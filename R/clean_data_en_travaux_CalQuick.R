@@ -27,6 +27,7 @@
   cell_split <- split(data, data$Cell_id)
 
 
+
   # Computing a local mean for each data.table
   cell_split <- lapply(cell_split, function(x) data.table::setDT(x)[, local_mean := gplots::wapply(x$time_frame, x$Mean_Grey, fun = mean, n=length(x$time_frame), width = mean_width, method = "nobs")[[2]]])
 
@@ -94,31 +95,17 @@
 
   data <- do.call(rbind, cell_split)
   data$Mean_Grey_wo_peaks[which(is.na(data$Mean_Grey_wo_peaks))] <- data$local_mean[which(is.na(data$Mean_Grey_wo_peaks))]
+
   cell_split <- split(data, data$Cell_id)
-
-  #cell_split <- lapply(cell_split, function(x) x[, local_quantile := gplots::wapply(x$time_frame, x$Mean_Grey_wo_peaks,
-  #fun = function(x) quantile_speed(x, probs = .1), n = n, width = 10, method = "nobs"), by = Cell_id])
-
-
-  #cell_split <- lapply(cell_split, function(x) x[, Mean_Grey_wo_peaks := approxfun(which(!is.na(Mean_Grey_wo_peaks)), na.omit(Mean_Grey_wo_peaks))(seq_along(Mean_Grey_wo_peaks))])
-
-  print("second approx done")
-  #cell_split <- lapply(cell_split, function(x) x[, Mean_Grey_wo_peaks := replace(Mean_Grey_wo_peaks, is.na(Mean_Grey_wo_peaks), quantile_speed(Mean_Grey_wo_peaks, probs = .5, na.rm = T))])
-
-  print("last replacing done")
-
-
-
-  #cell_split <- lapply(cell_split, function(x) x[, Mean_Grey_wo_peaks := replace(Mean_Grey_wo_peaks, DPA > quantile_speed(DPA, probs = .8) &
-                                                                                   #Mean_Grey_wo_peaks > quantile_speed(Mean_Grey_wo_peaks, probs = .1)
-                                                                                 #, quantile_speed(Mean_Grey_wo_peaks, probs = .5))])
-
 
   data <- moving_cells(cell_split, threshold = moving_threshold)
 
   print(paste("Number of cells after cleaning", length(unique(data$Cell_id)), sep = ": " ))
 
   print(paste("Removed", ncells_before - length(unique(data$Cell_id)), "cells", sep = " " ))
+
+  cell_split <- split(data, data$Cell_id)
+
 
   return(data)
 
@@ -140,9 +127,13 @@
 #' @examples
 moving_cells <- function(data, threshold = 0.1){
 
-  data <- lapply(data, function(x) data.table::setDT(x)[, Moving_cells := (sum(Mean_Grey == 0) / sum(Mean_Grey >= 0))  > threshold])
+  data <- lapply(data, function(x) data.table::setDT(x)[, Moving_cells
+                                                        := sum(Mean_Grey == 0) / sum(Mean_Grey >= 0) > threshold])
 
-  data <- lapply(data, function(x) data.table::setDT(x)[, Median_decrease := (sum(Mean_Grey == 0) / sum(Mean_Grey >= 0))  > threshold])
+  #print(data)
+  data <- lapply(data, function(x) data.table::setDT(x)[, Anormal_variation := LaplacesDemon::is.bimodal(Mean_Grey)])
+
+  #data <- lapply(data, function(x) x[Moving_cells == FALSE & Anormal_variation == FALSE,])
 
   data <- lapply(data, function(x) x[Moving_cells == FALSE,])
 
@@ -151,5 +142,11 @@ moving_cells <- function(data, threshold = 0.1){
   return(data)
 }
 
+start <- Sys.time()
+moving_cells(split(test_VNO_norm_1Hz, test_VNO_norm_1Hz$Cell_id), 0.1)
+end <- Sys.time()
+# 21.53074 avec is.bimodal
+# 33 sec avec is.unimodal
 
+unique(t$Cell_id) %in%unique(t_mean_grey$Cell_id)
 

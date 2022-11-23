@@ -117,15 +117,17 @@ cell_plot <- function(full_data, peaks_data, cell, var, line = c(FALSE, "poly", 
 
     else{
 
-      max <- df$Max_peak_smooth_z
+      max <- peak_info$Max_peak_smooth_z
       q <- q + ggplot2::geom_vline(ggplot2::aes(xintercept = peak_info$Start_peak_frame),size = 1)+
         ggplot2::geom_vline(ggplot2::aes(xintercept = peak_info$End_peak_frame),size = 1)+
         ggplot2::geom_point(ggplot2::aes(x = peak_info$Max_peak_frame, y = max))
 
-      max <- max(df$smooth_z)
+      max_peak <- df[df[[var]] == max(df[[var]], na.rm = TRUE), ]
+
       p <- p +  ggplot2::geom_vline(ggplot2::aes(xintercept = peak_info$Start_peak_frame), size = 1)+
         ggplot2::geom_vline(ggplot2::aes(xintercept = peak_info$End_peak_frame), size = 1) +
-        ggplot2::geom_point(ggplot2::aes(x = peak_info$Max_peak_frame, y = df[df$smooth_z == max,]$Mean_Grey))
+        ggplot2::geom_point(ggplot2::aes(x = peak_info$Max_peak_frame, y = max_peak[[var]]))
+
 
       final <- gridExtra::grid.arrange(p,q, ncol = 2)
 

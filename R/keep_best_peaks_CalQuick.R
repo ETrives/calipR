@@ -33,6 +33,8 @@ keep_best_peaks <- function(data, range){
 
   peaks_list <- lapply(peaks_list, function(x) x[, infValue :=  inferiorValues(x, data[[2]])])
 
+  peaks_list <- lapply(peaks_list, function(x) x[, bimod_peak :=  bimodal_cell(x, data[[2]])])
+
   #peaks_list <- lapply(peaks_list, function(x) x[, infValue_D :=  inferiorValues_lag(x, data[[2]])])
 
 
@@ -48,6 +50,7 @@ keep_best_peaks <- function(data, range){
   data_peaks[, Prediction := predict(model, data_peaks, type="response")]
 
   data_final <- data_peaks[data_peaks$Prediction > 0.1,]
+  #data_final <- data_peaks
   View(data)
   #true_peaks <- PNHRA(data[[1]], data[[2]], range)
   #true_peaks <- false_pos(data[[1]], data[[2]], range)

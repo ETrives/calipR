@@ -32,3 +32,20 @@ inferiorValues <- function(peak, full_data) {
 
   return(infVal)
 }
+
+#' bimodal_cell
+#'
+#' @param peak
+#' @param full_data
+#'
+#' @return
+#' @export
+#'
+#' @examples
+bimodal_cell <- function(peak, full_data){
+
+  data <- full_data[full_data$Cell_id == peak$Cell_id & full_data$time_frame %between% list(peak$Max_peak_frame - 30,peak$Max_peak_frame + 30),]
+  bimod <- is.bimodal(data$Mean_Grey)
+
+  return(bimod)
+}
