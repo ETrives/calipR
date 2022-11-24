@@ -142,11 +142,4 @@ moving_cells <- function(data, threshold = 0.1){
   return(data)
 }
 
-start <- Sys.time()
-moving_cells(split(test_VNO_norm_1Hz, test_VNO_norm_1Hz$Cell_id), 0.1)
-end <- Sys.time()
-# 21.53074 avec is.bimodal
-# 33 sec avec is.unimodal
-
-unique(t$Cell_id) %in%unique(t_mean_grey$Cell_id)
 
