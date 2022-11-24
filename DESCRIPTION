@@ -26,4 +26,5 @@ Imports:
   svglite,
   ggplot2,
   gridExtra,
-  ggvenn
+  ggvenn,
+  LaplacesDemon
