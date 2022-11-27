@@ -10,70 +10,90 @@
 #' @examples
 Analyze_Responses <- function(data, df_clean, compare_groups = FALSE){
 
-  data_count <- Count_responders(data, df_clean)
-
+  ### Adding a variable "Response" for each stimulus in df_clean
 
   if(compare_groups == FALSE){
-    data_count_stim <- Count_responders_stim(data, df_clean)
 
+    d <- unique(df_clean[,c("Cell_id", "stimulus")])
+    d_list <- split(d,cumsum(1:nrow(d) %in% seq(1:nrow(d))))
+
+    d_list <- lapply(d_list, function(x) data.table::setDT(x)[, Response := ifelse(is.na(
+      test_classify_1Hz[test_classify_1Hz$Cell_id == x$Cell_id &
+                          test_classify_1Hz$Start_peak_stimulus == x$stimulus,]$Cell_id[1]),
+      FALSE, TRUE) ])
+
+    d <- do.call(rbind, d_list)
+
+    stim_list <- unique(d$stimulus)
+
+    n_cells <- length(unique(d$Cell_id))
+
+    n_responders <- sum(d$Response == TRUE)
+    prop_total <- n_responders / n_cells
+
+    n_responses_by_stim <- unlist(lapply(stim_list, function(x) sum(d$stimulus == x & d$Response == TRUE)))
+    prop_by_stim <- n_responses_by_stim / n_cells
+    prop_by_stim_responders <- n_responses_by_stim / n_responders
+
+    df_final <- data.frame(Stimulus = stim_list)
+    df_final$Resp <- n_responses_by_stim
+    df_final$Proportion_of_responders <- prop_by_stim_responders
+    df_final$Proportion_of_total_cells <- prop_by_stim
+
+
+    d$Response <- ifelse(d$Response == TRUE, 1,0)
+    res <- Compare_props(d)
   }
 
   if(compare_groups == TRUE) {
-    data_count_stim <- Response_by_stim_and_groups(data, df_clean)
+
+    d <- unique(df_clean[,c("Cell_id", "stimulus", "group")])
+    d_list <- split(d,cumsum(1:nrow(d) %in% seq(1:nrow(d))))
+
+    d_list <- lapply(d_list, function(x) data.table::setDT(x)[, Response := ifelse(is.na(
+      test_classify_1Hz[test_classify_1Hz$Cell_id == x$Cell_id &
+                          test_classify_1Hz$Start_peak_stimulus == x$stimulus &
+                          test_classify_1Hz$group == x$group,]$Cell_id[1]),
+      FALSE, TRUE) ])
+
+    d <- do.call(rbind, d_list)
+    stim_list <- unique(d$stimulus)
+    group_list <- unique(d$group)
+
+    n_cells <- length(unique(d$Cell_id))
+
+    # Proportions totales
+    n_responders <- sum(d$Response == TRUE)
+    prop_total <- n_responders / n_cells
+
+    #n_responses_by_stim <- unlist(lapply(stim_list, function(x) sum(d$stimulus == x & d$Response == TRUE)))
+    # prop_by_stim <- n_responses_by_stim / n_cells
+    # prop_by_stim_responders <- n_responses_by_stim / n_responders
+
+
+    # Réponses par groupe :
+
+    n_responses_by_group <- unlist(lapply(group_list, function(x) sum(d$group == x & d$Response == TRUE)))
+    prop_by_group <- n_responses_by_group / n_cells
+    resp_by_group_and_stim <- unlist(lapply(group_list, function(x) lapply(stim_list, function(y) sum(d$group == x & d$stimulus == y & d$Response == TRUE))))
+
+    prop_by_group_and_stim_responders <- resp_by_group_and_stim / n_responders
+    prop_by_group_and_stim <- resp_by_group_and_stim / n_cells
+
+    df_final <- data.frame(Stimulus = rep(stim_list, times = length(group_list)))
+    df_final$group <- rep(group_list, each = length(stim_list))
+    df_final$resp <- resp_by_group_and_stim
+    #df_final$non_resp <- n_responders - resp_by_group_and_stim
+    #df_final$non_resp_total_cells <- n_cells - resp_by_group_and_stim
+    df_final$prop_responders <- prop_by_group_and_stim_responders
+    df_final$prop_total_cells <- prop_by_group_and_stim
+
+    #res <- glmer(Response ~ group * stimulus + (1|Cell_id), family = binomial, data = d)
+    res <- "NO STATS"
   }
 
-
-  #peaks <- Peaks_summary(data, df_clean)
-
-  #data_sum <- Peak_sum(peaks)
-
-  #peak_sum <- data_sum$Peak_sum
-
-  #total_peaks <- sum(unlist(peak_sum))
-
-  #props_stim <- Peak_prop(peaks, data_sum)
-
-
-  between_stim <- Compare_props(data_count_stim)
-
-  #return(list(unlist(data_count), data_count_stim[[2]], "n_peaks" = total_peaks, props_stim, between_stim[[1]], between_stim[[2]]))
-
-  return(list(data_count, data_count_stim[[2]], between_stim[[1]], between_stim[[2]]))
-}
-
-
-
-#' Peak_prop
-#'
-#' @param data_count
-#' @param data_sum
-#'
-#' @return
-#' @export
-#'
-#' @examples
-Peak_prop <- function(data_count, data_sum){
-
-
-  df <- filter(data_count, Peak_class == "standard")
-  props <- data.frame(1:dim(df)[1])
-  prop_vec <- list()
-  stim_vec <- list()
-  index = 1
-
-  for(i in data_sum$Peak_class){
-    df <- filter(data_count, Peak_class == i)
-
-    prop_vec[[i]] <- df$n / data_sum$Peak_sum[[index]]
-    stim_vec <- df$Stimulus
-
-    index = index +1
-
-
-  }
-
-  props <- cbind(props, stim_vec, prop_vec)
-  return(props[,-1])
+  #return(list(data_count, data_count_stim[[2]], between_stim[[1]], between_stim[[2]]))
+  return(list("n_cells" = n_cells, "n_responders" = n_responders, "Proportion" = prop_total, df_final, res))
 }
 
 
@@ -81,108 +101,17 @@ Peak_prop <- function(data_count, data_sum){
 
 #' Compare_props
 #'
-#' @param data a dataframe gathering the number and proportion of cells that responded to each stimulus (output from count_responders_stim())
+#' @param data the full output from Count_responders_stim()
 #'
-#' @return
+#' @return a list with 2 elements. The first is the general summary of the cochran's q test
+#' the second is the results of the pairwise comparisons between stimuli with McNemar test with correction for multiple comparisons
 #' @export
 #'
 #' @examples
 Compare_props <- function(data){
 
-
-  for(i in colnames(data[[1]])){
-
-    data[[1]][,i] <- unlist(lapply(data[[1]][,i], Two_to_one))
-
-  }
-
-  data <- data.frame(data[[1]])
-
-
-  res_tot <- rstatix::cochran_qtest(data, Freq~Var2|Var1)
-  res_post_hoc <- rstatix::pairwise_mcnemar_test(data, Freq ~ Var2|Var1)
+  res_tot <- rstatix::cochran_qtest(data, Response~stimulus|Cell_id)
+  res_post_hoc <- rstatix::pairwise_mcnemar_test(data, Response~stimulus|Cell_id)
 
   return(list(res_tot, res_post_hoc))
-}
-
-
-
-
-
-#' Peak_sum
-#'
-#' @param data
-#'
-#' @return
-#' @export
-#'
-#' @examples
-Peak_sum <- function(data) {
-
-  n_data <- plyr::ddply(data, .(Peak_class), summarise, Peak_sum = sum(n))
-
-  n_data$Class_prop <- n_data$Peak_sum / sum(n_data$Peak_sum)
-
-  return(n_data)
-}
-
-
-
-#' Peaks_summary
-#'
-#' @param data
-#' @param df_tidy
-#'
-#' @return
-#' @export
-#'
-#' @examples
-Peaks_summary <- function(data, df_tidy){
-
-  #data$Start_peak_stimulus <- str_replace_all(data$Start_peak_stimulus, "[12345.]", "")
-
-  res_std <- data.frame(table(data$Start_peak_stimulus, data$standard_peak  ))
-
-
-
-  res_std <- dplyr::filter(res_std, Var2 == TRUE)
-
-
-  res_early <- data.frame(table(data$Start_peak_stimulus, data$early_peak  ))
-
-
-  res_early <- dplyr::filter(res_early, Var2 == TRUE)
-  res_late <- data.frame(table(data$Start_peak_stimulus, data$late_peak  ))
-  res_late <- dplyr::filter(res_late, Var2 == TRUE)
-
-  res_final <- rbind(res_std, res_early, res_late)
-  peak_class <- c("standard", "early", "late")
-  res_final$Peak_class <- rep(peak_class, each = dim(res_std)[[1]])
-  res_final <- res_final[,-2]
-  names(res_final) <- c("Stimulus", "n", "Peak_class")
-
-  return("N_peaks_per_class_and_stim"= res_final)
-}
-
-
-#' Two_to_one
-#'
-#' @param x
-#'
-#' @return
-#' @export
-#'
-#' @examples
-Two_to_one <- function(x){
-
-  if(x >= 1){
-    y <- 1
-  }
-
-  else {
-    y <- 0
-
-  }
-
-  return(y)
 }

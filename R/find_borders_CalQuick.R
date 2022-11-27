@@ -58,6 +58,7 @@ True_peaks$End_peak_frame <- peak_end$time_frame
 
 True_peaks$End_peak_rel_frame <- peak_end$Time_frame_stim
 
+True_peaks$group <- peak_start$group
 
 return(list(True_peaks, peak_start, peak_end))
 

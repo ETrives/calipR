@@ -16,17 +16,12 @@ find_peaks <- function(data, smooth = FALSE, raw = FALSE, threshold, group = FAL
   threshold <- as.integer(threshold)
 
   data <- data[, Response := smooth_z >= threshold, by = list(Cell_id, stimulus) ]
-  data <- data[, Current_Response := smooth_z >= threshold]
 
   # Detecting responding cells
   sum_response <- data[, Sum_resp := sum(Response), by = Cell_id]
 
   # Filtering responding cells
   Responding_cells <- sum_response[Sum_resp != 0]
-
-  # Filtering periods during which the cells respond
-  data_sub <- data[Current_Response == TRUE]
-
 
   # créer une colonne qui contient l'info de la dérivée de la valeur précédende :
 

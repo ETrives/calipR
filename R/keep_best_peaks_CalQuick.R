@@ -12,9 +12,6 @@ keep_best_peaks <- function(data, range){
   data[[1]] <- data.table::setDT(data[[1]])[, True_peak := Max_peak_smooth_z == max(Max_peak_smooth_z), by = list(Cell_id, Max_peak_stimulus)]
   data[[2]] <- data.table::setDT(data[[2]])[, True_peak := smooth_z == max(smooth_z), by = list(Cell_id, stimulus)]
 
-  print(data[[1]])
-
-  print(data[[2]])
 
   peaks_data  <- data[[1]][data[[1]]$True_peak == TRUE,]
   peaks_list <- split(peaks_data,cumsum(1:nrow(peaks_data) %in% seq(1:nrow(peaks_data))))
@@ -51,7 +48,7 @@ keep_best_peaks <- function(data, range){
 
   data_final <- data_peaks[data_peaks$Prediction > 0.1,]
   #data_final <- data_peaks
-  View(data)
+
   #true_peaks <- PNHRA(data[[1]], data[[2]], range)
   #true_peaks <- false_pos(data[[1]], data[[2]], range)
 

@@ -14,6 +14,9 @@ Compare_props(data)
 \value{
 a list with 2 elements. The first is the general summary of the cochran's q test
 the second is the results of the pairwise comparisons between stimuli with McNemar test with correction for multiple comparisons
+
+a list with 2 elements. The first is the general summary of the cochran's q test
+the second is the results of the pairwise comparisons between stimuli with McNemar test with correction for multiple comparisons
 }
 \description{
 Compare_props

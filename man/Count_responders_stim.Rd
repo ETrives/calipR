@@ -4,7 +4,7 @@
 \alias{Count_responders_stim}
 \title{Count_responders_stim}
 \usage{
-Count_responders_stim(data, df_tidy)
+Count_responders_stim(data, df_tidy, n_cells)
 }
 \arguments{
 \item{data}{the first data frame output from find_rise}

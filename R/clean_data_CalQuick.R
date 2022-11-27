@@ -53,7 +53,7 @@
 
   #y[which(x == max(x, na.rm=TRUE))[1],]
 
-  print(cell_split[[1]])
+  #print(cell_split[[1]])
 
   cell_split <- lapply(cell_split, function(x) data.table::setDT(x)[, smooth_DPA := gplots::wapply(x$time_frame, x$DPA, fun = mean, n=length(x$time_frame), width = 10, method = "nobs")[[2]]])
 
@@ -72,7 +72,7 @@
   data$Mean_Grey_wo_peaks[which(is.na(data$Mean_Grey_wo_peaks))] <- data$local_mean[which(is.na(data$Mean_Grey_wo_peaks))]
 
 
-  print(data)
+  #print(data)
   print("first DPA done")
 
   #cell_split <- lapply(cell_split, function(x) x[, Mean_Grey_wo_peaks := replace(Mean_Grey_wo_peaks, Mean_Grey_wo_peaks > quantile_speed(DPA, probs = .5, na.rm = T)
