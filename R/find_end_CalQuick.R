@@ -17,9 +17,19 @@ find_end <- function(peaks, full_data, range){
 
   df_list_end <- lapply(peaks, subset_window, dt_2 = full_data, period = "end")
 
-  XmYm_end <- lapply(df_list_end, function(x) x[x$first_derivative == min(x$first_derivative, na.rm = TRUE),])
+  df_list_end_sub <- lapply(df_list_end, function(x) x[1:20,])
 
-  XrYr_end <- lapply(df_list_end, function(x) x[x$time_frame == max(x$time_frame, na.rm = TRUE),])
+
+  XmYm_end <- lapply(df_list_end_sub, function(x) x[x$first_derivative == min(x$first_derivative, na.rm = TRUE),])
+
+  #XrYr_end <- lapply(df_list_end, function(x) x[x$time_frame == max(x$time_frame, na.rm = TRUE),])
+
+  XrYr_end <- lapply(df_list_end, function(x) x[x$local_mean == min(x$local_mean, na.rm = TRUE),])
+
+
+  #lapply(XmYm_end, function(x) if(x$Cell_id[1] == "cahr") {print(x)})
+
+  #lapply(XrYr_end, function(x) if(x$Cell_id[1] == "cahr") {print(x)})
 
   # Computing the area of the trapezoid for each i :
 

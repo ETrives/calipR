@@ -23,12 +23,17 @@ df_list_start <- lapply(peaks, subset_window, dt_2 = full_data, period = "start"
 
 df_list_start <- lapply(df_list_start, function(x) x[order(-x$time_frame),])
 
-XmYm_start <- lapply(df_list_start, function(x) x[x$first_derivative == max(x$first_derivative, na.rm = TRUE)[1],])
+df_list_start_sub <- lapply(df_list_start, function(x) x[1:10,])
+
+XmYm_start <- lapply(df_list_start_sub, function(x) x[x$first_derivative == max(x$first_derivative, na.rm = TRUE)[1],])
 
 
 
 XrYr_start <- lapply(df_list_start, function(x) x[x$time_frame == min(x$time_frame)[1],])
 
+#lapply(XmYm_start, function(x) if(x$Cell_id[1] == "cahr") {print(x)})
+
+#lapply(XrYr_start, function(x) if(x$Cell_id[1] == "cahr") {print(x)})
 
 start_area_list <- purrr::pmap(list(df_list_start, XmYm_start, XrYr_start),
                                function(x,y,z) unlist(lapply(x$time_frame, function(a)
