@@ -65,8 +65,8 @@ Urine i-s;13;6.3
 Odor mix;13;10
 KCl;13;13.3
 Baseline;14;0
-Fur i-s;14;3
-Urine i-s;14;6.3
+Urine i-s;14;3
+Fur i-s;14;6.3
 Odor mix;14;10
 KCl;14;13.3
 Baseline;15;0
@@ -90,12 +90,12 @@ Urine i-s;18;6.3
 Odor mix;18;10
 KCl;18;13.3
 Baseline;19;0
-Fur i-s;19;3
-Urine i-s;19;6.3
+Urine i-s;19;3
+Fur i-s;19;6.3
 Odor mix;19;10
 KCl;19;13.3
 Baseline;20;0
 Fur i-s;20;3
-Urine i-s;20;6.3
+KCl;20;6.3
 Odor mix;20;10
-KCl;20;13.3
+Urine i-s;20;13.3

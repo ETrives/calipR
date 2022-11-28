@@ -18,8 +18,8 @@ Analyze_Responses <- function(data, df_clean, compare_groups = FALSE){
     d_list <- split(d,cumsum(1:nrow(d) %in% seq(1:nrow(d))))
 
     d_list <- lapply(d_list, function(x) data.table::setDT(x)[, Response := ifelse(is.na(
-      test_classify_1Hz[test_classify_1Hz$Cell_id == x$Cell_id &
-                          test_classify_1Hz$Start_peak_stimulus == x$stimulus,]$Cell_id[1]),
+      data[data$Cell_id == x$Cell_id &
+             data$Start_peak_stimulus == x$stimulus,]$Cell_id[1]),
       FALSE, TRUE) ])
 
     d <- do.call(rbind, d_list)
@@ -51,13 +51,15 @@ Analyze_Responses <- function(data, df_clean, compare_groups = FALSE){
     d_list <- split(d,cumsum(1:nrow(d) %in% seq(1:nrow(d))))
 
     d_list <- lapply(d_list, function(x) data.table::setDT(x)[, Response := ifelse(is.na(
-      test_classify_1Hz[test_classify_1Hz$Cell_id == x$Cell_id &
-                          test_classify_1Hz$Start_peak_stimulus == x$stimulus &
-                          test_classify_1Hz$group == x$group,]$Cell_id[1]),
-      FALSE, TRUE) ])
+      data[data$Cell_id == x$Cell_id &
+             data$Start_peak_stimulus == x$stimulus &
+             data$group == x$group,]$Cell_id[1]),
+      FALSE, TRUE)])
+
 
     d <- do.call(rbind, d_list)
-    stim_list <- unique(d$stimulus)
+    stim_list <- unique(data$Start_peak_stimulus)
+    print(stim_list)
     group_list <- unique(d$group)
 
     n_cells <- length(unique(d$Cell_id))
@@ -80,6 +82,8 @@ Analyze_Responses <- function(data, df_clean, compare_groups = FALSE){
     prop_by_group_and_stim_responders <- resp_by_group_and_stim / n_responders
     prop_by_group_and_stim <- resp_by_group_and_stim / n_cells
 
+    print(prop_by_group_and_stim_responders)
+
     df_final <- data.frame(Stimulus = rep(stim_list, times = length(group_list)))
     df_final$group <- rep(group_list, each = length(stim_list))
     df_final$resp <- resp_by_group_and_stim
@@ -88,6 +92,7 @@ Analyze_Responses <- function(data, df_clean, compare_groups = FALSE){
     df_final$prop_responders <- prop_by_group_and_stim_responders
     df_final$prop_total_cells <- prop_by_group_and_stim
 
+    df_final <- df_final[df_final$resp != 0, ]
     #res <- glmer(Response ~ group * stimulus + (1|Cell_id), family = binomial, data = d)
     res <- "NO STATS"
   }
