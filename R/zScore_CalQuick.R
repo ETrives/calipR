@@ -45,6 +45,7 @@ z_score <- function(data, var = c("raw", "poly", "gam", "linear", "quantile"), c
 
   dt <- data.table::setDT(data)
 
+
   if(var == "raw"){
     mean <- dt[, .(mean = mean(Mean_Grey)), .(Cell_id, stimulus)][stimulus == "1.Baseline"]
     mean_base_list <- split(mean, mean$Cell_id)
@@ -84,6 +85,7 @@ z_score <- function(data, var = c("raw", "poly", "gam", "linear", "quantile"), c
   if(var == "gam"){
     mean <- dt[, .(mean = mean(gam_detrended)), .(Cell_id, stimulus)][stimulus == "1.Baseline"]
     mean_base_list <- split(mean, mean$Cell_id)
+
 
     # Creating a vector of mean baseline for each coverslip, that has the same number of lines as each coverslip
     #mean_vec_list <- vector(mode = "list", length = length(mean_baseline$mean)*sum(unlist(dim_list)))

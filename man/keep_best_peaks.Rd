@@ -4,7 +4,7 @@
 \alias{keep_best_peaks}
 \title{keep_best_peaks}
 \usage{
-keep_best_peaks(data, range)
+keep_best_peaks(data)
 }
 \arguments{
 \item{data}{the whole output from find_peaks function}

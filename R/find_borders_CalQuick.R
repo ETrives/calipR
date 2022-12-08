@@ -15,10 +15,10 @@
 find_borders <- function(data, range){
 
 
-dt_1 <- data[[1]]
+True_peaks <- data[[1]]
 dt_2 <- data[[2]]
 
-True_peaks <- dt_1[dt_1$True_peak == TRUE]
+#True_peaks <- dt_1[dt_1$True_peak == TRUE]
 
 
 # Defining the range in which to find before and after the peak to find the

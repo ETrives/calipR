@@ -27,4 +27,7 @@ Imports:
   ggplot2,
   gridExtra,
   ggvenn,
-  LaplacesDemon
+  LaplacesDemon,
+  FastLZeroSpikeInference,
+  RSQLite,
+  DBI
