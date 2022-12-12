@@ -26,18 +26,15 @@
   # Splitting the data frame by cell_id
   cell_split <- split(data, data$Cell_id)
 
-print("before local_mean")
   # Computing a local mean for each data.table
   cell_split <- lapply(cell_split, function(x) data.table::setDT(x)[, local_mean := gplots::wapply(x$time_frame, x$Mean_Grey, fun = mean, n=length(x$time_frame), width = mean_width, method = "nobs")[[2]]])
 
 
-  print("after local_mean")
 
   #cell_split <- lapply(cell_split, function(x) x$Mean_Grey[x$time_frame == 1 & x$Mean_Grey == 0] <- x$local_mean[x$time_frame == 1 & x$Mean_Grey == 0])
   cell_split <- lapply(cell_split, function(x) x[, Mean_Grey := replace(Mean_Grey, time_frame == 1 & Mean_Grey == 0, local_mean[1])])
 
 
-  print(cell_split)
   # Computing first derivative
   cell_split <- lapply(cell_split, function(x) data.table::setDT(x)[, first_derivative := doremi::calculate.gold(time = x$time_seconds, signal = x$local_mean,
                                                                                               embedding = 2, n = 1)$dsignal[,2]])
@@ -48,18 +45,6 @@ print("before local_mean")
 
   cell_split <- lapply(cell_split, function(x) x[, DPA := replace(DPA, is.na(DPA), quantile_speed(DPA, probs = .5))])
 
-  #cell_split <- lapply(cell_split, function(x) x$first_derivative[which(is.na(x$first_derivative))] <- x$local_mean[which(is.na(x$first_derivative))])
-
-  #test_clean_1Hz$first_derivative[which(is.na(test_clean_1Hz$first_derivative))] <- test_clean_1Hz$local_mean[which(is.na(test_clean_1Hz$first_derivative))]
-
-
-  #cell_split <- lapply(cell_split, function(x) lapply(x, function(y) print(which(y == is.na(y)))))
-
-  #x$DPA[x$DPA] <- (x$local_mean[x$DPA == 0] - 5)/2.533
-
-  #y[which(x == max(x, na.rm=TRUE))[1],]
-
-  #print(cell_split[[1]])
 
   cell_split <- lapply(cell_split, function(x) data.table::setDT(x)[, smooth_DPA := gplots::wapply(x$time_frame, x$DPA, fun = mean, n=length(x$time_frame), width = 10, method = "nobs")[[2]]])
 
@@ -72,23 +57,9 @@ print("before local_mean")
 
   cell_split <- lapply(cell_split, function(x) x[, Mean_Grey_wo_peaks := approxfun(which(!is.na(Mean_Grey_wo_peaks)), na.omit(Mean_Grey_wo_peaks))(seq_along(Mean_Grey_wo_peaks))])
 
-  #cell_split <- lapply(cell_split, function(x) x[, Mean_Grey_wo_peaks := replace(Mean_Grey_wo_peaks, is.na(Mean_Grey_wo_peaks), quantile_speed(Mean_Grey_wo_peaks, probs = .5))])
 
   data <- do.call(rbind, cell_split)
   data$Mean_Grey_wo_peaks[which(is.na(data$Mean_Grey_wo_peaks))] <- data$local_mean[which(is.na(data$Mean_Grey_wo_peaks))]
-
-
-  #print(data)
-  print("first DPA done")
-
-  #cell_split <- lapply(cell_split, function(x) x[, Mean_Grey_wo_peaks := replace(Mean_Grey_wo_peaks, Mean_Grey_wo_peaks > quantile_speed(DPA, probs = .5, na.rm = T)
-                                                                                # & smooth_DPA > quantile_speed(smooth_DPA, probs = .5) ,NaN)])
-
-  #cell_split <- lapply(cell_split, function(x) x[, Mean_Grey_wo_peaks := approxfun(which(!is.na(Mean_Grey_wo_peaks)), na.omit(Mean_Grey_wo_peaks))(seq_along(Mean_Grey_wo_peaks))])
-
-  #data <- do.call(rbind, cell_split)
-  #data$Mean_Grey_wo_peaks[which(is.na(data$Mean_Grey_wo_peaks))] <- data$local_mean[which(is.na(data$Mean_Grey_wo_peaks))]
-
 
 
   cell_split <- split(data, data$Cell_id)
@@ -96,8 +67,6 @@ print("before local_mean")
 
   cell_split <- lapply(cell_split, function(x) x[, Mean_Grey_wo_peaks := gplots::wapply(x$time_frame, x$Mean_Grey_wo_peaks,
                                                                                     fun = function(x) quantile_speed(x, probs = .1), n = length(x$time_frame), width = 30, method = "nobs")[[2]]])
-
-  #cell_split <- lapply(cell_split, function(x) x[, quantile_detrended := Mean_Grey - local_quantile])
 
   data <- do.call(rbind, cell_split)
   data$Mean_Grey_wo_peaks[which(is.na(data$Mean_Grey_wo_peaks))] <- data$local_mean[which(is.na(data$Mean_Grey_wo_peaks))]

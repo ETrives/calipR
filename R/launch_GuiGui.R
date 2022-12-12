@@ -18,7 +18,7 @@ ui <-
       shiny::tags$style(".main-header .logo {padding-top: 1%}"),
       shiny::tags$style(".main-header .logo {padding-bottom: 1%}")
       ),
-      title = shiny::div(shiny::img(src = "CalQuick_bis.png", width = "70%", height = "70%", align = "center"))),
+      title = shiny::div(shiny::img(src = "logo/CalQuick_bis.png", width = "70%", height = "70%", align = "center"))),
 
 
     shinydashboard::dashboardSidebar(
