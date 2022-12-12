@@ -26,14 +26,20 @@
   # Splitting the data frame by cell_id
   cell_split <- split(data, data$Cell_id)
 
-
-
+print("before local_mean")
   # Computing a local mean for each data.table
   cell_split <- lapply(cell_split, function(x) data.table::setDT(x)[, local_mean := gplots::wapply(x$time_frame, x$Mean_Grey, fun = mean, n=length(x$time_frame), width = mean_width, method = "nobs")[[2]]])
 
 
+  print("after local_mean")
+
+  #cell_split <- lapply(cell_split, function(x) x$Mean_Grey[x$time_frame == 1 & x$Mean_Grey == 0] <- x$local_mean[x$time_frame == 1 & x$Mean_Grey == 0])
+  cell_split <- lapply(cell_split, function(x) x[, Mean_Grey := replace(Mean_Grey, time_frame == 1 & Mean_Grey == 0, local_mean[1])])
+
+
+  print(cell_split)
   # Computing first derivative
-  cell_split <- lapply(cell_split, function(x) x[, first_derivative := doremi::calculate.gold(time = x$time_seconds, signal = x$local_mean,
+  cell_split <- lapply(cell_split, function(x) data.table::setDT(x)[, first_derivative := doremi::calculate.gold(time = x$time_seconds, signal = x$local_mean,
                                                                                               embedding = 2, n = 1)$dsignal[,2]])
 
 

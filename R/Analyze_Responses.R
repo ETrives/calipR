@@ -43,6 +43,11 @@ Analyze_Responses <- function(data, df_clean, compare_groups = FALSE){
 
     d$Response <- ifelse(d$Response == TRUE, 1,0)
     res <- Compare_props(d)
+
+    ### Peak description by stimulus :
+
+    data <- data[, peak_duration := End_peak_frame - Start_peak_frame]
+
   }
 
   if(compare_groups == TRUE) {

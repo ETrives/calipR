@@ -30,7 +30,7 @@ keep_best_peaks <- function(data){
 
   data_peaks[, Prediction := predict(model, data_peaks, type="response")]
 
-  data_final <- data_peaks[data_peaks$Prediction > 0.1,]
+  data_final <- data_peaks[data_peaks$Prediction > 0.5,]
 
   return(list(data_final, data[[2]],data_peaks))
 }

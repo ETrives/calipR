@@ -30,4 +30,7 @@ Imports:
   LaplacesDemon,
   FastLZeroSpikeInference,
   RSQLite,
-  DBI
+  DBI,
+  shinydashboard,
+  shiny,
+  DT

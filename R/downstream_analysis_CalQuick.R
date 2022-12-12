@@ -41,9 +41,21 @@ downstream_analysis <- function(data, moving_thresh = 0.1, outlier_thresh = 2, m
 
   deconvolved <- deconvolve(norm, lambda = lambda, gam = gam, constraint = constraint,
                             threshold = threshold, var = deconvolve_var)
+  print("deconvolved ok")
+
+  if(length(deconvolved[[1]]$Cell_id) == 0){
+    print(deconvolved)
+  print("Deconvolved == 0 ")
+  borders <- list("No Peak", "No Peak")
+  }
+
+
+  if(length(deconvolved[[1]]$Cell_id) != 0){
+    print("Deconvolved != 0 ")
+
   best <- keep_best_peaks(deconvolved)
   borders <- find_borders(best, range = borders_range)
-
+  }
 
 return(list(borders[[1]], norm))
 }

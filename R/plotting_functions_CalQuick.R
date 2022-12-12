@@ -66,8 +66,7 @@ svg_responders <- function(full_data, peaks_data, var,
 cell_plot <- function(full_data, peaks_data, cell, var, line = c(FALSE, "poly", "gam"), show_peak = FALSE) {
 
   df <- full_data[full_data$Cell_id == cell,]
-  peak_info <- peaks_data[peaks_data$Cell_id == cell,]
-
+  print(peaks_data)
 
   p <- ggplot2::ggplot(df, ggplot2::aes(x = time_frame, y = !!rlang::sym(var)))+
     ggplot2::geom_line( ggplot2::aes( color =stimulus),size = 1)+
@@ -107,36 +106,51 @@ cell_plot <- function(full_data, peaks_data, cell, var, line = c(FALSE, "poly", 
 
 
 
+  isnot.null <- Negate(is.null)
 
-  if(show_peak == TRUE){
+  if(isnot.null(dim(peaks_data))){
 
-    if(length(peak_info$Cell_id) == 0){
-      final <- gridExtra::grid.arrange(p,q, ncol = 2)
+  peak_info <- peaks_data[peaks_data$Cell_id == cell,]
 
-    }
-
-    else{
-
-      max <- df$Max_peak_smooth_z
-      q <- q + ggplot2::geom_vline(ggplot2::aes(xintercept = peak_info$Start_peak_frame),size = 1)+
-        ggplot2::geom_vline(ggplot2::aes(xintercept = peak_info$End_peak_frame),size = 1)+
-        ggplot2::geom_point(ggplot2::aes(x = peak_info$Max_peak_frame, y = max))
-
-      max <- max(df$smooth_z)
-      p <- p +  ggplot2::geom_vline(ggplot2::aes(xintercept = peak_info$Start_peak_frame), size = 1)+
-        ggplot2::geom_vline(ggplot2::aes(xintercept = peak_info$End_peak_frame), size = 1) +
-        ggplot2::geom_point(ggplot2::aes(x = peak_info$Max_peak_frame, y = df[df$smooth_z == max,]$Mean_Grey))
-
-      final <- gridExtra::grid.arrange(p,q, ncol = 2)
-
-    }
   }
 
-  else{
+  if(is.null(dim(peaks_data))){
+
+    peak_info <- NULL
+
+  }
+
+  if(show_peak == TRUE & dim(peak_info)[[1]] != 0 ){
+
+    print("show peak True and Peak ")
+    print(peak_info)
+
+
+      colors <- c("#FF0000", "#000000", "#009900", "#6600CC", "#00FFFF", "#FF66FF", "#999999", "#003333" )
+      #sub_colors <- colors[1:length(peak_info$Max_peak_frame)]
+
+      q <- q +
+        sapply(seq_along(1:length(peak_info$Start_peak_frame)), function(x) ggplot2::geom_vline(ggplot2::aes(xintercept = peak_info$Start_peak_frame[[x]]), size = 1, group = x, colour = colors[[x]]))+
+
+        sapply(seq_along(1:length(peak_info$End_peak_frame)), function(x) ggplot2::geom_vline(ggplot2::aes(xintercept = peak_info$End_peak_frame[[x]]), size = 1, group = x, colour = colors[[x]]))+
+        sapply(seq_along(1:length(peak_info$Max_peak_frame)), function(x) ggplot2::geom_point(ggplot2::aes(x = peak_info$Max_peak_frame[[x]], y = peak_info$Max_peak_smooth_z[[x]]), group = x, colour = colors[[x]],size = 2))
+
+      p <- p +
+        sapply(seq_along(1:length(peak_info$Start_peak_frame)), function(x) ggplot2::geom_vline(ggplot2::aes(xintercept = peak_info$Start_peak_frame[[x]]), size = 1, group = x, colour = colors[[x]]))+
+        sapply(seq_along(1:length(peak_info$End_peak_frame)), function(x) ggplot2::geom_vline(ggplot2::aes(xintercept = peak_info$End_peak_frame[[x]]), size = 1, group = x, colour = colors[[x]]))+
+        sapply(seq_along(1:length(peak_info$Max_peak_frame)), function(x) ggplot2::geom_point(ggplot2::aes(x = peak_info$Max_peak_frame[[x]], y = peak_info[peak_info$Max_peak_frame == peak_info$Max_peak_frame[[x]]][[var]][[1]]), size = 2, group = x, colour = colors[[x]]))
+
+      final <- gridExtra::grid.arrange(p,q, ncol = 2)
+  }
+
+  if(show_peak == TRUE & dim(peak_info)[[1]] == 0){
+
+    print("show peak True and No Peak ")
 
     final <- gridExtra::grid.arrange(p,q, ncol = 2)
 
   }
+
 
   return(final)
 
