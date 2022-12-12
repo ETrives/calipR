@@ -32,7 +32,8 @@ deconvolve <- function(norm_data, gam = 0.95, lambda = 1, constraint = T, estima
 
   peaks_data <- lapply(peaks_data, function(x) data[data$smooth_z == max(data[data$Cell_id == x$Cell_id & data$time_frame %between% list(x$time_frame, x$frame_window)]$smooth_z)[[1]]])
 
-  peaks_data <- lapply(peaks_data, function(x) if(x$smooth_z >= threshold) {x} )
+
+  peaks_data <- lapply(peaks_data, function(x) if(x$smooth_z[[1]] >= threshold) {x} )
 
   peaks_data <- do.call(rbind, peaks_data)
 

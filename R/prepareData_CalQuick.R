@@ -38,7 +38,11 @@ prepareData <- function(folder_name, stim_number, frame_rate,  duration_in_secon
 
   # Code pour récupérer uniquement le numéro du coverslip et lui ajouter une lettre :
 
-  coverslip_id <- lapply(myFiles, function(x) as.integer(stringr::str_replace_all(stringr::str_split(x, "/")[[1]][4], "[.csv.]", "")))
+
+  index_cov <-length(stringr::str_split(myFiles[[1]], "/")[[1]])
+
+  coverslip_id <- lapply(myFiles, function(x) as.integer(stringr::str_replace_all(stringr::str_split(x, "/")[[1]][index_cov], "[.csv.]", "")))
+
 
   letter_list <- LETTERS[seq(from = 1, to = length(myFiles))]
 
@@ -66,8 +70,12 @@ prepareData <- function(folder_name, stim_number, frame_rate,  duration_in_secon
 
   ### Code pour récupérer uniquement le groupe auquel appartient un coverslip
 
+  index_gr <-length(stringr::str_split(myFiles[[1]], "/")[[1]])-2
 
-  group_list <- lapply(myFiles, function(x) stringr::str_split(x, "/")[[1]][2])
+  group_list <- lapply(myFiles, function(x) stringr::str_split(x, "/")[[1]][index_gr])
+
+
+
 
   if(compare_groups == TRUE) {
 

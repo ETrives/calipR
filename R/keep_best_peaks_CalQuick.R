@@ -26,7 +26,8 @@ keep_best_peaks <- function(data){
 
   data_peaks <- do.call(rbind, peaks_list)
 
-  model <- readRDS("model.rds")
+  model <- readRDS(system.file("model/model.rds", package = "CalQuick"))
+  #readRDS("model.rds")
 
   data_peaks[, Prediction := predict(model, data_peaks, type="response")]
 
