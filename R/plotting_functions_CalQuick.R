@@ -66,7 +66,6 @@ svg_responders <- function(full_data, peaks_data, var,
 cell_plot <- function(full_data, peaks_data, cell, var, line = c(FALSE, "poly", "gam"), show_peak = FALSE) {
 
   df <- full_data[full_data$Cell_id == cell,]
-  print(peaks_data)
 
   p <- ggplot2::ggplot(df, ggplot2::aes(x = time_frame, y = !!rlang::sym(var)))+
     ggplot2::geom_line( ggplot2::aes( color =stimulus),size = 1)+
@@ -122,9 +121,6 @@ cell_plot <- function(full_data, peaks_data, cell, var, line = c(FALSE, "poly", 
 
   if(show_peak == TRUE & dim(peak_info)[[1]] != 0 ){
 
-    print("show peak True and Peak ")
-    print(peak_info)
-
 
       colors <- c("#FF0000", "#000000", "#009900", "#6600CC", "#00FFFF", "#FF66FF", "#999999", "#003333" )
       #sub_colors <- colors[1:length(peak_info$Max_peak_frame)]
@@ -145,7 +141,6 @@ cell_plot <- function(full_data, peaks_data, cell, var, line = c(FALSE, "poly", 
 
   if(show_peak == TRUE & dim(peak_info)[[1]] == 0){
 
-    print("show peak True and No Peak ")
 
     final <- gridExtra::grid.arrange(p,q, ncol = 2)
 
@@ -171,7 +166,6 @@ cell_plot <- function(full_data, peaks_data, cell, var, line = c(FALSE, "poly", 
 simple_cell_plot <- function(data, triangle_data, cell, var, line = c(FALSE, "poly", "gam", "quantile"), trianglePlot = FALSE) {
 
   df <- data[data$Cell_id == cell,]
-  #print(df)
   p <- ggplot2::ggplot(df, ggplot2::aes(x = time_frame, y = !!rlang::sym(var)))+
     ggplot2::geom_line( ggplot2::aes( color =stimulus),size = 1)+
     #geom_point(data = peak,size = 2)+
@@ -277,10 +271,8 @@ cell_plot_shiny <- function(data) {
 random_plot_sim <- function(data) {
 
   '%notin%' <- Negate('%in%')
-  print(data[[2]])
   if(!is.data.table(data)) {
 
-    print("there is a response")
     cell_list <- unique(data[[2]]$Cell_id)
 
 
@@ -323,7 +315,6 @@ random_plot_sim <- function(data) {
     }
   }
   else {
-    print("there is no response")
     p <- ggplot2::ggplot(data, ggplot2::aes(x = time_frame, y = Mean_Grey))+
       ggplot2::geom_line(ggplot2::aes( color=stimulus))+
       ggplot2::geom_line(ggplot2::aes(x=time_frame, y = gam_fit))+

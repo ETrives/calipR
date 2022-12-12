@@ -106,10 +106,14 @@ ui <-
             shiny::textInput("gam", label = "Gam", placeholder = "Enter the Gam parameter for the Deconvolution (double between 0-1)"),
             shiny::textInput("n_cells", label = "Number of cells", placeholder = "Enter the number of cells you want to run the stimulation on"),
 
-            shiny::uiOutput('cells'),
+            shiny::uiOutput('responders'),
+            shiny::uiOutput('non_responders'),
+
 
             shiny::actionButton("sim", "Simulate Analysis", align = "center"),
-            shiny::actionButton("plot_simulation", "Plot Random Cells", align = "center"),
+            shiny::actionButton("plot_responders", "Plot Responder", align = "center"),
+            shiny::actionButton("plot_non_responders", "Plot Non Responder", align = "center"),
+
             shiny::plotOutput(outputId = "plot_cell_sim")),
 
       shinydashboard::box(title = "Try other parameters on a given cell", width = 6, solidHeader = TRUE, status = "primary",
@@ -244,29 +248,53 @@ folder <- shiny::reactive({
 
       cells <- unique(data[[2]]$Cell_id)
 
-      output$cells <- shiny::renderUI({
+      responders <- unique(data[[1]]$Cell_id)
 
-        shiny::selectInput(inputId = "cells_sim", "Cells", cells)
+      non_responders <- cells %in% responders
+
+      non_responders <- unlist(purrr::map2(cells, non_responders, function(x,y) if(y == FALSE){x}))
+
+      output$responders <- shiny::renderUI({
+
+        shiny::selectInput(inputId = "responders", "Responders", responders)
       })
+
+    output$non_responders <- shiny::renderUI({
+
+      shiny::selectInput(inputId = "non_responders", "Non Responders", non_responders)
     })
+})
 
 
 
 
-    shiny::observeEvent(input$plot_simulation, {
+    shiny::observeEvent(input$plot_responders, {
       print("plot trigerred")
 
       data <- res_sim$res
-      #data_sub <- data[[2]][data[[2]]$Cell_id == input$cells_sim]
 
 
       output$plot_cell_sim <- shiny::renderPlot({
 
-        p <- cell_plot(data[[2]], data[[1]], var = "Mean_Grey", cell = input$cells_sim, line = "gam", show_peak = TRUE)
+        p <- cell_plot(data[[2]], data[[1]], var = "Mean_Grey", cell = input$responders, line = "gam", show_peak = TRUE)
         p
 
 
     })
+    })
+
+      shiny::observeEvent(input$plot_non_responders, {
+        print("plot trigerred")
+
+        data <- res_sim$res
+
+      output$plot_cell_sim <- shiny::renderPlot({
+
+        p <- cell_plot(data[[2]], data[[1]], var = "Mean_Grey", cell = input$non_responders, line = "gam", show_peak = TRUE)
+        p
+
+
+      })
     })
 
       shiny::observeEvent(input$sim_bis, {
