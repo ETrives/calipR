@@ -10,7 +10,7 @@ deconvolve(
   lambda = 1,
   constraint = T,
   estimate_calcium = T,
-  var = "smooth_delta",
+  var = "gam_detrended",
   ESP = 1e-04,
   threshold = 3
 )

@@ -34,3 +34,5 @@ Imports:
   shinydashboard,
   shiny,
   DT
+Remotes:
+  jewellsean/FastLZeroSpikeInference

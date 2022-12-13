@@ -19,6 +19,7 @@ keep_best_peaks <- function(data){
   peaks_list <- split(data[[1]],cumsum(1:nrow(data[[1]]) %in% seq(1:nrow(data[[1]]))))
 
 
+
   peaks_list <- lapply(peaks_list, function(x) x[, infValue :=  inferiorValues(x, data[[2]])])
 
   peaks_list <- lapply(peaks_list, function(x) x[, bimod_peak :=  bimodal_cell(x, data[[2]])])
@@ -27,7 +28,6 @@ keep_best_peaks <- function(data){
   data_peaks <- do.call(rbind, peaks_list)
 
   model <- readRDS(system.file("model/model.rds", package = "CalQuick"))
-  #readRDS("model.rds")
 
   data_peaks[, Prediction := predict(model, data_peaks, type="response")]
 

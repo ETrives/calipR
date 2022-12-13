@@ -15,8 +15,8 @@
 #' @export
 #'
 #' @examples
-deconvolve <- function(norm_data, gam = 0.95, lambda = 1, constraint = T, estimate_calcium = T, var = "smooth_delta", ESP = 0.0001,
-                       threshold = 3) {
+deconvolve <- function(norm_data, gam = 0.95, lambda = 1, constraint = T, estimate_calcium = T, var = "gam_detrended", ESP = 0.0001,
+                         threshold = 3) {
 
   cells <- unique(norm_data$Cell_id)
 
@@ -27,13 +27,23 @@ deconvolve <- function(norm_data, gam = 0.95, lambda = 1, constraint = T, estima
 
   data <- do.call(rbind, cell_split)
   peaks_data <- do.call(rbind, peaks_data)
+
+  print(peaks_data)
   peaks_data <- split(peaks_data,cumsum(1:nrow(peaks_data) %in% seq(1:nrow(peaks_data))))
 
+  peaks_data <- lapply(peaks_data, function(x) if(x$smooth_z[[1]] >= threshold) {x} )
+
+  peaks_data <- do.call(rbind, peaks_data)
+
+  print(peaks_data)
+
+
+  peaks_data <- split(peaks_data,cumsum(1:nrow(peaks_data) %in% seq(1:nrow(peaks_data))))
 
   peaks_data <- lapply(peaks_data, function(x) data[data$smooth_z == max(data[data$Cell_id == x$Cell_id & data$time_frame %between% list(x$time_frame, x$frame_window)]$smooth_z)[[1]]])
 
 
-  peaks_data <- lapply(peaks_data, function(x) if(x$smooth_z[[1]] >= threshold) {x} )
+  #peaks_data <- lapply(peaks_data, function(x) if(x$smooth_z[[1]] >= threshold) {x} )
 
   peaks_data <- do.call(rbind, peaks_data)
 
@@ -64,8 +74,15 @@ add_peak_info <- function(x, gam, lambda,constraint, estimate_calcium, var = var
 
   lambda <- as.numeric(lambda)
   gam <- as.numeric(gam)
+
+  max <- max(x[[var]])
+
+  if(max <= 0){
+    max <- lambda
+  }
+
   peak_data <- FastLZeroSpikeInference::estimate_spikes(x[[var]], gam = gam,
-                                                        lambda = lambda*max(x[[var]]),constraint, estimate_calcium, ESP)
+                                                        lambda = max*lambda,constraint, estimate_calcium, ESP)
 
 
   x <- x[, c("deconvolved_trace", "peak_frames") :=
