@@ -106,6 +106,9 @@ ui <-
             shiny::textInput("gam", label = "Gam", placeholder = "Enter the Gam parameter for the Deconvolution (double between 0-1)"),
             shiny::textInput("n_cells", label = "Number of cells", placeholder = "Enter the number of cells you want to run the stimulation on"),
 
+            shiny::checkboxInput("false_pos", label = "Estimate False Positives"),
+            shiny::checkboxInput("show_peak", label = "Show Peaks"),
+
             shiny::uiOutput('responders'),
             shiny::uiOutput('non_responders'),
 
@@ -124,6 +127,10 @@ ui <-
 
             shiny::textInput("lambda_bis", label = "Lambda", placeholder = "Enter the Lambda parameter for the Deconvolution (integer)"),
             shiny::textInput("gam_bis", label = "Gam", placeholder = "Enter the Gam parameter for the Deconvolution (double between 0-1)"),
+
+            shiny::checkboxInput("false_pos_bis", label = "Estimate False Positives"),
+            shiny::checkboxInput("show_peak_bis", label = "Show Peaks"),
+
 
             shiny::actionButton("sim_bis", "Simulate Analysis", align = "center"),
             shiny::actionButton("plot_simulation_bis", "Plot Random Cells", align = "center"),
@@ -192,8 +199,6 @@ folder <- shiny::reactive({
 
   df_final <- shiny::eventReactive(input$launch, {
 
-      print("we are inside the reactive function")
-      print(stim_numb())
       df <- CalQuick::prepareData(folder(), stim_numb(), 0.25, compare_groups = TRUE)
 
       CalQuick::saveData(df, "db_cq.sqlite", "df_full")
@@ -241,8 +246,9 @@ folder <- shiny::reactive({
       print("Simulation started")
       df_sub <- CalQuick::get_sub_df("db_cq.sqlite", "df_full", input$n_cells)
 
-      res_sim$res <- CalQuick::downstream_analysis(df_sub, threshold = input$peak_thresh,
-                                         borders_range = input$rise_range, lambda = input$lambda, gam = input$gam)
+      res_sim$res <- downstream_analysis(df_sub, threshold = input$peak_thresh,
+                                         borders_range = input$rise_range, lambda = input$lambda, gam = input$gam,
+                                         false_pos = input$false_pos)
 
       data <- res_sim$res
 
@@ -269,14 +275,13 @@ folder <- shiny::reactive({
 
 
     shiny::observeEvent(input$plot_responders, {
-      print("plot trigerred")
 
       data <- res_sim$res
 
 
       output$plot_cell_sim <- shiny::renderPlot({
 
-        p <- cell_plot(data[[2]], data[[1]], var = "Mean_Grey", cell = input$responders, line = "gam", show_peak = TRUE)
+        p <- cell_plot(data[[2]], data[[1]], var = "Mean_Grey", cell = input$responders, line = "gam", show_peak = input$show_peak)
         p
 
 
@@ -284,13 +289,13 @@ folder <- shiny::reactive({
     })
 
       shiny::observeEvent(input$plot_non_responders, {
-        print("plot trigerred")
 
         data <- res_sim$res
 
       output$plot_cell_sim <- shiny::renderPlot({
 
-        p <- cell_plot(data[[2]], data[[1]], var = "Mean_Grey", cell = input$non_responders, line = "gam", show_peak = TRUE)
+        p <- cell_plot(data[[2]], data[[1]], var = "Mean_Grey", cell = input$non_responders,
+                       line = "gam", show_peak = input$show_peak)
         p
 
 
@@ -299,15 +304,17 @@ folder <- shiny::reactive({
 
       shiny::observeEvent(input$sim_bis, {
 
-        print("Second simulation started")
-
+        print("second stim started")
         df <- res_sim$res[[2]]
 
+        print("df ok ")
         df_sub_bis <- df[df$Cell_id == input$cell_opt]
 
+        print("df_sub ok")
 
-        res_sim$res_bis <- CalQuick::downstream_analysis(df_sub_bis, threshold = input$peak_thresh_bis,
-                                               borders_range = input$rise_range_bis, lambda = input$lambda_bis, gam = input$gam_bis)
+        res_sim$res_bis <- downstream_analysis(df_sub_bis, threshold = input$peak_thresh_bis,
+                                               borders_range = input$rise_range_bis, lambda = input$lambda_bis,
+                                               gam = input$gam_bis, false_pos = input$false_pos_bis)
 
       })
 
@@ -315,13 +322,12 @@ folder <- shiny::reactive({
 
 
       shiny::observeEvent(input$plot_simulation_bis, {
-        print("plot trigerred")
 
         data <- res_sim$res_bis
 
         output$plot_cell_sim_bis <- shiny::renderPlot({
 
-          p <- cell_plot(data[[2]], data[[1]], var = "Mean_Grey", cell = input$cell_opt, line = "gam", show_peak = TRUE)
+          p <- cell_plot(data[[2]], data[[1]], var = "Mean_Grey", cell = input$cell_opt, line = "gam", show_peak = input$show_peak_bis)
           p
 
 
@@ -337,7 +343,6 @@ folder <- shiny::reactive({
 
         group_value <- input$groups
         shiny::updateCheckboxInput(shiny::getDefaultReactiveDomain(), "groups", value = group_value)
-        print(input$groups)
       })
 
 
@@ -426,9 +431,7 @@ folder <- shiny::reactive({
 
         res <- get_full_df("db_cq.sqlite", "peak_res")
 
-        print(res)
         t <- dual_prop(res, input$stim1, input$stim2)
-        print(t)
 
       })
 

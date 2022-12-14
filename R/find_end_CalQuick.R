@@ -34,8 +34,8 @@ find_end <- function(peaks, full_data, range){
   # Computing the area of the trapezoid for each i :
 
   end_area_list <- purrr::pmap(list(df_list_end, XmYm_end, XrYr_end),
-                                 function(x,y,z) unlist(lapply(x$time_frame, function(a) 0.5*((y$DPA -
-                                 x[x$time_frame == a,]$DPA)*((2*z$time_frame) - x[x$time_frame == a,]$time_frame) - (y$time_frame)))))
+                                 function(x,y,z) unlist(lapply(x$time_frame, function(a) 0.5*((y$deconvolved_trace -
+                                 x[x$time_frame == a,]$deconvolved_trace)*((2*z$time_frame) - x[x$time_frame == a,]$time_frame) - (y$time_frame)))))
 
 
   df_list_end <- purrr::map2(end_area_list, df_list_end, function(x,y) y[which(x == max(x, na.rm=TRUE))[1],])

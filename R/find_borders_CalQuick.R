@@ -60,6 +60,15 @@ True_peaks$End_peak_rel_frame <- peak_end$Time_frame_stim
 
 True_peaks$group <- peak_start$group
 
+
+peaks <- split(True_peaks,cumsum(1:nrow(True_peaks) %in% seq(1:nrow(True_peaks))))
+
+isnot.na <- Negate(is.na)
+
+peaks <- lapply(peaks, function(x) if(isnot.na(x$End_peak_frame)) {x})
+
+True_peaks <- do.call(rbind, peaks)
+
 return(list(True_peaks, peak_start, peak_end))
 
 

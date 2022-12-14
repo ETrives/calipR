@@ -121,9 +121,9 @@ cell_plot <- function(full_data, peaks_data, cell, var, line = c(FALSE, "poly", 
 
   if(show_peak == TRUE & dim(peak_info)[[1]] != 0 ){
 
-
       colors <- c("#FF0000", "#000000", "#009900", "#6600CC", "#00FFFF", "#FF66FF", "#999999", "#003333" )
       #sub_colors <- colors[1:length(peak_info$Max_peak_frame)]
+
 
       q <- q +
         sapply(seq_along(1:length(peak_info$Start_peak_frame)), function(x) ggplot2::geom_vline(ggplot2::aes(xintercept = peak_info$Start_peak_frame[[x]]), size = 1, group = x, colour = colors[[x]]))+
@@ -134,7 +134,7 @@ cell_plot <- function(full_data, peaks_data, cell, var, line = c(FALSE, "poly", 
       p <- p +
         sapply(seq_along(1:length(peak_info$Start_peak_frame)), function(x) ggplot2::geom_vline(ggplot2::aes(xintercept = peak_info$Start_peak_frame[[x]]), size = 1, group = x, colour = colors[[x]]))+
         sapply(seq_along(1:length(peak_info$End_peak_frame)), function(x) ggplot2::geom_vline(ggplot2::aes(xintercept = peak_info$End_peak_frame[[x]]), size = 1, group = x, colour = colors[[x]]))+
-        sapply(seq_along(1:length(peak_info$Max_peak_frame)), function(x) ggplot2::geom_point(ggplot2::aes(x = peak_info$Max_peak_frame[[x]], y = peak_info[peak_info$Max_peak_frame == peak_info$Max_peak_frame[[x]]][[var]][[1]]), size = 2, group = x, colour = colors[[x]]))
+        sapply(seq_along(1:length(peak_info$Max_peak_frame)), function(x) ggplot2::geom_point(ggplot2::aes(x = peak_info$Max_peak_frame[[x]], y = peak_info[peak_info$Max_peak_frame == peak_info$Max_peak_frame[[x]]][[var]]), size = 2, group = x, colour = colors[[x]]))
 
       final <- gridExtra::grid.arrange(p,q, ncol = 2)
   }
@@ -145,6 +145,14 @@ cell_plot <- function(full_data, peaks_data, cell, var, line = c(FALSE, "poly", 
     final <- gridExtra::grid.arrange(p,q, ncol = 2)
 
   }
+
+  if(show_peak == FALSE){
+
+    final <- gridExtra::grid.arrange(p,q, ncol = 2)
+
+  }
+
+
 
 
   return(final)

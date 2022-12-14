@@ -21,8 +21,8 @@ downstream_analysis(
   deconvolve_var = "gam_detrended",
   borders_range = 50,
   time_thresh = 1,
-  frame_rate,
-  compare_groups = FALSE
+  compare_groups = FALSE,
+  false_pos = c(TRUE, FALSE)
 )
 }
 \arguments{

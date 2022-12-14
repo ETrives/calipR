@@ -26,6 +26,15 @@
   # Splitting the data frame by cell_id
   cell_split <- split(data, data$Cell_id)
 
+
+  # Removing Cells with too much Nas :
+
+  #cell_split <- lapply(cell_split, function(x) if(length(do.call(rbind, lapply(is.na(x$Mean_Grey), function(x) if(x == TRUE) x))[,1])/length(x$Mean_Grey) < moving_threshold) {x} )
+
+  cell_split <- lapply(cell_split, function(x) if((length(do.call(rbind, lapply(is.na(x$Mean_Grey), function(x) if(x == TRUE) x))[,1]) / length(x$Mean_Grey)) < moving_threshold) x)
+
+  cell_split <- cell_split[cell_split != "NULL"]
+
   # Computing a local mean for each data.table
   cell_split <- lapply(cell_split, function(x) data.table::setDT(x)[, local_mean := gplots::wapply(x$time_frame, x$Mean_Grey, fun = mean, n=length(x$time_frame), width = mean_width, method = "nobs")[[2]]])
 
@@ -38,7 +47,6 @@
   # Computing first derivative
   cell_split <- lapply(cell_split, function(x) data.table::setDT(x)[, first_derivative := doremi::calculate.gold(time = x$time_seconds, signal = x$local_mean,
                                                                                               embedding = 2, n = 1)$dsignal[,2]])
-
 
 
   cell_split <- lapply(cell_split, function(x) DPA(x, DPA_width, mean_width_diff))
@@ -59,6 +67,7 @@
 
 
   data <- do.call(rbind, cell_split)
+
   data$Mean_Grey_wo_peaks[which(is.na(data$Mean_Grey_wo_peaks))] <- data$local_mean[which(is.na(data$Mean_Grey_wo_peaks))]
 
 
@@ -79,7 +88,6 @@
 
   print(paste("Removed", ncells_before - length(unique(data$Cell_id)), "cells", sep = " " ))
 
-  cell_split <- split(data, data$Cell_id)
 
 
   return(data)

@@ -1,0 +1,25 @@
+﻿stimuli;coverslip;timing
+Baseline;1;0
+C9 10nM;1;3.3
+C9 50nM;1;6
+C9 100nM;1;8.3
+Pup Wash;1;11
+KCl 200mM;1;13.3
+Baseline;2;0
+C9 10nM;2;3.3
+C9 50nM;2;6
+C9 100nM;2;8.3
+Pup Wash;2;11
+KCl 200mM;2;13.3
+Baseline;3;0
+C9 10nM;3;3.3
+C9 50nM;3;6
+C9 100nM;3;8.3
+Pup Wash;3;11
+KCl 200mM;3;13.3
+Baseline;4;0
+C9 10nM;4;3.3
+C9 50nM;4;6
+C9 100nM;4;8.3
+Pup Wash;4;11
+KCl 200mM;4;13.3
