@@ -18,6 +18,8 @@ find_borders <- function(data, range){
 True_peaks <- data[[1]]
 dt_2 <- data[[2]]
 
+print( True_peaks)
+print(dt_2)
 #True_peaks <- dt_1[dt_1$True_peak == TRUE]
 
 

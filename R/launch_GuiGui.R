@@ -99,6 +99,7 @@ ui <-
 
       shinydashboard::tabItem("opt",
 
+      shiny::fluidRow(
       shinydashboard::box(title = "Optimize Parameters", width = 6, solidHeader = TRUE, status = "primary",
             shiny::textInput("peak_thresh", label = "Peak Threshold", placeholder = "Enter the peak threshold you want to try (z score)"),
             shiny::textInput("rise_range", label = "Range", placeholder = "Enter the range taken to find a peak start (integer between 5 and 60)"),
@@ -115,15 +116,15 @@ ui <-
 
             shiny::actionButton("sim", "Simulate Analysis", align = "center"),
             shiny::actionButton("plot_responders", "Plot Responder", align = "center"),
-            shiny::actionButton("plot_non_responders", "Plot Non Responder", align = "center"),
+            shiny::actionButton("plot_non_responders", "Plot Non Responder", align = "center")),
 
-            shiny::plotOutput(outputId = "plot_cell_sim")),
+
 
       shinydashboard::box(title = "Try other parameters on a given cell", width = 6, solidHeader = TRUE, status = "primary",
-            shiny::textInput("cell_opt", label = NULL, placeholder = "On which cell do you want to try new parameters ?"),
+            shiny::textInput("cell_opt", label = "Cell", placeholder = "On which cell do you want to try new parameters ?"),
 
-            shiny::textInput("peak_thresh_bis", label = NULL, placeholder = "Enter the peak threshold you want to try (z score)"),
-            shiny::textInput("rise_range_bis", label = NULL, placeholder = "Enter the range taken to find a peak start (integer between 5 and 60)"),
+            shiny::textInput("peak_thresh_bis", label = "Threshold", placeholder = "Enter the peak threshold you want to try (z score)"),
+            shiny::textInput("rise_range_bis", label = "Range", placeholder = "Enter the range taken to find a peak start (integer between 5 and 60)"),
 
             shiny::textInput("lambda_bis", label = "Lambda", placeholder = "Enter the Lambda parameter for the Deconvolution (integer)"),
             shiny::textInput("gam_bis", label = "Gam", placeholder = "Enter the Gam parameter for the Deconvolution (double between 0-1)"),
@@ -133,9 +134,13 @@ ui <-
 
 
             shiny::actionButton("sim_bis", "Simulate Analysis", align = "center"),
-            shiny::actionButton("plot_simulation_bis", "Plot Random Cells", align = "center"),
-            shiny::plotOutput(outputId = "plot_cell_sim_bis"))),
+            shiny::actionButton("plot_simulation_bis", "Plot Random Cells", align = "center"))),
 
+      shiny::fluidRow(
+      shinydashboard::box(title = "Plot Window", width = 6, solidHeader = TRUE, status = "primary",
+                          shiny::plotOutput(outputId = "plot_cell_sim")),
+      shinydashboard::box(title = "Plot Window", width = 6, solidHeader = TRUE, status = "primary",
+                          shiny::plotOutput(outputId = "plot_cell_sim_bis")))),
 
 
       shinydashboard::tabItem("ana_full",
