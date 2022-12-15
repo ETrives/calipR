@@ -40,7 +40,6 @@ deconvolve <- function(norm_data, gam = 0.95, lambda = 1, constraint = T, estima
   peaks_data <- split(peaks_data,cumsum(1:nrow(peaks_data) %in% seq(1:nrow(peaks_data))))
 
   print("split ok")
-  peaks_data <- lapply(peaks_data, function(x) if(x$smooth_z[[1]] >= threshold) {x} )
 
   print("threshold ok" )
   peaks_data <- do.call(rbind, peaks_data)
@@ -54,17 +53,24 @@ deconvolve <- function(norm_data, gam = 0.95, lambda = 1, constraint = T, estima
 
   peaks_data <- lapply(peaks_data, function(x) data[data$smooth_z == max(data[data$Cell_id == x$Cell_id & data$time_frame %between% list(x$time_frame, x$frame_window)]$smooth_z)[[1]]])
 
+
   print("subset ok" )
 
   #peaks_data <- lapply(peaks_data, function(x) if(x$smooth_z[[1]] >= threshold) {x} )
 
+  peaks_data <- lapply(peaks_data, function(x) if(x$smooth_z[[1]] >= threshold) {x} )
+
   peaks_data <- do.call(rbind, peaks_data)
+
+  if(is.null(peaks_data) == FALSE) {
 
   peaks_data <- dplyr::rename(peaks_data,  "Max_peak_stimulus" = "stimulus", "Max_peak_frame" = "time_frame", "Max_peak_stimulation" = "Stimulation",
                               "Max_peak_smooth_z" = "smooth_z", "Max_peak_first_derivative" = "first_derivative" )
 
 
   peaks_data <- unique(peaks_data[,c("Cell_id", "Max_peak_frame", "Max_peak_smooth_z", "Mean_Grey", "gam_detrended")])
+  }
+
 
   }
 

@@ -66,9 +66,21 @@ svg_responders <- function(full_data, peaks_data, var,
 cell_plot <- function(full_data, peaks_data, cell, var, line = c(FALSE, "poly", "gam"), show_peak = FALSE) {
 
   df <- full_data[full_data$Cell_id == cell,]
-  peaks_data <- peaks_data[peaks_data$Cell_id == cell]
+  print(peaks_data)
 
-  print(df)
+  if(is.null(peaks_data) == FALSE) {
+  if(is.null(dim(peaks_data)) == FALSE | dim(peaks_data)[[1]] != 0){
+  peak_info <- peaks_data[peaks_data$Cell_id == cell]
+
+  }
+
+
+  }
+
+  else{
+    peak_info <- NULL
+}
+
   p <- ggplot2::ggplot(df, ggplot2::aes(x = time_frame, y = !!rlang::sym(var)))+
     ggplot2::geom_line( ggplot2::aes( color =stimulus),size = 1)+
     #geom_point(data = peak,size = 2)+
@@ -81,7 +93,6 @@ cell_plot <- function(full_data, peaks_data, cell, var, line = c(FALSE, "poly", 
     ggplot2::facet_wrap(~df$Cell_id) +
     ggplot2::theme_classic()
 
-  print("p and q ok")
   if(line == FALSE) {
 
   }
@@ -99,26 +110,17 @@ cell_plot <- function(full_data, peaks_data, cell, var, line = c(FALSE, "poly", 
   }
 
 
-
-  isnot.null <- Negate(is.null)
-
-  if(isnot.null(dim(peaks_data)) | dim(peaks_data)[[1]] != 0 ){
-
-    print("is not null")
-    print(peaks_data)
-  peak_info <- peaks_data[peaks_data$Cell_id == cell,]
-
-  }
-
-  if(is.null(dim(peaks_data)) | dim(peaks_data)[[1]] == 0  ){
+  if(is.null(peak_info) == FALSE) {
+  if(dim(peak_info)[[1]] == 0){
 
     peak_info <- NULL
     print("peak_info == NULL")
     print(dim(peak_info)[[1]])
 
   }
+  }
 
-  if(show_peak == TRUE & isnot.null(peak_info)){
+  if(show_peak == TRUE & is.null(peak_info) == FALSE){
 
       colors <- c("#FF0000", "#000000", "#009900", "#6600CC", "#00FFFF", "#FF66FF", "#999999", "#003333" )
       #sub_colors <- colors[1:length(peak_info$Max_peak_frame)]
@@ -138,6 +140,7 @@ cell_plot <- function(full_data, peaks_data, cell, var, line = c(FALSE, "poly", 
       final <- gridExtra::grid.arrange(p,q, ncol = 2)
   }
 
+  print(peak_info)
   if(show_peak == TRUE & is.null(peak_info)){
 
 

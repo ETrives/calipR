@@ -56,7 +56,7 @@ downstream_analysis <- function(data, moving_thresh = 0.1, outlier_thresh = 2, m
   print("deconvolved = ok")
   print(deconvolved[[1]]$Cell_id)
   if(length(deconvolved[[1]]$Cell_id) == 0){
-  borders <- list("No Peak", "No Peak")
+  borders <- NULL
   print(borders)
   }
 
@@ -68,7 +68,7 @@ downstream_analysis <- function(data, moving_thresh = 0.1, outlier_thresh = 2, m
 
   print("best = ok")
   if(length(best[[1]]$Cell_id) == 0 ){
-    borders <- list("No Peak", "No Peak")
+    borders <- NULL
 
   }
 
