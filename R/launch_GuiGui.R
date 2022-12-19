@@ -440,16 +440,22 @@ folder <- shiny::reactive({
 
       ### Computing dual proportions (proportion of cells responding to one stimulus that also responds to another stimulus)
 
-      res_bis <- get_full_df("db_cq.sqlite", "peak_res")
-      stim_list <- unique(res_bis$Start_peak_stimulus)
-
       output$stim_list_1 <- shiny::renderUI({
+
+        res <- get_full_df("db_cq.sqlite", "peak_res")
+
+        stim_list <- unique(res$Start_peak_stimulus)
 
         shiny::selectInput(inputId = "stim_list_1", "Stimulus 1", stim_list)
       })
 
 
       output$stim_list_2 <- shiny::renderUI({
+
+        res <- get_full_df("db_cq.sqlite", "peak_res")
+
+        stim_list <- unique(res$Start_peak_stimulus)
+
 
         shiny::selectInput(inputId = "stim_list_2", "Stimulus 2", stim_list)
       })
@@ -458,9 +464,6 @@ folder <- shiny::reactive({
       t <- shiny::eventReactive(input$dual_button, {
 
         res <- get_full_df("db_cq.sqlite", "peak_res")
-
-        stim_list <- unique(res$Start_peak_stimulus)
-
 
 
         t <- dual_prop(res, input$stim_list_1, input$stim_list_2)
