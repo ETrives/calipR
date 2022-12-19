@@ -39,6 +39,8 @@ ui <-
                   shinydashboard::menuSubItem("Visualize Raw Data", tabName = "viz"),
                   shinydashboard::menuSubItem("Optimize Analysis Parameters", tabName = "opt"),
                   shinydashboard::menuSubItem("Analyze data", tabName = "ana_full"),
+                  shinydashboard::menuSubItem("Visualize Results", tabName = "viz_res"),
+
 
 
 
@@ -56,19 +58,17 @@ ui <-
 
 
                  shiny::conditionalPanel( 'input.sidebarid == "ana_full"',
-                                   shiny::textInput("peak_thresh_full", label = NULL, placeholder = "Peak Threshold"),
-                                   shiny::textInput("rise_full", label = NULL, placeholder = "Frame before peak"),
+                                   shiny::textInput("peak_thresh_full", label = "Peak Threshold", placeholder = "Peak Threshold"),
+                                   shiny::textInput("rise_full", label = "Borders Range", placeholder = "Frame before peak"),
+                                   shiny::textInput("lambda_full", label = "Lambda"),
+                                   shiny::textInput("gam_full", label = "gam"),
+                                   shiny::checkboxInput("false_pos_full", label = "False Positives Estimation"),
+
+
                                    shiny::checkboxInput("groups", label = "Compare groups"),
-                                   shiny::actionButton("ana_full_button", "Launch Full Analysis", align = "center")
+                                   shiny::actionButton("ana_full_button", "Launch Full Analysis", align = "center"))
 
-
-
-                                   )
-
-
-
-      ))
-    ,
+                            )),
 
 
 
@@ -157,18 +157,22 @@ ui <-
 
         shiny::fluidRow(
           shinydashboard::box(title = "Dual Proportions", width = 12, solidHeader = TRUE, status = "primary",
-              shiny::textInput("stim1", label = NULL, placeholder = "Stimulus 1"),
-              shiny::textInput("stim2", label = NULL, placeholder = "Stimulus 2"),
+              shiny::uiOutput("stim_list_1"),
+              shiny::uiOutput("stim_list_2"),
               shiny::actionButton("dual_button", "Compute Dual Proportions", align = "center" ),
               shiny::br(),
               shiny::br(),
-              DT::dataTableOutput("dual_prop"),
-        ))
+              DT::dataTableOutput("dual_prop")))),
+
+      shinydashboard::tabItem("viz_res",
+                              shiny::fluidRow(
+                                shinydashboard::box(title = "Plotting Cells", width = 6, solidHeader = TRUE, status = "primary",
+                                                    shiny::textInput("cell_bis", label = NULL, placeholder = "Enter the name of the cell you want to plot"),
+                                                    shiny::actionButton("cell_click_bis", "Plot Cell", align = "center"),
+                                                    shiny::plotOutput(outputId = "plot_cell_bis"))))
 
 
-        )
-    )
-    ))
+      )))
 
 
 
@@ -357,16 +361,19 @@ folder <- shiny::reactive({
 
       res <- shiny::eventReactive(input$ana_full_button, {
         df_full <- CalQuick::get_full_df("db_cq.sqlite", "df_full")
-        res <- CalQuick::downstream_analysis(df_full, 4,2,4,input$peak_thresh_full, input$rise_full,2, compare_groups = input$groups)
+        res <- downstream_analysis(df_full, threshold = input$peak_thresh_full,
+                                             borders_range = input$rise_full, lambda = input$lambda_full, gam = input$gam_full,
+                                             false_pos = input$false_pos_full, compare_groups = input$groups)
+
 
         # Extracting and saving the data table containing one row for each peak with the informations
         #about the peak
-        res1 <- res[[2]]
+        res1 <- res[[1]]
 
         CalQuick::saveData(res1, "db_cq.sqlite", "peak_res")
 
         # Extracting and saving the full data table updated
-        res2 <- res[[3]]
+        res2 <- res[[2]]
         CalQuick::saveData(res2, "db_cq.sqlite", "df_final")
 
         res
@@ -377,7 +384,9 @@ folder <- shiny::reactive({
 
         res <- res()
 
-        res1 <- res[[1]][1][[1]]
+        print("res[[3]][1]")
+        print(res[[3]][1])
+        res1 <- res[[3]][[1]]
         res1
 
       })
@@ -387,7 +396,7 @@ folder <- shiny::reactive({
 
         res <- res()
 
-        res2 <- res[[1]][2][[1]]
+        res2 <- res[[3]][[4]]
         res2
 
       })
@@ -396,35 +405,34 @@ folder <- shiny::reactive({
 
         res <- res()
 
-        res3 <- res[[1]][3][[1]]
+        res3 <- res[[3]][[2]]
         res3
 
       })
 
-      output$peaks_by_class <- DT::renderDataTable({
+      #output$peaks_by_class <- DT::renderDataTable({
 
-        res <- res()
+        #res <- res()
 
-        res4 <- res[[1]][4][[1]]
-        res4
+        #res4 <- res[[1]][4][[1]]
+        #res4
 
-      })
+      #})
 
 
       output$overall_q <- DT::renderDataTable({
 
         res <- res()
-
-        res4 <- res[[1]][5][[1]]
+        res4 <- res[[3]][[5]][[1]]
         res4
-
-      })
+      }
+      )
 
       output$post_hoc_mcnemar <- DT::renderDataTable({
 
         res <- res()
 
-        res4 <- res[[1]][6][[1]]
+        res4 <- res[[3]][[5]][[2]]
         res4
 
       })
@@ -432,24 +440,53 @@ folder <- shiny::reactive({
 
       ### Computing dual proportions (proportion of cells responding to one stimulus that also responds to another stimulus)
 
+      res_bis <- get_full_df("db_cq.sqlite", "peak_res")
+      stim_list <- unique(res_bis$Start_peak_stimulus)
+
+      output$stim_list_1 <- shiny::renderUI({
+
+        shiny::selectInput(inputId = "stim_list_1", "Stimulus 1", stim_list)
+      })
+
+
+      output$stim_list_2 <- shiny::renderUI({
+
+        shiny::selectInput(inputId = "stim_list_2", "Stimulus 2", stim_list)
+      })
+
+
       t <- shiny::eventReactive(input$dual_button, {
 
         res <- get_full_df("db_cq.sqlite", "peak_res")
 
-        t <- dual_prop(res, input$stim1, input$stim2)
+        stim_list <- unique(res$Start_peak_stimulus)
+
+
+
+        t <- dual_prop(res, input$stim_list_1, input$stim_list_2)
 
       })
 
 
-      output$dual_prop <- DT::renderDataTable({
-       t()
-      })
+      output$dual_prop <- DT::renderDataTable(
 
+        DT::datatable({t()},
+       extensions = 'Buttons',
+       options = list(
+         paging = TRUE,
+         searching = TRUE,
+         fixedColumns = TRUE,
+         autoWidth = TRUE,
+         ordering = TRUE,
+         dom = 'tB',
+         c("copy", "csv", "excel")),
+
+       class = "display"
+
+       ))
 
 }
-
 shiny::shinyApp(ui, server)
-
 
 }
 

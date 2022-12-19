@@ -28,7 +28,8 @@ Analyze_Responses <- function(data, df_clean, compare_groups = FALSE){
 
     n_cells <- length(unique(d$Cell_id))
 
-    n_responders <- sum(d$Response == TRUE)
+    n_responders <- length(unique(d[d$Response == TRUE]$Cell_id))
+
     prop_total <- n_responders / n_cells
 
     n_responses_by_stim <- unlist(lapply(stim_list, function(x) sum(d$stimulus == x & d$Response == TRUE)))
@@ -70,12 +71,10 @@ Analyze_Responses <- function(data, df_clean, compare_groups = FALSE){
     n_cells <- length(unique(d$Cell_id))
 
     # Proportions totales
-    n_responders <- sum(d$Response == TRUE)
-    prop_total <- n_responders / n_cells
 
-    #n_responses_by_stim <- unlist(lapply(stim_list, function(x) sum(d$stimulus == x & d$Response == TRUE)))
-    # prop_by_stim <- n_responses_by_stim / n_cells
-    # prop_by_stim_responders <- n_responses_by_stim / n_responders
+    n_responders <- length(unique(d[d$Response == TRUE]$Cell_id))
+
+    prop_total <- n_responders / n_cells
 
 
     # Réponses par groupe :

@@ -84,5 +84,7 @@ downstream_analysis <- function(data, moving_thresh = 0.1, outlier_thresh = 2, m
 
   }
 
-return(list(borders[[1]], norm))
+  res <- Analyze_Responses(borders[[1]], clean, compare_groups = compare_groups)
+
+return(list(borders[[1]], norm, res))
 }
