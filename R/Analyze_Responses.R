@@ -8,11 +8,13 @@
 #' @export
 #'
 #' @examples
-Analyze_Responses <- function(data, df_clean, compare_groups = FALSE){
+Analyze_Responses <- function(data, df_clean, compare_groups = FALSE, one_cell = FALSE){
 
   ### Adding a variable "Response" for each stimulus in df_clean
 
   if(compare_groups == FALSE){
+
+    print("compare groups = FALSE")
 
     d <- unique(df_clean[,c("Cell_id", "stimulus")])
     d_list <- split(d,cumsum(1:nrow(d) %in% seq(1:nrow(d))))
@@ -22,6 +24,8 @@ Analyze_Responses <- function(data, df_clean, compare_groups = FALSE){
              data$Start_peak_stimulus == x$stimulus,]$Cell_id[1]),
       FALSE, TRUE) ])
 
+    print("response var created")
+
     d <- do.call(rbind, d_list)
 
     stim_list <- unique(d$stimulus)
@@ -30,28 +34,60 @@ Analyze_Responses <- function(data, df_clean, compare_groups = FALSE){
 
     n_responders <- length(unique(d[d$Response == TRUE]$Cell_id))
 
+    print("n_responders computed")
     prop_total <- n_responders / n_cells
 
+    print(stim_list)
+    print(d)
+    print(data)
+    print(data$Start_peak_stimulus)
+
     n_responses_by_stim <- unlist(lapply(stim_list, function(x) sum(d$stimulus == x & d$Response == TRUE)))
+
+    print("response by stim computed")
+
+
     prop_by_stim <- n_responses_by_stim / n_cells
     prop_by_stim_responders <- n_responses_by_stim / n_responders
 
+    print("prop by stim computed")
+
     df_final <- data.frame(Stimulus = stim_list)
     df_final$Resp <- n_responses_by_stim
+
+
     df_final$Proportion_of_responders <- prop_by_stim_responders
     df_final$Proportion_of_total_cells <- prop_by_stim
 
 
     d$Response <- ifelse(d$Response == TRUE, 1,0)
+
+    print("d")
+    print(d)
+
+    if(one_cell == FALSE){
     res <- Compare_props(d)
 
+    print("res = OK")
+    }
+
+    if(one_cell == TRUE){
+    res = NULL
+    print("res = OK")
+
+    }
     ### Peak description by stimulus :
 
+    if(length(data$Cell_id) != 0){
     data <- data[, peak_duration := End_peak_frame - Start_peak_frame]
-
+}
+  print("data = ok ")
+  print(data)
   }
 
   if(compare_groups == TRUE) {
+
+    print("compare_groups = TRUE")
 
     d <- unique(df_clean[,c("Cell_id", "stimulus", "group")])
     d_list <- split(d,cumsum(1:nrow(d) %in% seq(1:nrow(d))))
@@ -101,6 +137,7 @@ Analyze_Responses <- function(data, df_clean, compare_groups = FALSE){
     res <- "NO STATS"
   }
 
+  print("Analyze Responses OK")
   #return(list(data_count, data_count_stim[[2]], between_stim[[1]], between_stim[[2]]))
   return(list("n_cells" = n_cells, "n_responders" = n_responders, "Proportion" = prop_total, df_final, res))
 }

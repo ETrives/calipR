@@ -323,7 +323,7 @@ folder <- shiny::reactive({
 
         res_sim$res_bis <- downstream_analysis(df_sub_bis, threshold = input$peak_thresh_bis,
                                                borders_range = input$rise_range_bis, lambda = input$lambda_bis,
-                                               gam = input$gam_bis, false_pos = input$false_pos_bis)
+                                               gam = input$gam_bis, false_pos = input$false_pos_bis, one_cell = TRUE)
 
       })
 

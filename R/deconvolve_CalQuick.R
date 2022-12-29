@@ -37,12 +37,12 @@ deconvolve <- function(norm_data, gam = 0.95, lambda = 1, constraint = T, estima
   data <- do.call(rbind, cell_split)
   peaks_data <- do.call(rbind, peaks_data)
 
-  peaks_data <- split(peaks_data,cumsum(1:nrow(peaks_data) %in% seq(1:nrow(peaks_data))))
+  #peaks_data <- split(peaks_data,cumsum(1:nrow(peaks_data) %in% seq(1:nrow(peaks_data))))
 
   print("split ok")
 
   print("threshold ok" )
-  peaks_data <- do.call(rbind, peaks_data)
+ # peaks_data <- do.call(rbind, peaks_data)
 
   print(peaks_data)
   print(length(peaks_data$Cell_id))

@@ -22,7 +22,8 @@ downstream_analysis(
   borders_range = 50,
   time_thresh = 1,
   compare_groups = FALSE,
-  false_pos = c(TRUE, FALSE)
+  false_pos = c(TRUE, FALSE),
+  one_cell = FALSE
 )
 }
 \arguments{

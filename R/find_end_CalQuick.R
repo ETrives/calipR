@@ -40,7 +40,7 @@ find_end <- function(peaks, full_data, range){
 
   df_list_end <- purrr::map2(end_area_list, df_list_end, function(x,y) y[which(x == max(x, na.rm=TRUE))[1],])
 
-
+print("find_end = done")
   return(df_list_end)
 }
 

@@ -29,7 +29,7 @@ downstream_analysis <- function(data, moving_thresh = 0.1, outlier_thresh = 2, m
                                 norm_width = 10, lambda = 100,
                                 gam = 0.97, constraint = T, threshold = 3,
                                 deconvolve_var = "gam_detrended", borders_range = 50,
-                                time_thresh = 1, compare_groups = FALSE, false_pos = c(TRUE, FALSE)) {
+                                time_thresh = 1, compare_groups = FALSE, false_pos = c(TRUE, FALSE), one_cell = FALSE) {
 
   lambda <- as.numeric(lambda)
   print(lambda)
@@ -84,7 +84,7 @@ downstream_analysis <- function(data, moving_thresh = 0.1, outlier_thresh = 2, m
 
   }
 
-  res <- Analyze_Responses(borders[[1]], clean, compare_groups = compare_groups)
+  res <- Analyze_Responses(borders[[1]], clean, compare_groups = compare_groups, one_cell = one_cell)
 
 return(list(borders[[1]], norm, res))
 }

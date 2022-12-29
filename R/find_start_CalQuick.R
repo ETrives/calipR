@@ -18,12 +18,17 @@ find_start <- function(peaks, full_data, range){
 print("inside find_start")
 df_list_start <- lapply(peaks, subset_window, dt_2 = full_data, period = "start")
 
+print("subset = ok")
 
 #df_list_start <- lapply(peaks, function(x) full_data[full_data$Cell_id == x$Cell_id])
 
 df_list_start <- lapply(df_list_start, function(x) x[order(-x$time_frame),])
 
+print("order = ok")
+
 df_list_start_sub <- lapply(df_list_start, function(x) x[1:10,])
+
+print("sub 10 lines = ok")
 
 XmYm_start <- lapply(df_list_start_sub, function(x) x[x$first_derivative == max(x$first_derivative, na.rm = TRUE)[1],])
 
@@ -43,6 +48,7 @@ start_area_list <- purrr::pmap(list(df_list_start, XmYm_start, XrYr_start),
 
 df_list_start <- purrr::map2(start_area_list, df_list_start, function(x,y) y[which(x == max(x, na.rm=TRUE))[1],])
 
+print("find_start = done")
 
 
 return(df_list_start)
