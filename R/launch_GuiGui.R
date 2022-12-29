@@ -10,7 +10,7 @@
 #' @examples
 launch_GuiGui <- function(){
 ui <-
-  shinydashboard::dashboardPage(
+  shinydashboard::dashboardPage(skin = "blue",
     shinydashboard::dashboardHeader(
       shiny::tags$li(class = "dropdown",
       shiny::tags$style(".main-header {max-height: 180px}"),

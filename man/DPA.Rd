@@ -4,7 +4,7 @@
 \alias{DPA}
 \title{DPA}
 \usage{
-DPA(data, DPA_width, mean_width_diff)
+DPA(data, DPA_width)
 }
 \arguments{
 \item{data}{}

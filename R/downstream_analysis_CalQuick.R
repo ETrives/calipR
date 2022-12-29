@@ -24,7 +24,7 @@
 #' @export
 #'
 #' @examples
-downstream_analysis <- function(data, moving_thresh = 0.1, outlier_thresh = 2, mean_width = 10, DPA_width = 10,
+downstream_analysis <- function(data, moving_thresh = 0.1, outlier_thresh = 2, mean_width = 20, DPA_width = 10, CN_DPA_width = 80,
                                 mean_width_diff = 10, method = "gam", norm_var = "gam",
                                 norm_width = 10, lambda = 100,
                                 gam = 0.97, constraint = T, threshold = 3,
@@ -40,7 +40,7 @@ downstream_analysis <- function(data, moving_thresh = 0.1, outlier_thresh = 2, m
   borders_range <- as.integer(borders_range)
   print(borders_range)
 
-  clean <- clean_data(data, moving_thresh, outlier_thresh, mean_width, DPA_width, mean_width_diff)
+  clean <- clean_data(data, moving_thresh, outlier_thresh, mean_width, DPA_width, CN_DPA_width, mean_width_diff)
   print("cleaning = OK")
   back <- backEstimate(clean, method = method)
   print("back = OK")

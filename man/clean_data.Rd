@@ -10,20 +10,13 @@ clean_data(
   outlier_threshold,
   mean_width,
   DPA_width,
+  CN_DPA_width,
   mean_width_diff,
   mean_width_second
 )
 }
 \arguments{
 \item{data}{a data.table output from prepareData function}
-
-\item{threshold}{a number of sd above which : a cell's mean fluorescence is
-considered an outlier, an ending median fluorescence is too high compared with
-the minimum median fluorescence}
-
-\item{width}{the number of frames that will be taken to compute the
-running average (this is used to smooth the data to then fit a linear model
-and exclude cells with a fit (adjusted R2) above 80\% )}
 }
 \description{
 This function removes cells that are moving, dying, not responding or

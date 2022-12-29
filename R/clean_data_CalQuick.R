@@ -4,20 +4,20 @@
 #' with mean fluorescence values that are deviating more than n sd from the
 #' population's sd
 #'
+#' @param moving_threshold
+#' @param outlier_threshold
+#' @param mean_width
+#' @param DPA_width
+#' @param CN_DPA_width
+#' @param mean_width_diff
+#' @param mean_width_second
 #' @param data a data.table output from prepareData function
-#' @param threshold a number of sd above which : a cell's mean fluorescence is
-#' considered an outlier, an ending median fluorescence is too high compared with
-#' the minimum median fluorescence
-#'
-#' @param width the number of frames that will be taken to compute the
-#' running average (this is used to smooth the data to then fit a linear model
-#' and exclude cells with a fit (adjusted R2) above 80% )
 #'
 #' @return
 #' @export
 #'
 #' @examples
-  clean_data <- function(data, moving_threshold, outlier_threshold ,mean_width, DPA_width, mean_width_diff, mean_width_second){
+clean_data <- function(data, moving_threshold, outlier_threshold ,mean_width, DPA_width, CN_DPA_width, mean_width_diff, mean_width_second){
 
   ncells_before <- length(unique(data$Cell_id))
 
@@ -46,25 +46,54 @@
 
   # Computing first derivative
   cell_split <- lapply(cell_split, function(x) data.table::setDT(x)[, first_derivative := doremi::calculate.gold(time = x$time_seconds, signal = x$local_mean,
-                                                                                              embedding = 2, n = 1)$dsignal[,2]])
+                                                                                                                 embedding = 2, n = 1)$dsignal[,2]])
 
 
-  cell_split <- lapply(cell_split, function(x) DPA(x, DPA_width, mean_width_diff))
+  cell_split <- lapply(cell_split, function(x) x[ , smooth_Diff := gplots::wapply(x$time_frame, x$first_derivative, fun = mean, n =length(data$time_frame), width = mean_width_diff, method = "nobs", drop.na = FALSE)[[2]]])
 
-  cell_split <- lapply(cell_split, function(x) x[, DPA := replace(DPA, is.na(DPA), quantile_speed(DPA, probs = .5))])
+  print(cell_split[[1]])
+
+  cell_split <- lapply(cell_split, function(x) data.table::setDT(x)[, c("DPA", "CN_DPA") := list(DPA(x, DPA_width),  CN_DPA(x, CN_DPA_width))])
 
 
-  cell_split <- lapply(cell_split, function(x) data.table::setDT(x)[, smooth_DPA := gplots::wapply(x$time_frame, x$DPA, fun = mean, n=length(x$time_frame), width = 10, method = "nobs")[[2]]])
+  print("DPA DOOONE")
+
+  print("CN_DPA DOOONE")
+
+  cell_split <- lapply(cell_split, function(x) x[, c("DPA", "CN_DPA") :=
+                            list(replace(DPA, is.na(DPA),quantile_speed(DPA, probs = .5)),
+                            replace(CN_DPA, is.na(CN_DPA), quantile_speed(CN_DPA, probs = .5)))])
 
 
-  cell_split <- lapply(cell_split, function(x) x[, Mean_Grey_wo_peaks := replace(Mean_Grey, smooth_DPA > quantile_speed(smooth_DPA, probs = .5)
-                                                                                 |Mean_Grey < (mean(Mean_Grey) - 2*stats::sd(Mean_Grey)),
+  cell_split <- lapply(cell_split, function(x) data.table::setDT(x)[,
+                      c("smooth_DPA", "smooth_CN_DPA") := list(gplots::wapply(x$time_frame, x$DPA, fun = mean, n=length(x$time_frame), width = 10, method = "nobs")[[2]],
+                      gplots::wapply(x$time_frame, x$CN_DPA, fun = mean, n=length(x$time_frame), width = 10, method = "nobs")[[2]])])
+
+
+
+  cell_split <- lapply(cell_split, function(x) x[, Mean_Grey_wo_peaks := replace(Mean_Grey, smooth_CN_DPA > quantile_speed(smooth_CN_DPA, probs = .7, na.rm = T)|
+                                                                                   Mean_Grey < (mean(Mean_Grey) - 2*stats::sd(Mean_Grey)),
                                                                                  NaN)])
+
+  print(cell_split[[1]])
+
+  cell_split <- lapply(cell_split, function(x) x[, Mean_Grey_wo_peaks := replace(Mean_Grey_wo_peaks, time_frame == max(time_frame) & is.na(Mean_Grey_wo_peaks), local_mean[ max(time_frame)])])
+  cell_split <- lapply(cell_split, function(x) x[, Mean_Grey_wo_peaks := replace(Mean_Grey_wo_peaks, time_frame == 1 & is.na(Mean_Grey_wo_peaks), local_mean[1])])
+
+  print(cell_split[[1]])
+
+  lapply(cell_split, function(x) if(length(is.na(x$Mean_Grey_wo_peaks)[is.na(x$Mean_Grey_wo_peaks)[TRUE]]) == length(x$Mean_Grey_wo_peaks)) {print(x)})
+
+  #cell_split <- lapply(cell_split, function(x) x[, Mean_Grey_wo_peaks := replace(Mean_Grey, smooth_DPA > quantile_speed(smooth_DPA, probs = .5)
+                                                                                # |Mean_Grey < (mean(Mean_Grey) - 2*stats::sd(Mean_Grey)),
+                                                                                # NaN)])
+
 
 
 
   cell_split <- lapply(cell_split, function(x) x[, Mean_Grey_wo_peaks := approxfun(which(!is.na(Mean_Grey_wo_peaks)), na.omit(Mean_Grey_wo_peaks))(seq_along(Mean_Grey_wo_peaks))])
 
+print("OKKKK")
 
   data <- do.call(rbind, cell_split)
 
@@ -75,7 +104,7 @@
 
 
   cell_split <- lapply(cell_split, function(x) x[, Mean_Grey_wo_peaks := gplots::wapply(x$time_frame, x$Mean_Grey_wo_peaks,
-                                                                                    fun = function(x) quantile_speed(x, probs = .1), n = length(x$time_frame), width = 30, method = "nobs")[[2]]])
+                                                                                        fun = function(x) quantile_speed(x, probs = .1), n = length(x$time_frame), width = 30, method = "nobs")[[2]]])
 
   data <- do.call(rbind, cell_split)
   data$Mean_Grey_wo_peaks[which(is.na(data$Mean_Grey_wo_peaks))] <- data$local_mean[which(is.na(data$Mean_Grey_wo_peaks))]

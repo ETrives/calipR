@@ -2,6 +2,7 @@
 
 export(.onLoad)
 export(Analyze_Responses)
+export(CN_DPA)
 export(Compare_props)
 export(Count_responders)
 export(Count_responders_stim)
