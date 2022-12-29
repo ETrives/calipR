@@ -140,7 +140,11 @@ ui <-
       shinydashboard::box(title = "Plot Window", width = 6, solidHeader = TRUE, status = "primary",
                           shiny::plotOutput(outputId = "plot_cell_sim")),
       shinydashboard::box(title = "Plot Window", width = 6, solidHeader = TRUE, status = "primary",
-                          shiny::plotOutput(outputId = "plot_cell_sim_bis")))),
+                          shiny::plotOutput(outputId = "plot_cell_sim_bis"))),
+
+      shiny::fluidRow(
+        shinydashboard::box(title = "Statistics", width = 6, solidHeader = TRUE, status = "primary",
+                            DT::dataTableOutput("stats_opt")))),
 
 
       shinydashboard::tabItem("ana_full",
@@ -277,6 +281,15 @@ folder <- shiny::reactive({
     output$non_responders <- shiny::renderUI({
 
       shiny::selectInput(inputId = "non_responders", "Non Responders", non_responders)
+    })
+
+
+
+    output$stats_opt <- DT::renderDataTable({
+
+      res2 <- data[[3]][[4]]
+      res2
+
     })
 })
 
