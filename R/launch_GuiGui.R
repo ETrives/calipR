@@ -14,11 +14,9 @@ ui <-
 
 
     calipR::dashboardHeader(
-      #shiny::tags$li(class = "dropdown",
-                     #shiny::tags$h1("CALcium Imaging analysis Pipeline in R", style = "color: #ffffff; text-align: left;"),
 
-      title.navbar = tags$h1(style = "color: #ffffff; text-align: center; font-family:  Lato; Padding-top: 30px;
-                             ", HTML(paste0("CALcium Imaging analysis Pipeline in R")),
+      title.navbar = shiny::tags$h1(style = "color: #ffffff; text-align: center; font-family:  Lato; Padding-top: 30px;
+                             ", shiny::HTML(paste0("CALcium Imaging analysis Pipeline in R")),
 
       shiny::tags$style(".main-header {max-height: 100%}"),
       shiny::tags$style(".main-header .logo {height: 100%}")),
@@ -77,7 +75,7 @@ ui <-
 
     shinydashboard::dashboardBody(
 
-      shiny::tags$head(tags$style(HTML(
+      shiny::tags$head(shiny::tags$style(shiny::HTML(
         " /* navbar */
       .skin-blue .main-header .navbar {
           background-color: #172330;}
@@ -116,7 +114,7 @@ ui <-
 
         shinydashboard::tabItem("prep",
 
-        shiny::tags$style(HTML("
+        shiny::tags$style(shiny::HTML("
 
 
 .box.box-solid.box-primary>.box-header {

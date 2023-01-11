@@ -17,19 +17,19 @@
 dashboardHeader <- function(..., title = NULL, disable = FALSE,title.navbar=NULL, .list = NULL) {
   items <- c(list(...), .list)
   #lapply(items, tagAssert, type = "li", class = "dropdown")
-  tags$header(class = "main-header",
+  shiny::tags$header(class = "main-header",
               style = if (disable) "display: none;",
-              span(class = "logo", title),
-              tags$nav(class = "navbar navbar-static-top", role = "navigation",
+              shiny::span(class = "logo", title),
+              shiny::tags$nav(class = "navbar navbar-static-top", role = "navigation",
                        # Embed hidden icon so that we get the font-awesome dependency
-                       span(shiny::icon("bars"), style = "display:none;"),
+                       shiny::span(shiny::icon("bars"), style = "display:none;"),
                        # Sidebar toggle button
-                       a(href="#", class="sidebar-toggle", `data-toggle`="offcanvas",
+                       shiny::a(href="#", class="sidebar-toggle", `data-toggle`="offcanvas",
                          role="button",
-                         span(class="sr-only", "Toggle navigation")
+                         shiny::span(class="sr-only", "Toggle navigation")
                        ),title.navbar,
-                       div(class = "navbar-custom-menu",
-                           tags$ul(class = "nav navbar-nav",
+                       shiny::div(class = "navbar-custom-menu",
+                           shiny::tags$ul(class = "nav navbar-nav",
                                    items
                            )
                        )
