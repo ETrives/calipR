@@ -1,5 +1,5 @@
-Package: CalQuick
-Title: Quick and Easy Calcium Imaging Analysis 
+Package: calipR
+Title: Calcium Imaging Analysis Pipeline in R 
 Version: 0.0.0.9000
 Authors@R: 
     person("Elliott", "Trives", , "triveselliott@hotmail.fr", role = c("aut", "cre"),

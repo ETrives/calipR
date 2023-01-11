@@ -9,7 +9,7 @@
 #' @examples
 logo_path <- function(){
 
-  path <- system.file("logo/CalQuick_bis.png", "CalQUick")
+  path <- system.file("logo/calipR_logo", "calipR")
 
 return(path)
 

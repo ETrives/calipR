@@ -11,14 +11,19 @@
 launch_GuiGui <- function(){
 ui <-
   shinydashboard::dashboardPage(skin = "blue",
-    shinydashboard::dashboardHeader(
-      shiny::tags$li(class = "dropdown",
-      shiny::tags$style(".main-header {max-height: 180px}"),
-      shiny::tags$style(".main-header .logo {height: 180px}"),
-      shiny::tags$style(".main-header .logo {padding-top: 1%}"),
-      shiny::tags$style(".main-header .logo {padding-bottom: 1%}")
-      ),
-      title = shiny::div(shiny::img(src = "logo/CalQuick_bis.png", width = "70%", height = "70%", align = "center"))),
+
+
+    dashboardHeader(
+      #shiny::tags$li(class = "dropdown",
+                     #shiny::tags$h1("CALcium Imaging analysis Pipeline in R", style = "color: #ffffff; text-align: left;"),
+
+      title.navbar = tags$h1(style = "color: #ffffff; text-align: center; font-family:  Lato; Padding-top: 30px;
+                             ", HTML(paste0("CALcium Imaging analysis Pipeline in R")),
+
+      shiny::tags$style(".main-header {max-height: 100%}"),
+      shiny::tags$style(".main-header .logo {height: 100%}")),
+
+      title = shiny::div(shiny::img(src = "logo/calipR_logo.png", width = "70%", height = "70%", align = "center"))),
 
 
     shinydashboard::dashboardSidebar(
@@ -52,8 +57,6 @@ ui <-
                                    shiny::actionButton("launch", "Load & Tidy Data", align = "center")),
 
                  shiny::conditionalPanel( 'input.sidebarid == "viz"',
-                                   shiny::textInput("cell", label = NULL, placeholder = "Enter the name of the cell you want to plot"),
-                                   shiny::actionButton("cell_click", "Plot Cell", align = "center")
                                    ),
 
 
@@ -74,6 +77,34 @@ ui <-
 
     shinydashboard::dashboardBody(
 
+      shiny::tags$head(tags$style(HTML(
+        " /* navbar */
+      .skin-blue .main-header .navbar {
+          background-color: #172330;}
+
+      /* logo */
+        .skin-blue .main-header .logo {
+                              background-color: #172330;
+                              bottom-color:#5499c7:}
+
+        /* logo when hovered */
+        .skin-blue .main-header .logo:hover {
+                              background-color: #e4f3f8
+;}
+
+
+        /* main sidebar */
+        .skin-blue .main-sidebar {
+                              background-color: #172330;
+                              }
+
+        /* active selected tab in the sidebarmenu */
+        .skin-blue .main-sidebar .sidebar .sidebar-menu .active a{
+                              background-color: #5499c7
+                              }
+
+                                    "))),
+
       shinydashboard::tabItems(
 
         shinydashboard::tabItem("des"),
@@ -84,6 +115,35 @@ ui <-
         shinydashboard::tabItem("tuto"),
 
         shinydashboard::tabItem("prep",
+
+        shiny::tags$style(HTML("
+
+
+.box.box-solid.box-primary>.box-header {
+  color:#fff;
+  background:#5499c7
+                    }
+
+.box.box-solid.box-primary{
+border-bottom-color:#5499c7  ;
+border-left-color:#5499c7  ;
+border-right-color:#5499c7  ;
+border-top-color:#5499c7  ;
+}
+
+.box.box-primary>.box-header {
+  color:#000000;
+  background:#fff
+                    }
+
+.box.box-primary{
+border-bottom-color:#5499c7  ;
+border-left-color:#5499c7  ;
+border-right-color:#5499c7  ;
+border-top-color:#5499c7  ;
+}
+
+                                    ")),
 
       shiny::fluidRow(
         shinydashboard::box(title = "Dataset Prepared", width = 12, solidHeader = TRUE, status = "primary",
@@ -134,7 +194,7 @@ ui <-
 
 
             shiny::actionButton("sim_bis", "Simulate Analysis", align = "center"),
-            shiny::actionButton("plot_simulation_bis", "Plot Random Cells", align = "center"))),
+            shiny::actionButton("plot_simulation_bis", "Plot Cell", align = "center"))),
 
       shiny::fluidRow(
       shinydashboard::box(title = "Plot Window", width = 6, solidHeader = TRUE, status = "primary",
@@ -212,9 +272,9 @@ folder <- shiny::reactive({
 
   df_final <- shiny::eventReactive(input$launch, {
 
-      df <- CalQuick::prepareData(folder(), stim_numb(), 0.25, compare_groups = TRUE)
+      df <- calipR::prepareData(folder(), stim_numb(), 0.25, compare_groups = TRUE)
 
-      CalQuick::saveData(df, "db_cq.sqlite", "df_full")
+      calipR::saveData(df, "db_cq.sqlite", "df_full")
 
       df
     })
@@ -227,7 +287,7 @@ folder <- shiny::reactive({
   if(is.null(df_final())) {return()}
 
   else{
-  df <- CalQuick::loading100("db_cq.sqlite", "df_full")
+  df <- calipR::loading100("db_cq.sqlite", "df_full")
   df <- DT::datatable(df)
   df
   }
@@ -236,14 +296,14 @@ folder <- shiny::reactive({
 
     df_plot <- shiny::eventReactive(input$cell_click, {
 
-      df <- CalQuick::get_cell(input$cell, "db_cq.sqlite", "df_full")
+      df <- calipR::get_cell(input$cell, "db_cq.sqlite", "df_full")
       df
     })
 
 
     output$plot_cell <- shiny::renderPlot({
 
-      p <- CalQuick::cell_plot_shiny(df_plot())
+      p <- calipR::cell_plot_shiny(df_plot())
       p
 
 
@@ -257,7 +317,7 @@ folder <- shiny::reactive({
     observeEvent(input$sim, {
 
       print("Simulation started")
-      df_sub <- CalQuick::get_sub_df("db_cq.sqlite", "df_full", input$n_cells)
+      df_sub <- calipR::get_sub_df("db_cq.sqlite", "df_full", input$n_cells)
 
       res_sim$res <- downstream_analysis(df_sub, threshold = input$peak_thresh,
                                          borders_range = input$rise_range, lambda = input$lambda, gam = input$gam,
@@ -373,7 +433,7 @@ folder <- shiny::reactive({
 
 
       res <- shiny::eventReactive(input$ana_full_button, {
-        df_full <- CalQuick::get_full_df("db_cq.sqlite", "df_full")
+        df_full <- calipR::get_full_df("db_cq.sqlite", "df_full")
         res <- downstream_analysis(df_full, threshold = input$peak_thresh_full,
                                              borders_range = input$rise_full, lambda = input$lambda_full, gam = input$gam_full,
                                              false_pos = input$false_pos_full, compare_groups = input$groups)
@@ -383,11 +443,11 @@ folder <- shiny::reactive({
         #about the peak
         res1 <- res[[1]]
 
-        CalQuick::saveData(res1, "db_cq.sqlite", "peak_res")
+        calipR::saveData(res1, "db_cq.sqlite", "peak_res")
 
         # Extracting and saving the full data table updated
         res2 <- res[[2]]
-        CalQuick::saveData(res2, "db_cq.sqlite", "df_final")
+        calipR::saveData(res2, "db_cq.sqlite", "df_final")
 
         res
       })
@@ -501,9 +561,13 @@ folder <- shiny::reactive({
 
        ))
 
+      ### Ajouter des visualisations des pourcentages par groupe, par coverslip etc. :
+      #output$viz <-  if(peak_res calipR::get_full_df("db_cq.sqlite", "peak_res")
+
 }
 shiny::shinyApp(ui, server)
 
 }
+
 
 

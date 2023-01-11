@@ -14,7 +14,7 @@
     prefix = "logo",
     directoryPath = system.file(
       "logo",
-      package = "CalQuick"
+      package = "calipR"
     )
   )
 }
