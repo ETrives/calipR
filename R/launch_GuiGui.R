@@ -13,7 +13,7 @@ ui <-
   shinydashboard::dashboardPage(skin = "blue",
 
 
-    dashboardHeader(
+    calipR::dashboardHeader(
       #shiny::tags$li(class = "dropdown",
                      #shiny::tags$h1("CALcium Imaging analysis Pipeline in R", style = "color: #ffffff; text-align: left;"),
 
