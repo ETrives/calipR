@@ -13,9 +13,9 @@ ui <-
   shinydashboard::dashboardPage(skin = "blue",
 
 
-    calipR::dashboardHeader(
+    calipR::dashboardHeader(disable = TRUE,
 
-      title.navbar = shiny::tags$h1(style = "color: #ffffff; text-align: center; font-family:  Lato; Padding-top: 30px;
+      title.navbar = shiny::tags$h1(style = "color: #ffffff; text-align: center; font-family:  comic sans ms, cursive; Padding-top: 30px;
                              ", shiny::HTML(paste0("CALcium Imaging analysis Pipeline in R")),
 
       shiny::tags$style(".main-header {max-height: 100%}"),
@@ -26,7 +26,18 @@ ui <-
 
     shinydashboard::dashboardSidebar(
 
-      shiny::tags$style(".left-side, .main-sidebar {padding-top: 180px}"),
+      tags$head(
+        tags$style(HTML(".sidebar {
+                      height: 100%;
+                    }"
+        ) # close HTML
+        )            # close tags$style
+      ),
+
+      shiny::img(src = "logo/calipR_logo.png", width = "70%", height = "70%",
+      style = "position: relative; top: -30px; left: 30px;"),
+
+      #shiny::tags$style(".left-side, .main-sidebar {padding-top: 180px}"),
       shinydashboard::sidebarMenu(id = "sidebarid",
                   shinydashboard::menuItem(
                     "Description", tabName = "des"),
@@ -43,7 +54,6 @@ ui <-
                   shinydashboard::menuSubItem("Optimize Analysis Parameters", tabName = "opt"),
                   shinydashboard::menuSubItem("Analyze data", tabName = "ana_full"),
                   shinydashboard::menuSubItem("Visualize Results", tabName = "viz_res"),
-
 
 
 
@@ -75,21 +85,8 @@ ui <-
 
     shinydashboard::dashboardBody(
 
-      shiny::tags$head(shiny::tags$style(shiny::HTML(
-        " /* navbar */
-      .skin-blue .main-header .navbar {
-          background-color: #172330;}
 
-      /* logo */
-        .skin-blue .main-header .logo {
-                              background-color: #172330;
-                              bottom-color:#5499c7:}
-
-        /* logo when hovered */
-        .skin-blue .main-header .logo:hover {
-                              background-color: #e4f3f8
-;}
-
+      shiny::tags$head(shiny::tags$style(shiny::HTML("
 
         /* main sidebar */
         .skin-blue .main-sidebar {
@@ -105,7 +102,48 @@ ui <-
 
       shinydashboard::tabItems(
 
-        shinydashboard::tabItem("des"),
+        shinydashboard::tabItem("des",
+
+        shiny::fluidRow(
+        #shiny::tags$h1(style = "color: #000000; text-align: center; font-family:  comic sans ms, cursive; Padding-top: 40px;
+                            # ", shiny::HTML(paste0("CALcium Imaging analysis Pipeline in R")))),
+
+          shiny::img(src = "logo/calipR_logo.png",
+                     style = "border: 1px;
+    color: white;
+    position: absolute;
+    left: 300px;
+    right: 0;
+    margin: 0 auto;
+    max-width: 250px;")),
+
+
+        shiny::fluidRow(
+
+        shiny::HTML( "<center> <p style = 'font-size: 20px; word-wrap: break-word;
+        width: 1000px; align: justify; color: black; padding-top: 50px;
+    position: absolute;
+    top: 300px;
+    left: 250px;
+    right: 0;
+    margin: 0 auto;
+    max-width: 600px;'> <b> calipR </b> is an open source software designed to facilitate calcium imaging data analysis.
+                      It is fully written in the R programming language.
+                      With this Graphical User Interface (GUI) you can analyze your data
+                      without any programming skills.<br> <br>
+                      Two workflows are available: one that allows you to automatize
+                     ROIs detection with the Trackmate imageJ plugin and another
+                     one that takes the output from manual ROI detection in ImageJ.
+                     To start with your first analysis you can go on to the Tutorial page.</p> </center>"),
+
+
+        ),
+        shiny::fluidRow(shiny::tags$br()),
+        shiny::fluidRow(shiny::tags$br()),
+        shiny::fluidRow(shiny::tags$br()),
+
+        ),
+
 
 
         shinydashboard::tabItem("ana"),
