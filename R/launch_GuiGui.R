@@ -26,8 +26,8 @@ ui <-
 
     shinydashboard::dashboardSidebar(
 
-      tags$head(
-        tags$style(HTML(".sidebar {
+      shiny::tags$head(
+        shiny::tags$style(shiny::HTML(".sidebar {
                       height: 100%;
                     }"
         ) # close HTML
