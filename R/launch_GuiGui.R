@@ -9,6 +9,8 @@
 #'
 #' @examples
 launch_GuiGui <- function(){
+
+
 ui <-
   shinydashboard::dashboardPage(skin = "blue",
 
@@ -258,10 +260,11 @@ border-top-color:#5499c7  ;
 
       shinydashboard::tabItem("viz_res",
                               shiny::fluidRow(
-                                shinydashboard::box(title = "Plotting Cells", width = 6, solidHeader = TRUE, status = "primary",
-                                                    shiny::textInput("cell_bis", label = NULL, placeholder = "Enter the name of the cell you want to plot"),
-                                                    shiny::actionButton("cell_click_bis", "Plot Cell", align = "center"),
-                                                    shiny::plotOutput(outputId = "plot_cell_bis")),shiny::div(style = "height:1000px;")))
+                                shinydashboard::box(title = "Plotting Cells", width = 12, solidHeader = TRUE, status = "primary",
+                                                    shiny::selectInput(inputId = "x", label = NULL, list("Group" = "Group", "Coverslip" = "Coverslip", "Stimulus" = "Stimulus")),
+                                                    shiny::selectInput(inputId = "y", label = NULL, list("Proportion" = "Proportion", "Responses" = "Responses")),
+                                                    shiny::selectInput(inputId = "z", label = NULL, list("Group" = "Group", "Coverslip" = "Coverslip", "Stimulus" = "Stimulus")),
+                                                    plotly::plotlyOutput(outputId = "viz")),shiny::div(style = "height:1000px;")))
 
 
       )))
@@ -482,13 +485,27 @@ folder <- shiny::reactive({
         # Extracting and saving the data table containing one row for each peak with the informations
         #about the peak
         res1 <- res[[1]]
-
+        print("res1")
+        print(res1)
         calipR::saveData(res1, "db_cq.sqlite", "peak_res")
 
         # Extracting and saving the full data table updated
         res2 <- res[[2]]
+        print("res2")
+        print(res2)
         calipR::saveData(res2, "db_cq.sqlite", "df_final")
 
+
+
+        res3 <- res[[3]][[2]]
+        print("res3")
+        print(res3)
+        print(str(res3))
+        res3 <- data.table::setDT(res3)
+        print(res3)
+        print(str(res3))
+        calipR::saveData(res3, "db_cq.sqlite", "stats_desc_final")
+        print("res3 done")
         res
       })
 
@@ -657,7 +674,52 @@ folder <- shiny::reactive({
        ))
 
       ### Ajouter des visualisations des pourcentages par groupe, par coverslip etc. :
-      #output$viz <-  if(peak_res calipR::get_full_df("db_cq.sqlite", "peak_res")
+
+
+        output$viz <- plotly::renderPlotly({
+
+          res <- get_full_df("db_cq.sqlite", "stats_desc_final")
+
+             plotly::plot_ly(
+
+              type = 'box',
+
+              x = res[[input$x]],
+
+              y = res[[input$y]],
+
+              text = paste("Group: ", res$Group,
+
+                           "<br>Stimulus:  ", res$Stimulus,
+
+                           "<br>Responders: ", res$Responses,
+
+                           "<br>Proportion: ", res$Proportion,
+                           "<br> Total cells: ", res$n_cells),
+
+              hoverinfo = 'text',
+
+              mode = 'markers',
+              boxpoints = "all",
+              jitter = 0.3,
+              pointpos = 0,
+
+              marker = list(size = 9, color = "black"),
+
+
+
+              color = res[[input$z]],
+
+            ) %>%
+               plotly::layout(boxmode ="group", yaxis = list(automargin = TRUE),
+                              xaxis = list(automargin = TRUE), boxgap = -2, boxgroupgap = 0)
+
+
+
+
+        })
+
+
 
 }
 shiny::shinyApp(ui, server)
