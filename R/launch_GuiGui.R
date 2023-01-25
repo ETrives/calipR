@@ -13,15 +13,7 @@ ui <-
   shinydashboard::dashboardPage(skin = "blue",
 
 
-    calipR::dashboardHeader(disable = TRUE,
-
-      title.navbar = shiny::tags$h1(style = "color: #ffffff; text-align: center; font-family:  comic sans ms, cursive; Padding-top: 30px;
-                             ", shiny::HTML(paste0("CALcium Imaging analysis Pipeline in R")),
-
-      shiny::tags$style(".main-header {max-height: 100%}"),
-      shiny::tags$style(".main-header .logo {height: 100%}")),
-
-      title = shiny::div(shiny::img(src = "logo/calipR_logo.png", width = "70%", height = "70%", align = "center"))),
+    calipR::dashboardHeader(disable = TRUE),
 
 
     shinydashboard::dashboardSidebar(
@@ -30,8 +22,8 @@ ui <-
         shiny::tags$style(shiny::HTML(".sidebar {
                       height: 100%;
                     }"
-        ) # close HTML
-        )            # close tags$style
+        )
+        )
       ),
 
       shiny::img(src = "logo/calipR_logo.png", width = "70%", height = "70%",
@@ -105,17 +97,16 @@ ui <-
         shinydashboard::tabItem("des",
 
         shiny::fluidRow(
-        #shiny::tags$h1(style = "color: #000000; text-align: center; font-family:  comic sans ms, cursive; Padding-top: 40px;
-                            # ", shiny::HTML(paste0("CALcium Imaging analysis Pipeline in R")))),
 
           shiny::img(src = "logo/calipR_logo.png",
                      style = "border: 1px;
     color: white;
     position: absolute;
+    top : 100px;
     left: 300px;
     right: 0;
     margin: 0 auto;
-    max-width: 250px;")),
+    max-width: 250px;"), shiny::div(style = "height:1000px;")),
 
 
         shiny::fluidRow(
@@ -123,7 +114,7 @@ ui <-
         shiny::HTML( "<center> <p style = 'font-size: 20px; word-wrap: break-word;
         width: 1000px; align: justify; color: black; padding-top: 50px;
     position: absolute;
-    top: 300px;
+    top: 400px;
     left: 250px;
     right: 0;
     margin: 0 auto;
@@ -146,9 +137,9 @@ ui <-
 
 
 
-        shinydashboard::tabItem("ana"),
+        shinydashboard::tabItem("ana", shiny::fluidRow(shiny::div(style = "height:1000px;"))),
 
-        shinydashboard::tabItem("tuto"),
+        shinydashboard::tabItem("tuto", shiny::fluidRow(shiny::div(style = "height:1000px;"))),
 
         shinydashboard::tabItem("prep",
 
@@ -181,9 +172,11 @@ border-top-color:#5499c7  ;
 
                                     ")),
 
-      shiny::fluidRow(
-        shinydashboard::box(title = "Dataset Prepared", width = 12, solidHeader = TRUE, status = "primary",
-            DT::dataTableOutput("df_sql")))),
+      shiny::fluidRow(class = "myRow1",
+                 shiny::column(12,
+        shinydashboard::box(title = "Dataset Prepared", width = 12, solidHeader = TRUE, status = "primary", collapsible = T,
+            DT::dataTableOutput("df_sql")),
+        shiny::div(style = "height:1000px;")))),
 
 
       shinydashboard::tabItem("viz",
@@ -191,7 +184,7 @@ border-top-color:#5499c7  ;
         shinydashboard::box(title = "Plotting Cells", width = 6, solidHeader = TRUE, status = "primary",
             shiny::textInput("cell", label = NULL, placeholder = "Enter the name of the cell you want to plot"),
             shiny::actionButton("cell_click", "Plot Cell", align = "center"),
-            shiny::plotOutput(outputId = "plot_cell")))),
+            shiny::plotOutput(outputId = "plot_cell")), shiny::div(style = "height:1000px"))),
 
       shinydashboard::tabItem("opt",
 
@@ -247,9 +240,8 @@ border-top-color:#5499c7  ;
 
       shiny::fluidRow(
         shinydashboard::box(title = "Description of Responses", width = 12, solidHeader = TRUE, status = "primary",
-            shiny::textOutput("resp_count"),
+            shinycssloaders::withSpinner(DT::dataTableOutput("resp_count"), type = 6),
             DT::dataTableOutput("resp_group_stim"),
-            shiny::textOutput("n_peaks"),
             DT::dataTableOutput("peaks_by_class"),
             DT::dataTableOutput("overall_q"),
             DT::dataTableOutput("post_hoc_mcnemar")
@@ -262,14 +254,14 @@ border-top-color:#5499c7  ;
               shiny::actionButton("dual_button", "Compute Dual Proportions", align = "center" ),
               shiny::br(),
               shiny::br(),
-              DT::dataTableOutput("dual_prop")))),
+              DT::dataTableOutput("dual_prop")),shiny::div(style = "height:1000px;"))),
 
       shinydashboard::tabItem("viz_res",
                               shiny::fluidRow(
                                 shinydashboard::box(title = "Plotting Cells", width = 6, solidHeader = TRUE, status = "primary",
                                                     shiny::textInput("cell_bis", label = NULL, placeholder = "Enter the name of the cell you want to plot"),
                                                     shiny::actionButton("cell_click_bis", "Plot Cell", align = "center"),
-                                                    shiny::plotOutput(outputId = "plot_cell_bis"))))
+                                                    shiny::plotOutput(outputId = "plot_cell_bis")),shiny::div(style = "height:1000px;")))
 
 
       )))
@@ -350,44 +342,56 @@ folder <- shiny::reactive({
     res_sim <- shiny::reactiveValues(res = NULL)
 
 
-    observeEvent(input$sim, {
+
+   shiny::observeEvent(input$sim, {
 
       print("Simulation started")
       df_sub <- calipR::get_sub_df("db_cq.sqlite", "df_full", input$n_cells)
 
-      res_sim$res <- downstream_analysis(df_sub, threshold = input$peak_thresh,
+      res_sim$res <- calipR::downstream_analysis(df_sub, threshold = input$peak_thresh,
                                          borders_range = input$rise_range, lambda = input$lambda, gam = input$gam,
                                          false_pos = input$false_pos)
 
-      data <- res_sim$res
+   })
 
-      cells <- unique(data[[2]]$Cell_id)
 
-      responders <- unique(data[[1]]$Cell_id)
+    if(is.null(res_sim)){
 
-      non_responders <- cells %in% responders
-
-      non_responders <- unlist(purrr::map2(cells, non_responders, function(x,y) if(y == FALSE){x}))
-
+    }
+   else{
       output$responders <- shiny::renderUI({
-
+        data <- res_sim$res
+        responders <- unique(data[[1]]$Cell_id)
         shiny::selectInput(inputId = "responders", "Responders", responders)
       })
+   }
 
+   if(is.null(res_sim)){
+
+   }
+   else{
     output$non_responders <- shiny::renderUI({
-
+      data <- res_sim$res
+      cells <- unique(data[[2]]$Cell_id)
+      responders <- unique(data[[1]]$Cell_id)
+      non_responders <- cells %in% responders
+      non_responders <- unlist(purrr::map2(cells, non_responders, function(x,y) if(y == FALSE){x}))
       shiny::selectInput(inputId = "non_responders", "Non Responders", non_responders)
     })
 
+}
 
+   if(is.null(res_sim)){
 
+   }
+   else{
     output$stats_opt <- DT::renderDataTable({
-
-      res2 <- data[[3]][[4]]
+      data <- res_sim$res
+      res2 <- data[[3]][[2]]
       res2
 
     })
-})
+}
 
 
 
@@ -430,7 +434,7 @@ folder <- shiny::reactive({
 
         print("df_sub ok")
 
-        res_sim$res_bis <- downstream_analysis(df_sub_bis, threshold = input$peak_thresh_bis,
+        res_sim$res_bis <- calipR::downstream_analysis(df_sub_bis, threshold = input$peak_thresh_bis,
                                                borders_range = input$rise_range_bis, lambda = input$lambda_bis,
                                                gam = input$gam_bis, false_pos = input$false_pos_bis, one_cell = TRUE)
 
@@ -470,7 +474,7 @@ folder <- shiny::reactive({
 
       res <- shiny::eventReactive(input$ana_full_button, {
         df_full <- calipR::get_full_df("db_cq.sqlite", "df_full")
-        res <- downstream_analysis(df_full, threshold = input$peak_thresh_full,
+        res <- calipR::downstream_analysis(df_full, threshold = input$peak_thresh_full,
                                              borders_range = input$rise_full, lambda = input$lambda_full, gam = input$gam_full,
                                              false_pos = input$false_pos_full, compare_groups = input$groups)
 
@@ -489,51 +493,87 @@ folder <- shiny::reactive({
       })
 
 
-      output$resp_count <- shiny::renderText({
+      output$resp_count <- DT::renderDataTable({
 
         res <- res()
 
-        print("res[[3]][1]")
-        print(res[[3]][1])
         res1 <- res[[3]][[1]]
-        res1
+
+        DT::datatable({res1},
+                      extensions = 'Buttons',
+                      options = list(
+                        paging = TRUE,
+                        searching = TRUE,
+                        fixedColumns = TRUE,
+                        autoWidth = TRUE,
+                        ordering = TRUE,
+                        dom = 'tB',
+                        c("copy", "csv")),
+
+                      class = "display"
+
+        )
 
       })
+
+
 
 
       output$resp_group_stim <- DT::renderDataTable({
 
         res <- res()
 
-        res2 <- res[[3]][[4]]
-        res2
+        res2 <- res[[3]][[2]]
 
+        DT::datatable({res2},
+                      extensions = 'Buttons',
+                      options = list(
+                        paging = TRUE,
+                        searching = TRUE,
+                        fixedColumns = TRUE,
+                        autoWidth = TRUE,
+                        ordering = TRUE,
+                        dom = 'tB',
+                        c("copy", "csv")),
+
+                      class = "display"
+
+        )
       })
 
-      output$n_peaks <- shiny::renderText({
 
-        res <- res()
 
-        res3 <- res[[3]][[2]]
-        res3
-
-      })
-
-      #output$peaks_by_class <- DT::renderDataTable({
-
-        #res <- res()
-
-        #res4 <- res[[1]][4][[1]]
-        #res4
-
-      #})
 
 
       output$overall_q <- DT::renderDataTable({
 
+
+
         res <- res()
-        res4 <- res[[3]][[5]][[1]]
-        res4
+
+        if(is.character(res[[3]][[3]][[1]])) {
+
+        }
+        else{
+
+        res3 <- res[[3]][[3]][[1]]
+
+
+        DT::datatable({res3},
+                      extensions = 'Buttons',
+                      options = list(
+                        paging = TRUE,
+                        searching = TRUE,
+                        fixedColumns = TRUE,
+                        autoWidth = TRUE,
+                        ordering = TRUE,
+                        dom = 'tB',
+                        c("copy", "csv")),
+
+                      class = "display"
+
+        )
+        }
       }
       )
 
@@ -541,9 +581,28 @@ folder <- shiny::reactive({
 
         res <- res()
 
-        res4 <- res[[3]][[5]][[2]]
-        res4
+        if(is.character(res[[3]][[3]][[1]])) {
 
+        }
+        else{
+
+        res4 <- res[[3]][[3]][[2]]
+
+        DT::datatable({res4},
+                      extensions = 'Buttons',
+                      options = list(
+                        paging = TRUE,
+                        searching = TRUE,
+                        fixedColumns = TRUE,
+                        autoWidth = TRUE,
+                        ordering = TRUE,
+                        dom = 'tB',
+                        c("copy", "csv")),
+
+                      class = "display"
+
+        )
+}
       })
 
 
@@ -591,7 +650,7 @@ folder <- shiny::reactive({
          autoWidth = TRUE,
          ordering = TRUE,
          dom = 'tB',
-         c("copy", "csv", "excel")),
+         c("copy", "csv")),
 
        class = "display"
 

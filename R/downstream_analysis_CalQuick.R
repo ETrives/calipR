@@ -40,15 +40,24 @@ downstream_analysis <- function(data, moving_thresh = 0.1, outlier_thresh = 2, m
   borders_range <- as.integer(borders_range)
   print(borders_range)
 
+  shiny::withProgress(message = "Analysis in Progress", value = 0, detail = "Cleaning Data", {
+
   clean <- clean_data(data, moving_thresh, outlier_thresh, mean_width, DPA_width, CN_DPA_width, mean_width_diff)
   print("cleaning = OK")
+
+  shiny::incProgress(1/6, detail = "Estimating Background")
+
   back <- backEstimate(clean, method = method)
   print("back = OK")
+
+  shiny::incProgress(1/6, detail = "Normalizing Data")
 
   norm <- norm_df(back, var = norm_var, width = norm_width)
   print("norm = OK")
 
   print(norm)
+
+  shiny::incProgress(1/6, detail = "Performing Deconvolution")
 
   deconvolved <- deconvolve(norm, lambda = lambda, gam = gam, constraint = constraint,
                             threshold = threshold, var = deconvolve_var)
@@ -73,18 +82,24 @@ downstream_analysis <- function(data, moving_thresh = 0.1, outlier_thresh = 2, m
   }
 
   else{
+  shiny::incProgress(1/6, detail = "Finding Peaks Borders")
+
   borders <- find_borders(best, range = borders_range)
 }
   }
 
   if(false_pos == FALSE){
+  shiny::incProgress(1/6, detail = "Finding Peaks Borders")
 
   borders <- find_borders(deconvolved, range = borders_range)
   }
 
   }
 
+  shiny::incProgress(1/6, detail = "Computing Statistics")
+
   res <- Analyze_Responses(borders[[1]], clean, compare_groups = compare_groups, one_cell = one_cell)
+  })
 
 return(list(borders[[1]], norm, res))
 }

@@ -33,6 +33,7 @@ Imports:
   DBI,
   shinydashboard,
   shiny,
-  DT
+  DT,
+  shinycssloaders
 Remotes:
   jewellsean/FastLZeroSpikeInference
