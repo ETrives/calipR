@@ -10,7 +10,6 @@ downstream_analysis(
   outlier_thresh = 2,
   mean_width = 20,
   DPA_width = 10,
-  CN_DPA_width = 80,
   mean_width_diff = 10,
   method = "gam",
   norm_var = "gam",

@@ -14,6 +14,11 @@
 #' @examples
 norm_df <- function(data, var = c("raw", "poly", "gam", "linear", "quantile"), width){
 
+  print("inside norm")
+  print(data$coverslip)
+  print(typeof(data$coverslip))
+  data$coverslip <- as.character(data$coverslip)
+
   cov_split <- split(data, data$coverslip)
   dim_list <- lapply(cov_split, function(x) dim(dplyr::filter(x, Cell_id == x$Cell_id[[1]]))[1])
 

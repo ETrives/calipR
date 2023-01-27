@@ -55,7 +55,9 @@ ui <-
                                    shiny::selectInput("stim_num", label ="Stimuli number (/cell)", c("1" = "1", "2" = "2", "3" = "3",
                                                                                                                      "4" = "4", "5" = "5", "6"="6", "7"="7",
                                                                                                                       "8"="8", "9"="9","10"="10")),
+                                   shiny::textInput("frame_rate", label = "Enter your frame rate (Hz)", placeholder = "e.g. 0.5" ),
                                    shiny::textInput("folder", label = NULL, placeholder = "Write folder's name (where all the files are)"),
+
                                    shiny::actionButton("launch", "Load & Tidy Data", align = "center")),
 
                  shiny::conditionalPanel( 'input.sidebarid == "viz"',
@@ -303,7 +305,7 @@ folder <- shiny::reactive({
 
   df_final <- shiny::eventReactive(input$launch, {
 
-      df <- calipR::prepareData(folder(), stim_numb(), 0.25, compare_groups = TRUE)
+      df <- calipR::prepareData(folder(), stim_numb(), as.numeric(input$frame_rate), compare_groups = TRUE)
 
       calipR::saveData(df, "db_cq.sqlite", "df_full")
 

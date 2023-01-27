@@ -12,7 +12,9 @@ RoxygenNote: 7.2.1
 Depends:
   stringr,
   plyr,
-  data.table
+  data.table,
+  parsnip,
+  workflows
 Imports:
   purrr,
   dplyr,
