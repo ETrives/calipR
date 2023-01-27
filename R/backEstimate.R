@@ -19,8 +19,8 @@ backEstimate <- function(data, smooth = 50, method = c("smooth","gam")){
 
   data <- data %>%
     dplyr::bind_cols(
-      parsnip::predict.model_fit()(noise_model, data),
-      parsnip::predict.model_fit()(noise_model, data, type = "prob" )
+      predict(noise_model, data),
+      predict(noise_model, data, type = "prob" )
     )
 
 
