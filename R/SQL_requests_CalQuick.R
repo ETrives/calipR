@@ -19,6 +19,14 @@ saveData <- function(data, db_name, tab_name ) {
 }
 
 
+checkTable <- function(db_name, tab_name){
+  con <- RSQLite::dbConnect(RSQLite::SQLite(), db_name)
+  t <- RSQLite::dbGetQuery(con, paste("SELECT name FROM sqlite_master WHERE type='table' AND name=", tab_name, sep = "" ))
+  RSQLite::dbDisconnect(con)
+return(t)
+}
+
+
 
 # Exemple d'une requête pour récupérer les 100 premières lignes du df :
 

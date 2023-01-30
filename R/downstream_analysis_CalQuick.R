@@ -24,7 +24,7 @@
 #' @export
 #'
 #' @examples
-downstream_analysis <- function(data, moving_thresh = 0.1, outlier_thresh = 2, mean_width = 20, DPA_width = 10,
+downstream_analysis <- function(data, moving_thresh = 0.1, outlier_thresh = 2, mean_width = 20, DPA_width = 10, CN_DPA_width = 80,
                                 mean_width_diff = 10, method = "gam", norm_var = "gam",
                                 norm_width = 10, lambda = 100,
                                 gam = 0.97, constraint = T, threshold = 3,
@@ -40,27 +40,27 @@ downstream_analysis <- function(data, moving_thresh = 0.1, outlier_thresh = 2, m
   borders_range <- as.integer(borders_range)
   print(borders_range)
 
-  shiny::withProgress(message = "Analysis in Progress", value = 0, detail = "Cleaning Data", {
+  if(one_cell == FALSE){
+  shiny::withProgress(message = "Analyzing Full Dataset", value = 0, detail = "Cleaning Data", {
 
-  clean <- clean_data(data, moving_thresh, outlier_thresh, mean_width, DPA_width, mean_width_diff)
+  clean <- calipR::clean_data(data, moving_thresh, outlier_thresh, mean_width, DPA_width, mean_width_diff)
   print("cleaning = OK")
 
   shiny::incProgress(1/6, detail = "Estimating Background")
 
-  back <- backEstimate(clean, method = "gam")
+  back <- calipR::backEstimate(clean, method = method)
   print("back = OK")
-  simple_cell_plot(back, cell = "aaae", var = "Mean_Grey", line = "gam")
 
   shiny::incProgress(1/6, detail = "Normalizing Data")
 
-  norm <- norm_df(back, var = norm_var, width = norm_width)
+  norm <- calipR::norm_df(back, var = norm_var, width = norm_width)
   print("norm = OK")
 
   print(norm)
 
   shiny::incProgress(1/6, detail = "Performing Deconvolution")
 
-  deconvolved <- deconvolve(norm, lambda = lambda, gam = gam, constraint = constraint,
+  deconvolved <- calipR::deconvolve(norm, lambda = lambda, gam = gam, constraint = constraint,
                             threshold = threshold, var = deconvolve_var)
 
   print("deconvolved = ok")
@@ -74,7 +74,7 @@ downstream_analysis <- function(data, moving_thresh = 0.1, outlier_thresh = 2, m
   if(length(deconvolved[[1]]$Cell_id) != 0){
 
   if(false_pos == TRUE){
-  best <- keep_best_peaks(deconvolved)
+  best <- calipR::keep_best_peaks(deconvolved)
 
   print("best = ok")
   if(length(best[[1]]$Cell_id) == 0 ){
@@ -85,22 +85,69 @@ downstream_analysis <- function(data, moving_thresh = 0.1, outlier_thresh = 2, m
   else{
   shiny::incProgress(1/6, detail = "Finding Peaks Borders")
 
-  borders <- find_borders(best, range = borders_range)
+  borders <- calipR::find_borders(best, range = borders_range)
 }
   }
 
   if(false_pos == FALSE){
   shiny::incProgress(1/6, detail = "Finding Peaks Borders")
 
-  borders <- find_borders(deconvolved, range = borders_range)
+  borders <- calipR::find_borders(deconvolved, range = borders_range)
   }
 
   }
 
   shiny::incProgress(1/6, detail = "Computing Statistics")
 
-  res <- Analyze_Responses(borders[[1]], clean, compare_groups = compare_groups, one_cell = one_cell)
+  res <- calipR::Analyze_Responses(borders[[1]], clean, compare_groups = compare_groups, one_cell = FALSE)
   })
+  }
+
+  if(one_cell == TRUE){
+
+    shiny::withProgress(message = "Testing New Parameters", value = 0, detail = "Performing Deconvolution", {
+
+    deconvolved <- calipR::deconvolve(data, lambda = lambda, gam = gam, constraint = constraint,
+                              threshold = threshold, var = deconvolve_var)
+
+    print("deconvolved = ok")
+    print(deconvolved[[1]]$Cell_id)
+    if(length(deconvolved[[1]]$Cell_id) == 0){
+      borders <- NULL
+      print(borders)
+    }
+
+
+    if(length(deconvolved[[1]]$Cell_id) != 0){
+
+      if(false_pos == TRUE){
+        best <- calipR::keep_best_peaks(deconvolved)
+
+        print("best = ok")
+        if(length(best[[1]]$Cell_id) == 0 ){
+          borders <- NULL
+
+        }
+
+        else{
+          shiny::incProgress(1/2, detail = "Finding Peaks Borders")
+
+          borders <- calipR::find_borders(best, range = borders_range)
+        }
+      }
+
+      if(false_pos == FALSE){
+        shiny::incProgress(1/2, detail = "Finding Peaks Borders")
+
+        borders <- calipR::find_borders(deconvolved, range = borders_range)
+      }
+
+    }
+    res <- "NO RES"
+    norm <- data
+    })
+  }
+
 
 return(list(borders[[1]], norm, res))
 }

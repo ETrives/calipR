@@ -8,7 +8,7 @@
 #' @export
 #'
 #' @examples
-launch_GuiGui <- function(){
+  launch_GuiGui <- function(){
 
 
 ui <-
@@ -248,13 +248,16 @@ border-top-color:#5499c7  ;
             DT::dataTableOutput("resp_group_stim"),
             DT::dataTableOutput("peaks_by_class"),
             DT::dataTableOutput("overall_q"),
-            DT::dataTableOutput("post_hoc_mcnemar")
+            DT::dataTableOutput("post_hoc_mcnemar"),
+            shiny::actionButton("update_button", "Update", align = "right"),
+
             )),
 
         shiny::fluidRow(
           shinydashboard::box(title = "Dual Proportions", width = 12, solidHeader = TRUE, status = "primary",
               shiny::uiOutput("stim_list_1"),
               shiny::uiOutput("stim_list_2"),
+
               shiny::actionButton("dual_button", "Compute Dual Proportions", align = "center" ),
               shiny::br(),
               shiny::br(),
@@ -408,6 +411,9 @@ folder <- shiny::reactive({
 
       output$plot_cell_sim <- shiny::renderPlot({
 
+        print(data[[1]])
+        print(data[[2]])
+
         p <- cell_plot(data[[2]], data[[1]], var = "Mean_Grey", cell = input$responders, line = "gam", show_peak = input$show_peak)
         p
 
@@ -477,8 +483,12 @@ folder <- shiny::reactive({
 
 
 
-      res <- shiny::eventReactive(input$ana_full_button, {
+      res <- shiny::observeEvent(input$ana_full_button, {
+
+
+        print("inside anafull")
         df_full <- calipR::get_full_df("db_cq.sqlite", "df_full")
+        print("df_full ok")
         res <- calipR::downstream_analysis(df_full, threshold = input$peak_thresh_full,
                                              borders_range = input$rise_full, lambda = input$lambda_full, gam = input$gam_full,
                                              false_pos = input$false_pos_full, compare_groups = input$groups)
@@ -487,38 +497,44 @@ folder <- shiny::reactive({
         # Extracting and saving the data table containing one row for each peak with the informations
         #about the peak
         res1 <- res[[1]]
-        print("res1")
-        print(res1)
+
         calipR::saveData(res1, "db_cq.sqlite", "peak_res")
 
         # Extracting and saving the full data table updated
         res2 <- res[[2]]
-        print("res2")
-        print(res2)
         calipR::saveData(res2, "db_cq.sqlite", "df_final")
 
 
+        res3_1 <- data.table::setDT(res[[3]][[1]])
+        calipR::saveData(res3_1, "db_cq.sqlite", "stats_desc_final")
 
-        res3 <- res[[3]][[2]]
-        print("res3")
-        print(res3)
-        print(str(res3))
-        res3 <- data.table::setDT(res3)
-        print(res3)
-        print(str(res3))
-        calipR::saveData(res3, "db_cq.sqlite", "stats_desc_final")
-        print("res3 done")
+
+        res3_2 <- data.table::setDT(res[[3]][[2]])
+        calipR::saveData(res3_2, "db_cq.sqlite", "stats_desc_by_cov_group")
+
+
+        res3_3_1 <- data.table::setDT(res[[3]][[3]][[1]])
+        calipR::saveData(res3_3_1, "db_cq.sqlite", "overall_q")
+
+        res3_3_2 <- data.table::setDT(res[[3]][[3]][[2]])
+        calipR::saveData(res3_3_2, "db_cq.sqlite", "pairwise")
+
+
         res
       })
 
 
+
+      observeEvent(input$update_button, {
       output$resp_count <- DT::renderDataTable({
 
-        res <- res()
 
-        res1 <- res[[3]][[1]]
+        if(dim(checkTable("db_cq.sqlite", "'stats_desc_final'"))[1] == 0) {}
+        else{
 
-        DT::datatable({res1},
+
+        a <- get_full_df("db_cq.sqlite", "stats_desc_final")
+        DT::datatable({a},
                       extensions = 'Buttons',
                       options = list(
                         paging = TRUE,
@@ -533,18 +549,21 @@ folder <- shiny::reactive({
 
         )
 
+}
       })
-
 
 
 
       output$resp_group_stim <- DT::renderDataTable({
 
-        res <- res()
+        if(dim(checkTable("db_cq.sqlite", "'stats_desc_by_cov_group'"))[1] == 0) {}
+        else{
 
-        res2 <- res[[3]][[2]]
 
-        DT::datatable({res2},
+        b <- get_full_df("db_cq.sqlite", "stats_desc_by_cov_group")
+
+
+        DT::datatable({b},
                       extensions = 'Buttons',
                       options = list(
                         paging = TRUE,
@@ -558,7 +577,10 @@ folder <- shiny::reactive({
                       class = "display"
 
         )
+
+        }
       })
+
 
 
 
@@ -566,19 +588,13 @@ folder <- shiny::reactive({
 
       output$overall_q <- DT::renderDataTable({
 
-
-
-        res <- res()
-
-        if(is.character(res[[3]][[3]][[1]])) {
-
-        }
+        if(dim(checkTable("db_cq.sqlite", "'overall_q'"))[1] == 0) {}
         else{
 
-        res3 <- res[[3]][[3]][[1]]
+        c <- get_full_df("db_cq.sqlite", "overall_q")
 
 
-        DT::datatable({res3},
+        DT::datatable({c},
                       extensions = 'Buttons',
                       options = list(
                         paging = TRUE,
@@ -598,16 +614,12 @@ folder <- shiny::reactive({
 
       output$post_hoc_mcnemar <- DT::renderDataTable({
 
-        res <- res()
-
-        if(is.character(res[[3]][[3]][[1]])) {
-
-        }
+        if(dim(checkTable("db_cq.sqlite", "'pairwise'"))[1] == 0) {}
         else{
+        d <- get_full_df("db_cq.sqlite", "pairwise")
 
-        res4 <- res[[3]][[3]][[2]]
 
-        DT::datatable({res4},
+        DT::datatable({d},
                       extensions = 'Buttons',
                       options = list(
                         paging = TRUE,
@@ -621,7 +633,7 @@ folder <- shiny::reactive({
                       class = "display"
 
         )
-}
+        }
       })
 
 
@@ -629,32 +641,45 @@ folder <- shiny::reactive({
 
       output$stim_list_1 <- shiny::renderUI({
 
-        res <- get_full_df("db_cq.sqlite", "peak_res")
+        if(dim(checkTable("db_cq.sqlite", "'peak_res'"))[1] == 0) {}
+        else{
 
-        stim_list <- unique(res$Start_peak_stimulus)
+        e <- get_full_df("db_cq.sqlite", "peak_res")
+
+
+
+        stim_list <- unique(e$Start_peak_stimulus)
 
         shiny::selectInput(inputId = "stim_list_1", "Stimulus 1", stim_list)
+        }
       })
 
 
       output$stim_list_2 <- shiny::renderUI({
 
-        res <- get_full_df("db_cq.sqlite", "peak_res")
+        if(dim(checkTable("db_cq.sqlite", "'peak_res'"))[1] == 0) {}
+        else{
 
-        stim_list <- unique(res$Start_peak_stimulus)
+        f <- get_full_df("db_cq.sqlite", "peak_res")
+
+
+        stim_list <- unique(f$Start_peak_stimulus)
 
 
         shiny::selectInput(inputId = "stim_list_2", "Stimulus 2", stim_list)
+        }
       })
 
 
       t <- shiny::eventReactive(input$dual_button, {
 
-        res <- get_full_df("db_cq.sqlite", "peak_res")
+        if(dim(checkTable("db_cq.sqlite", "'peak_res'"))[1] == 0) {}
+        else{
 
+        g <- get_full_df("db_cq.sqlite", "peak_res")
 
-        t <- dual_prop(res, input$stim_list_1, input$stim_list_2)
-
+        t <- dual_prop(g, input$stim_list_1, input$stim_list_2)
+}
       })
 
 
@@ -675,12 +700,14 @@ folder <- shiny::reactive({
 
        ))
 
+
+})
       ### Ajouter des visualisations des pourcentages par groupe, par coverslip etc. :
 
 
         output$viz <- plotly::renderPlotly({
 
-          res <- get_full_df("db_cq.sqlite", "stats_desc_final")
+          res <- get_full_df("db_cq.sqlite", "stats_desc_by_cov_group")
 
              plotly::plot_ly(
 
@@ -719,14 +746,13 @@ folder <- shiny::reactive({
 
 
 
-        })
-
-
+      })
 
 }
 shiny::shinyApp(ui, server)
 
 }
+
 
 
 
