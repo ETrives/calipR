@@ -19,8 +19,8 @@ backEstimate <- function(data, smooth = 50, method = c("smooth","gam")){
 
   data <- data %>%
     dplyr::bind_cols(
-      predict(noise_model, data),
-      predict(noise_model, data, type = "prob" )
+      stats::predict(noise_model, data),
+      stats::predict(noise_model, data, type = "prob" )
     )
 
 
