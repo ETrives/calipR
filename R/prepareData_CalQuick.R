@@ -13,28 +13,48 @@
 
 
 #' @examples
-prepareData <- function(folder_name, stim_number, frame_rate,  duration_in_seconds = 30, compare_groups = FALSE
+prepareData <- function(folder_name, stim_number, frame_rate,  duration_in_seconds = 30, compare_groups = FALSE, marker_thresh
 ) {
 
 
   # Get the file names and store the content in a list of df :
   myFiles <- list.files(folder_name, pattern = "\\.csv", recursive = T, full.names = T)
-
+  len_before <- length(myFiles)
   # Removing the meta_data file :
 
-  myFiles <- myFiles[!stringr::str_detect(myFiles,pattern="meta")]
+  myFiles <- myFiles[!stringr::str_detect(myFiles,pattern="meta") & !stringr::str_detect(myFiles,pattern="marker")]
 
+  len_after <- length(myFiles)
   meta <- list.files(folder_name, pattern = "meta", recursive = T, full.names = T)
+
 
   df_list <- vector(mode = "list", length = length(myFiles))
 
-  # Reading all the files
+  # Reading all the data files
 
   df_list <- lapply(myFiles, function(x) data.table::fread(x, skip = 1, header = FALSE))
-
   df_list <- lapply(df_list, function(x) x[,2:length(x)])
-
   df_list <- lapply(df_list, function(x) setnames(x, paste0(rep("Mean", length(x)), seq(1: length(x)))))
+
+
+  # Checking if marker files have been added
+
+  if(len_before - len_after > 1){
+    print("yes")
+    marker <- list.files(folder_name, pattern = "marker", recursive = T, full.names = T)
+
+    # Reading the files
+    marker_list <- lapply(marker, function(x) data.table::fread(x, skip = 1, header = FALSE))
+    marker_list <- lapply(marker_list, function(x) x[,2:length(x)])
+    marker_list <- lapply(marker_list, function(x) setnames(x, paste0(rep("Mean", length(x)), seq(1: length(x)))))
+    print(marker_list)
+  }
+
+  else{
+    marker_list <- NULL
+  }
+
+
 
   # Code pour récupérer uniquement le numéro du coverslip et lui ajouter une lettre :
 
@@ -86,7 +106,7 @@ prepareData <- function(folder_name, stim_number, frame_rate,  duration_in_secon
 
       df_list[[i]] <- tidy_df(df_list[[i]],stimuli[[i]], each[[i]], pattern,
                               duration_in_seconds, frame_rate, coverslip_id = coverslip_id[[i]], id = i,
-                              multiple = TRUE, compare_groups = TRUE, group_list[[i]])
+                              multiple = TRUE, compare_groups = TRUE, group_list[[i]], marker_list[[i]], marker_thresh)
 
     }
   }
@@ -98,7 +118,9 @@ prepareData <- function(folder_name, stim_number, frame_rate,  duration_in_secon
 
     for(i in 1:length(df_list)){
 
-      df_list[[i]] <- tidy_df(df_list[[i]],stimuli[[i]], each[[i]], pattern, duration_in_seconds, frame_rate, coverslip_id = i, id = i, multiple = TRUE, compare_groups = FALSE, group_list[[i]])
+      df_list[[i]] <- tidy_df(df_list[[i]],stimuli[[i]], each[[i]], pattern, duration_in_seconds,
+                      frame_rate, coverslip_id = i, id = i, multiple = TRUE, compare_groups = FALSE,
+                      group_list[[i]], marker_list[[i]], marker_thresh)
 
     }
   }
@@ -106,7 +128,7 @@ prepareData <- function(folder_name, stim_number, frame_rate,  duration_in_secon
 
   df <- do.call(rbind, df_list)
 
-
+  print(df)
   #write.csv(df, "df_manip_maxime.csv")
 
   return(df)

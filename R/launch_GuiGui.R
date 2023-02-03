@@ -29,7 +29,7 @@ ui <-
       ),
 
       shiny::img(src = "logo/calipR_logo.png", width = "70%", height = "70%",
-      style = "position: relative; top: -30px; left: 30px;"),
+      style = "position: relative; top: -30px; left: 35px;"),
 
       #shiny::tags$style(".left-side, .main-sidebar {padding-top: 180px}"),
       shinydashboard::sidebarMenu(id = "sidebarid",
@@ -57,6 +57,7 @@ ui <-
                                                                                                                       "8"="8", "9"="9","10"="10")),
                                    shiny::textInput("frame_rate", label = "Enter your frame rate (Hz)", placeholder = "e.g. 0.5" ),
                                    shiny::textInput("folder", label = NULL, placeholder = "Write folder's name (where all the files are)"),
+                                   shiny::textInput("mark_thresh", label = "if you have a cellular marker, enter your threshold", placeholder = "e.g. 30"),
 
                                    shiny::actionButton("launch", "Load & Tidy Data", align = "center")),
 
@@ -180,6 +181,7 @@ border-top-color:#5499c7  ;
                  shiny::column(12,
         shinydashboard::box(title = "Dataset Prepared", width = 12, solidHeader = TRUE, status = "primary", collapsible = T,
             DT::dataTableOutput("df_sql")),
+
         shiny::div(style = "height:1000px;")))),
 
 
@@ -308,7 +310,8 @@ folder <- shiny::reactive({
 
   df_final <- shiny::eventReactive(input$launch, {
 
-      df <- calipR::prepareData(folder(), stim_numb(), as.numeric(input$frame_rate), compare_groups = TRUE)
+      df <- calipR::prepareData(folder(), stim_numb(), as.numeric(input$frame_rate),
+                        compare_groups = TRUE, marker_thresh = as.numeric(input$mark_thresh))
 
       calipR::saveData(df, "db_cq.sqlite", "df_full")
 
@@ -328,6 +331,7 @@ folder <- shiny::reactive({
   df
   }
   })
+
 
 
     df_plot <- shiny::eventReactive(input$cell_click, {
@@ -529,7 +533,7 @@ folder <- shiny::reactive({
       output$resp_count <- DT::renderDataTable({
 
 
-        if(dim(checkTable("db_cq.sqlite", "'stats_desc_final'"))[1] == 0) {}
+        if(dim(calipR::checkTable("db_cq.sqlite", "'stats_desc_final'"))[1] == 0) {}
         else{
 
 
@@ -556,7 +560,7 @@ folder <- shiny::reactive({
 
       output$resp_group_stim <- DT::renderDataTable({
 
-        if(dim(checkTable("db_cq.sqlite", "'stats_desc_by_cov_group'"))[1] == 0) {}
+        if(dim(calipR::checkTable("db_cq.sqlite", "'stats_desc_by_cov_group'"))[1] == 0) {}
         else{
 
 
@@ -588,7 +592,7 @@ folder <- shiny::reactive({
 
       output$overall_q <- DT::renderDataTable({
 
-        if(dim(checkTable("db_cq.sqlite", "'overall_q'"))[1] == 0) {}
+        if(dim(calipR::checkTable("db_cq.sqlite", "'overall_q'"))[1] == 0) {}
         else{
 
         c <- get_full_df("db_cq.sqlite", "overall_q")
@@ -614,7 +618,7 @@ folder <- shiny::reactive({
 
       output$post_hoc_mcnemar <- DT::renderDataTable({
 
-        if(dim(checkTable("db_cq.sqlite", "'pairwise'"))[1] == 0) {}
+        if(dim(calipR::checkTable("db_cq.sqlite", "'pairwise'"))[1] == 0) {}
         else{
         d <- get_full_df("db_cq.sqlite", "pairwise")
 
@@ -641,7 +645,7 @@ folder <- shiny::reactive({
 
       output$stim_list_1 <- shiny::renderUI({
 
-        if(dim(checkTable("db_cq.sqlite", "'peak_res'"))[1] == 0) {}
+        if(dim(calipR::checkTable("db_cq.sqlite", "'peak_res'"))[1] == 0) {}
         else{
 
         e <- get_full_df("db_cq.sqlite", "peak_res")
@@ -657,7 +661,7 @@ folder <- shiny::reactive({
 
       output$stim_list_2 <- shiny::renderUI({
 
-        if(dim(checkTable("db_cq.sqlite", "'peak_res'"))[1] == 0) {}
+        if(dim(calipR::checkTable("db_cq.sqlite", "'peak_res'"))[1] == 0) {}
         else{
 
         f <- get_full_df("db_cq.sqlite", "peak_res")
@@ -673,7 +677,7 @@ folder <- shiny::reactive({
 
       t <- shiny::eventReactive(input$dual_button, {
 
-        if(dim(checkTable("db_cq.sqlite", "'peak_res'"))[1] == 0) {}
+        if(dim(calipR::checkTable("db_cq.sqlite", "'peak_res'"))[1] == 0) {}
         else{
 
         g <- get_full_df("db_cq.sqlite", "peak_res")

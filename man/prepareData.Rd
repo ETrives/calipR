@@ -9,7 +9,8 @@ prepareData(
   stim_number,
   frame_rate,
   duration_in_seconds = 30,
-  compare_groups = FALSE
+  compare_groups = FALSE,
+  marker_thresh
 )
 }
 \arguments{

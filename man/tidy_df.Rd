@@ -15,7 +15,9 @@ tidy_df(
   id,
   multiple = FALSE,
   compare_groups = FALSE,
-  groups
+  groups,
+  marker,
+  marker_thresh
 )
 }
 \arguments{

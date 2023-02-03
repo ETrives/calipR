@@ -12,7 +12,9 @@ cell_sort(
   id,
   multiple = TRUE,
   compare_groups = TRUE,
-  groups
+  groups,
+  marker,
+  marker_thresh
 )
 }
 \arguments{

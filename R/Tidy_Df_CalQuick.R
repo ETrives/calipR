@@ -13,10 +13,11 @@
 #' @examples
 
 tidy_df <- function(data, stimuli, each, pattern, duration_in_seconds,
-                    frame_rate, coverslip_id, id, multiple = FALSE, compare_groups = FALSE, groups) {
+                    frame_rate, coverslip_id, id, multiple = FALSE, compare_groups = FALSE, groups, marker, marker_thresh) {
 
   df_stim <- stim_var(data, stimuli, each, frame_rate, coverslip_id)
-  df_final <- cell_sort(df_stim, pattern, duration_in_seconds, frame_rate, id = id, multiple = multiple, compare_groups, groups)
+  df_final <- cell_sort(df_stim, pattern, duration_in_seconds, frame_rate, id = id,
+                        multiple = multiple, compare_groups, groups, marker, marker_thresh)
 
 
   return(df_final)

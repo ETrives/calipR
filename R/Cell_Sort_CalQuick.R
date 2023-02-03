@@ -17,7 +17,7 @@ library(tidyr)
 
 #' @examples
 cell_sort <- function(df,pat,  duration_in_seconds, frame_rate, id,
-                      multiple = TRUE, compare_groups = TRUE, groups){
+                      multiple = TRUE, compare_groups = TRUE, groups, marker, marker_thresh){
 
 
   stimuli_full <- df$stimulus
@@ -37,6 +37,21 @@ cell_sort <- function(df,pat,  duration_in_seconds, frame_rate, id,
 
   data_fus$Mean_Grey <- unlist(lapply(data_fus$Mean_Grey, function(x) if(is.character(x)) {str_replace_all( x, ",",".")} else{x}))
   data_fus$Mean_Grey <- unlist(lapply(data_fus$Mean_Grey, function(x) if(is.character(x)) {as.numeric(x)} else {x}))
+
+
+  ### Adding the marker column
+  if(is.null(marker)){}
+  else{
+  long_marker <- tidyr::gather(marker,
+                               key = "Cell_id",
+                               value = "Mean_Grey", 1:dim[2])
+  print("long_marker")
+  print(long_marker)
+  print(dim)
+  data_fus$marker <- rep(long_marker$Mean_Grey, each = dim[1])
+  data_fus$marker_positive <-  data_fus$marker > marker_thresh
+  print(data_fus)
+}
 
 
   #Creating the variable stimulus and adding it to the data
@@ -67,7 +82,6 @@ cell_sort <- function(df,pat,  duration_in_seconds, frame_rate, id,
 
   data_fus <- data.table::setDT(data_fus)[, Time_frame_stim := seq(c(1:length(stimulus)))]
   data_fus <- data_fus[, Stimulation := Time_frame_stim <= duration]
-
 
   return(data_fus)
 

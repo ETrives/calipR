@@ -17,6 +17,7 @@
 
 stim_var <- function(data, stimuli, each, frame_rate, coverslip_id){
 
+
   frame_list <- list()
   time <- purrr::map(each, function(x) as.numeric(x))
 
