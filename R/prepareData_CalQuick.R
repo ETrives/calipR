@@ -34,7 +34,7 @@ prepareData <- function(folder_name, stim_number, frame_rate,  duration_in_secon
 
   df_list <- lapply(myFiles, function(x) data.table::fread(x, skip = 1, header = FALSE))
   df_list <- lapply(df_list, function(x) x[,2:length(x)])
-  df_list <- lapply(df_list, function(x) setnames(x, paste0(rep("Mean", length(x)), seq(1: length(x)))))
+  df_list <- lapply(df_list, function(x) data.table::setnames(x, paste0(rep("Mean", length(x)), seq(1: length(x)))))
 
 
   # Checking if marker files have been added
@@ -46,7 +46,7 @@ prepareData <- function(folder_name, stim_number, frame_rate,  duration_in_secon
     # Reading the files
     marker_list <- lapply(marker, function(x) data.table::fread(x, skip = 1, header = FALSE))
     marker_list <- lapply(marker_list, function(x) x[,2:length(x)])
-    marker_list <- lapply(marker_list, function(x) setnames(x, paste0(rep("Mean", length(x)), seq(1: length(x)))))
+    marker_list <- lapply(marker_list, function(x) data.table::setnames(x, paste0(rep("Mean", length(x)), seq(1: length(x)))))
     print(marker_list)
   }
 
