@@ -11,7 +11,7 @@
 #' @export
 #'
 #' @examples
-prepareData_track <- function(folder_name, stim_number, frame_rate,  duration_in_seconds = 30, compare_groups = FALSE
+prepareData_track <- function(folder_name, stim_number, frame_rate,  duration_in_seconds = 30, compare_groups = FALSE, marker_thresh = 0
 ) {
 
 
@@ -27,8 +27,12 @@ prepareData_track <- function(folder_name, stim_number, frame_rate,  duration_in
   df_list <- vector(mode = "list", length = length(myFiles))
 
   # Reading all the files
-
   df_list <- lapply(myFiles, function(x) data.table::fread(x))
+  #df_list <- lapply(myFiles, function(x) data.table::fread(x, skip = 3, header = FALSE))
+  View(df_list[[1]])
+
+  #df_list <- lapply(df_list, function(x) x[,2:length(x)])
+  #df_list <- lapply(df_list, function(x) data.table::setnames(x, paste0(rep("Mean", length(x)), seq(1: length(x)))))
 
 
   # Code pour récupérer uniquement le numéro du coverslip et lui ajouter une lettre :

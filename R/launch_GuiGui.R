@@ -58,6 +58,7 @@ ui <-
                                    shiny::textInput("frame_rate", label = "Enter your frame rate (Hz)", placeholder = "e.g. 0.5" ),
                                    shiny::textInput("folder", label = NULL, placeholder = "Write folder's name (where all the files are)"),
                                    shiny::textInput("mark_thresh", label = "if you have a cellular marker, enter your threshold", placeholder = "e.g. 30"),
+                                   shiny::checkboxInput("trackbox", label = "Check if you did ROI detection with Trackmate"),
 
                                    shiny::actionButton("launch", "Load & Tidy Data", align = "center")),
 
@@ -310,8 +311,18 @@ folder <- shiny::reactive({
 
   df_final <- shiny::eventReactive(input$launch, {
 
+    if(input$trackbox == FALSE){
       df <- calipR::prepareData(folder(), stim_numb(), as.numeric(input$frame_rate),
                         compare_groups = TRUE, marker_thresh = as.numeric(input$mark_thresh))
+
+    }
+
+    if(input$trackbox == TRUE){
+      print(("TRUE"))
+      df <- calipR::prepareData_track(folder(), stim_numb(), as.numeric(input$frame_rate),
+                                compare_groups = FALSE, marker_thresh = as.numeric(input$mark_thresh))
+
+    }
 
       calipR::saveData(df, "db_cq.sqlite", "df_full")
 
@@ -360,7 +371,7 @@ folder <- shiny::reactive({
       print("Simulation started")
       df_sub <- calipR::get_sub_df("db_cq.sqlite", "df_full", input$n_cells)
 
-      res_sim$res <- calipR::downstream_analysis(df_sub, threshold = input$peak_thresh,
+      res_sim$res <- downstream_analysis(df_sub, threshold = input$peak_thresh,
                                          borders_range = input$rise_range, lambda = input$lambda, gam = input$gam,
                                          false_pos = input$false_pos)
 

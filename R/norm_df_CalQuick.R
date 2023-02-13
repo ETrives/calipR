@@ -12,7 +12,7 @@
 #'
 #'
 #' @examples
-norm_df <- function(data, var = c("raw", "poly", "gam", "linear", "quantile"), width){
+norm_df <- function(data, var = c("raw", "poly", "gam", "linear", "quantile"), width, new = FALSE){
 
   print("inside norm")
   print(data$coverslip)
@@ -22,7 +22,7 @@ norm_df <- function(data, var = c("raw", "poly", "gam", "linear", "quantile"), w
   cov_split <- split(data, data$coverslip)
   dim_list <- lapply(cov_split, function(x) dim(dplyr::filter(x, Cell_id == x$Cell_id[[1]]))[1])
 
-  data_z <- z_score(data, var = var, cov_split = cov_split, dim_list = dim_list)
+  data_z <- z_score_travaux(data, var = var, cov_split = cov_split, dim_list = dim_list, new = new)
   print("z score computed")
 
   data_d <- delta_f(data_z, var = var)

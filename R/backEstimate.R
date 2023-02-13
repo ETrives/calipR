@@ -13,7 +13,7 @@
 #'
 #' @examples
 #'
-backEstimate <- function(data, smooth = 50, method = c("smooth","gam")){
+backEstimate_model <- function(data, smooth = 50, method = c("smooth","gam")){
 
   noise_model <- readRDS(system.file("model/noise_model.rds", package = "calipR"))
 

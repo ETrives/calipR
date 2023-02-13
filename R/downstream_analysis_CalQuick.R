@@ -43,7 +43,7 @@ downstream_analysis <- function(data, moving_thresh = 0.1, outlier_thresh = 2, m
   if(one_cell == FALSE){
   shiny::withProgress(message = "Analyzing Full Dataset", value = 0, detail = "Cleaning Data", {
 
-  clean <- calipR::clean_data(data, moving_thresh, outlier_thresh, mean_width, DPA_width, mean_width_diff)
+  clean <- calipR::clean_data(data, moving_thresh, outlier_thresh, mean_width, CN_DPA_width, DPA_width, mean_width_diff)
   print("cleaning = OK")
 
   shiny::incProgress(1/6, detail = "Estimating Background")

@@ -4,7 +4,12 @@
 \alias{norm_df}
 \title{norm_df}
 \usage{
-norm_df(data, var = c("raw", "poly", "gam", "linear", "quantile"), width)
+norm_df(
+  data,
+  var = c("raw", "poly", "gam", "linear", "quantile"),
+  width,
+  new = FALSE
+)
 }
 \arguments{
 \item{data}{a data frame output from prepareData and back_estimate}
