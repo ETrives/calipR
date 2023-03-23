@@ -13,7 +13,7 @@ dual_prop <- function(data, stim1, stim2){
   #data$Start_peak_stimulus <- str_replace_all(data$Start_peak_stimulus, "[12345.]", "")
 
 
-  data <- setDT(data)
+  data <- data.table::setDT(data)
   data <- data[, Stim1 := Start_peak_stimulus == stim1]
   data <- data[, Stim2 := Start_peak_stimulus == stim2]
 

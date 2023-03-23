@@ -263,6 +263,8 @@ border-top-color:#5499c7  ;
 
               shiny::actionButton("dual_button", "Compute Dual Proportions", align = "center" ),
               shiny::br(),
+              shiny::checkboxInput("base_resp", label = "Remove Baseline Responders"),
+
               shiny::br(),
               DT::dataTableOutput("dual_prop")),shiny::div(style = "height:1000px;"))),
 
@@ -538,6 +540,24 @@ folder <- shiny::reactive({
         res
       })
 
+      res <- shiny::eventReactive(input$base_resp,{
+
+      full <- calipR::get_full_df("db_cq.sqlite", "df_final")
+      peaks <- calipR::get_full_df("db_cq.sqlite", "peak_res")
+
+      if(input$base_resp == TRUE){
+      peaks_wo_base <- calipR::base_resp.rm(peaks, full)[[1]]
+      full_wo_base <- calipR::base_resp.rm(peaks, full)[[2]]
+
+      res <- calipR::Analyze_Responses(peaks_wo_base, full_wo_base, compare_groups = input$groups)
+      }
+
+      else{
+        res <- calipR::Analyze_Responses(peaks, full, compare_groups = input$groups)
+      }
+      res
+
+})
 
 
       observeEvent(input$update_button, {
@@ -547,9 +567,7 @@ folder <- shiny::reactive({
         if(dim(calipR::checkTable("db_cq.sqlite", "'stats_desc_final'"))[1] == 0) {}
         else{
 
-
-        a <- get_full_df("db_cq.sqlite", "stats_desc_final")
-        DT::datatable({a},
+        DT::datatable({res()[[1]]},
                       extensions = 'Buttons',
                       options = list(
                         paging = TRUE,
@@ -562,10 +580,11 @@ folder <- shiny::reactive({
 
                       class = "display"
 
-        )
-
+)
 }
+
       })
+
 
 
 
@@ -575,10 +594,7 @@ folder <- shiny::reactive({
         else{
 
 
-        b <- get_full_df("db_cq.sqlite", "stats_desc_by_cov_group")
-
-
-        DT::datatable({b},
+        DT::datatable({res()[[2]]},
                       extensions = 'Buttons',
                       options = list(
                         paging = TRUE,
@@ -606,10 +622,8 @@ folder <- shiny::reactive({
         if(dim(calipR::checkTable("db_cq.sqlite", "'overall_q'"))[1] == 0) {}
         else{
 
-        c <- get_full_df("db_cq.sqlite", "overall_q")
 
-
-        DT::datatable({c},
+        DT::datatable({res()[[3]][[1]]},
                       extensions = 'Buttons',
                       options = list(
                         paging = TRUE,
@@ -631,10 +645,8 @@ folder <- shiny::reactive({
 
         if(dim(calipR::checkTable("db_cq.sqlite", "'pairwise'"))[1] == 0) {}
         else{
-        d <- get_full_df("db_cq.sqlite", "pairwise")
 
-
-        DT::datatable({d},
+        DT::datatable({res()[[3]][[2]]},
                       extensions = 'Buttons',
                       options = list(
                         paging = TRUE,
@@ -659,7 +671,7 @@ folder <- shiny::reactive({
         if(dim(calipR::checkTable("db_cq.sqlite", "'peak_res'"))[1] == 0) {}
         else{
 
-        e <- get_full_df("db_cq.sqlite", "peak_res")
+        e <- calipR::get_full_df("db_cq.sqlite", "peak_res")
 
 
 
@@ -675,7 +687,7 @@ folder <- shiny::reactive({
         if(dim(calipR::checkTable("db_cq.sqlite", "'peak_res'"))[1] == 0) {}
         else{
 
-        f <- get_full_df("db_cq.sqlite", "peak_res")
+        f <- calipR::get_full_df("db_cq.sqlite", "peak_res")
 
 
         stim_list <- unique(f$Start_peak_stimulus)
@@ -691,9 +703,14 @@ folder <- shiny::reactive({
         if(dim(calipR::checkTable("db_cq.sqlite", "'peak_res'"))[1] == 0) {}
         else{
 
-        g <- get_full_df("db_cq.sqlite", "peak_res")
+        g <- calipR::get_full_df("db_cq.sqlite", "peak_res")
 
-        t <- dual_prop(g, input$stim_list_1, input$stim_list_2)
+        if(input$base_resp == TRUE){
+        g <- base_resp.rm(g)
+
+        }
+
+        t <- calipR::dual_prop(g, input$stim_list_1, input$stim_list_2)
 }
       })
 
@@ -722,7 +739,7 @@ folder <- shiny::reactive({
 
         output$viz <- plotly::renderPlotly({
 
-          res <- get_full_df("db_cq.sqlite", "stats_desc_by_cov_group")
+          res <- calipR::get_full_df("db_cq.sqlite", "stats_desc_by_cov_group")
 
              plotly::plot_ly(
 

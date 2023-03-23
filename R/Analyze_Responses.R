@@ -79,7 +79,7 @@ Analyze_Responses <- function(data, df_clean, compare_groups = FALSE, one_cell =
     ### Peak description by stimulus :
 
     if(length(data$Cell_id) != 0){
-    data <- data[, peak_duration := End_peak_frame - Start_peak_frame]
+    data <- data.table::setDT(data)[, peak_duration := End_peak_frame - Start_peak_frame]
 }
 
     df_by_cov <- data.frame(Coverslip = rep(cov_list, each = length(stim_list)))
