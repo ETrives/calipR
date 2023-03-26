@@ -9,10 +9,9 @@ clean_data(
   moving_threshold,
   outlier_threshold,
   mean_width,
-  DPA_width,
   CN_DPA_width,
-  mean_width_diff,
-  mean_width_second
+  DPA_width,
+  mean_width_diff
 )
 }
 \arguments{

@@ -14,9 +14,9 @@ DPA <- function(data, DPA_width){
   #data <- data.table::setDT(data)[ , smooth_Diff := gplots::wapply(data$time_frame, data$first_derivative, fun = mean, n =length(data$time_frame), width = mean_width_diff, method = "nobs", drop.na = FALSE)[[2]]]
 
   print(data$Cell_id[[1]])
-  pos <- data$first_derivative
+  pos <- data$smooth_Diff
   pos[pos < 0] <- 0
-  neg <-  data$first_derivative
+  neg <-  data$smooth_Diff
   neg[neg > 0] <- 0
 
   neg <- abs(neg)

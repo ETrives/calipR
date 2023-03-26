@@ -4,7 +4,15 @@
 \alias{Analyze_Responses}
 \title{Analyze_Responses}
 \usage{
-Analyze_Responses(data, df_clean, compare_groups = FALSE, one_cell = FALSE)
+Analyze_Responses(
+  data,
+  df_clean,
+  compare_groups = FALSE,
+  one_cell = FALSE,
+  marker = FALSE,
+  var_list = NULL,
+  simulation = FALSE
+)
 }
 \arguments{
 \item{compare_groups}{}

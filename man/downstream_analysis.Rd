@@ -10,7 +10,7 @@ downstream_analysis(
   outlier_thresh = 2,
   mean_width = 20,
   DPA_width = 10,
-  CN_DPA_width = 80,
+  CN_DPA_width = 20,
   mean_width_diff = 10,
   method = "gam",
   norm_var = "gam",
@@ -24,7 +24,8 @@ downstream_analysis(
   time_thresh = 1,
   compare_groups = FALSE,
   false_pos = c(TRUE, FALSE),
-  one_cell = FALSE
+  one_cell = FALSE,
+  simulation = FALSE
 )
 }
 \arguments{

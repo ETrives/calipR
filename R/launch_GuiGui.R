@@ -248,11 +248,18 @@ border-top-color:#5499c7  ;
       shiny::fluidRow(
         shinydashboard::box(title = "Description of Responses", width = 12, solidHeader = TRUE, status = "primary",
             shinycssloaders::withSpinner(DT::dataTableOutput("resp_count"), type = 6),
+
             DT::dataTableOutput("resp_group_stim"),
             DT::dataTableOutput("peaks_by_class"),
             DT::dataTableOutput("overall_q"),
             DT::dataTableOutput("post_hoc_mcnemar"),
+            shiny::selectInput(inputId = "grouping_var", label = NULL,
+                               list("Group" = "group", "Coverslip" = "coverslip", "Stimulus" = "stimulus", "Marker" = "marker_positive"),
+                               multiple = TRUE),
             shiny::actionButton("update_button", "Update", align = "right"),
+            shiny::checkboxInput("base_resp", label = "Remove Baseline Responders"),
+
+
 
             )),
 
@@ -263,7 +270,7 @@ border-top-color:#5499c7  ;
 
               shiny::actionButton("dual_button", "Compute Dual Proportions", align = "center" ),
               shiny::br(),
-              shiny::checkboxInput("base_resp", label = "Remove Baseline Responders"),
+              shiny::checkboxInput("base_resp_dual", label = "Remove Baseline Responders"),
 
               shiny::br(),
               DT::dataTableOutput("dual_prop")),shiny::div(style = "height:1000px;"))),
@@ -356,7 +363,7 @@ folder <- shiny::reactive({
 
     output$plot_cell <- shiny::renderPlot({
 
-      p <- calipR::cell_plot_shiny(df_plot())
+      p <- cell_plot_shiny(df_plot())
       p
 
 
@@ -375,7 +382,7 @@ folder <- shiny::reactive({
 
       res_sim$res <- downstream_analysis(df_sub, threshold = input$peak_thresh,
                                          borders_range = input$rise_range, lambda = input$lambda, gam = input$gam,
-                                         false_pos = input$false_pos)
+                                         false_pos = input$false_pos, simulation = TRUE)
 
    })
 
@@ -506,7 +513,10 @@ folder <- shiny::reactive({
         print("inside anafull")
         df_full <- calipR::get_full_df("db_cq.sqlite", "df_full")
         print("df_full ok")
-        res <- calipR::downstream_analysis(df_full, threshold = input$peak_thresh_full,
+        print("input$groups")
+
+        print(input$groups)
+        res <- downstream_analysis(df_full, threshold = input$peak_thresh_full,
                                              borders_range = input$rise_full, lambda = input$lambda_full, gam = input$gam_full,
                                              false_pos = input$false_pos_full, compare_groups = input$groups)
 
@@ -514,47 +524,58 @@ folder <- shiny::reactive({
         # Extracting and saving the data table containing one row for each peak with the informations
         #about the peak
         res1 <- res[[1]]
-
+        print(res1)
+        print(str(res1))
         calipR::saveData(res1, "db_cq.sqlite", "peak_res")
 
         # Extracting and saving the full data table updated
         res2 <- res[[2]]
+        print(res2)
+        print(str(res2))
         calipR::saveData(res2, "db_cq.sqlite", "df_final")
 
 
         res3_1 <- data.table::setDT(res[[3]][[1]])
+        print(res3_1)
+        print(str(res3_1))
         calipR::saveData(res3_1, "db_cq.sqlite", "stats_desc_final")
 
 
-        res3_2 <- data.table::setDT(res[[3]][[2]])
-        calipR::saveData(res3_2, "db_cq.sqlite", "stats_desc_by_cov_group")
-
-
-        res3_3_1 <- data.table::setDT(res[[3]][[3]][[1]])
+if(input$groups == TRUE){print( "it is true")}
+        else{
+          print("it is not true")
+        res3_3_1 <- data.table::setDT(res[[3]][[2]][[1]])
         calipR::saveData(res3_3_1, "db_cq.sqlite", "overall_q")
 
-        res3_3_2 <- data.table::setDT(res[[3]][[3]][[2]])
+        res3_3_2 <- data.table::setDT(res[[3]][[2]][[2]])
         calipR::saveData(res3_3_2, "db_cq.sqlite", "pairwise")
-
+        }
 
         res
       })
 
-      res <- shiny::eventReactive(input$base_resp,{
 
+      # retrieving full dataset and peaks dataset :
+      if(dim(calipR::checkTable("db_cq.sqlite", "'df_final'"))[1] == 0) {
+        }
+      else{
       full <- calipR::get_full_df("db_cq.sqlite", "df_final")
       peaks <- calipR::get_full_df("db_cq.sqlite", "peak_res")
+}
+
+      res <- shiny::eventReactive(input$update_button,{
 
       if(input$base_resp == TRUE){
       peaks_wo_base <- calipR::base_resp.rm(peaks, full)[[1]]
       full_wo_base <- calipR::base_resp.rm(peaks, full)[[2]]
 
-      res <- calipR::Analyze_Responses(peaks_wo_base, full_wo_base, compare_groups = input$groups)
+      res <- Analyze_Responses(peaks_wo_base, full_wo_base, var_list = input$grouping_var)
       }
 
       else{
-        res <- calipR::Analyze_Responses(peaks, full, compare_groups = input$groups)
+        res <- Analyze_Responses(peaks, full, var_list = input$grouping_var)
       }
+      print(res)
       res
 
 })
@@ -587,43 +608,13 @@ folder <- shiny::reactive({
 
 
 
-
-      output$resp_group_stim <- DT::renderDataTable({
-
-        if(dim(calipR::checkTable("db_cq.sqlite", "'stats_desc_by_cov_group'"))[1] == 0) {}
-        else{
-
-
-        DT::datatable({res()[[2]]},
-                      extensions = 'Buttons',
-                      options = list(
-                        paging = TRUE,
-                        searching = TRUE,
-                        fixedColumns = TRUE,
-                        autoWidth = TRUE,
-                        ordering = TRUE,
-                        dom = 'tB',
-                        c("copy", "csv")),
-
-                      class = "display"
-
-        )
-
-        }
-      })
-
-
-
-
-
-
       output$overall_q <- DT::renderDataTable({
 
-        if(dim(calipR::checkTable("db_cq.sqlite", "'overall_q'"))[1] == 0) {}
-        else{
+       # if(dim(calipR::checkTable("db_cq.sqlite", "'overall_q'"))[1] == 0) {}
+       # else{
 
 
-        DT::datatable({res()[[3]][[1]]},
+        DT::datatable({res()[[2]][[1]]},
                       extensions = 'Buttons',
                       options = list(
                         paging = TRUE,
@@ -637,16 +628,16 @@ folder <- shiny::reactive({
                       class = "display"
 
         )
-        }
+        #}
       }
       )
 
       output$post_hoc_mcnemar <- DT::renderDataTable({
 
-        if(dim(calipR::checkTable("db_cq.sqlite", "'pairwise'"))[1] == 0) {}
-        else{
+#        if(dim(calipR::checkTable("db_cq.sqlite", "'pairwise'"))[1] == 0) {}
+        #else{
 
-        DT::datatable({res()[[3]][[2]]},
+        DT::datatable({res()[[2]][[2]]},
                       extensions = 'Buttons',
                       options = list(
                         paging = TRUE,
@@ -660,8 +651,9 @@ folder <- shiny::reactive({
                       class = "display"
 
         )
-        }
+       # }
       })
+
 
 
       ### Computing dual proportions (proportion of cells responding to one stimulus that also responds to another stimulus)
@@ -705,8 +697,9 @@ folder <- shiny::reactive({
 
         g <- calipR::get_full_df("db_cq.sqlite", "peak_res")
 
-        if(input$base_resp == TRUE){
-        g <- base_resp.rm(g)
+        if(input$base_resp_dual == TRUE){
+        g <- calipR::base_resp.rm(peaks, full)[[1]]
+
 
         }
 
@@ -739,15 +732,15 @@ folder <- shiny::reactive({
 
         output$viz <- plotly::renderPlotly({
 
-          res <- calipR::get_full_df("db_cq.sqlite", "stats_desc_by_cov_group")
+          #res <- calipR::get_full_df("db_cq.sqlite", "stats_desc_by_cov_group")
 
              plotly::plot_ly(
 
               type = 'box',
 
-              x = res[[input$x]],
+              x = res()[[1]][[input$x]],
 
-              y = res[[input$y]],
+              y = res()[[1]][[input$y]],
 
               text = paste("Group: ", res$Group,
 
@@ -769,7 +762,7 @@ folder <- shiny::reactive({
 
 
 
-              color = res[[input$z]],
+              color = res()[[1]][[input$z]],
 
             ) %>%
                plotly::layout(boxmode ="group", yaxis = list(automargin = TRUE),

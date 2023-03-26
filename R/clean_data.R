@@ -10,14 +10,13 @@
 #' @param DPA_width
 #' @param CN_DPA_width
 #' @param mean_width_diff
-#' @param mean_width_second
 #' @param data a data.table output from prepareData function
 #'
 #' @return
 #' @export
 #'
 #' @examples
-clean_data <- function(data, moving_threshold, outlier_threshold ,mean_width, DPA_width, CN_DPA_width, mean_width_diff, mean_width_second){
+clean_data <- function(data, moving_threshold, outlier_threshold ,mean_width, CN_DPA_width, DPA_width, mean_width_diff){
 
   ncells_before <- length(unique(data$Cell_id))
 
@@ -71,7 +70,9 @@ clean_data <- function(data, moving_threshold, outlier_threshold ,mean_width, DP
 
 
 
-  cell_split <- lapply(cell_split, function(x) x[, Mean_Grey_wo_peaks := replace(Mean_Grey, smooth_CN_DPA > quantile_speed(smooth_CN_DPA, probs = .7, na.rm = T)|
+  cell_split <- lapply(cell_split, function(x) x[, Mean_Grey_wo_peaks := replace(Mean_Grey, smooth_Diff > 1 |
+                                                                                   smooth_DPA > quantile_speed(smooth_DPA, probs = .7, na.rm = T)|
+                                                                                   smooth_CN_DPA > quantile_speed(smooth_CN_DPA, probs = .7, na.rm = T)|
                                                                                    Mean_Grey < (mean(Mean_Grey) - 1.5*stats::sd(Mean_Grey)),
                                                                                  NaN)])
 

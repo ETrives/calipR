@@ -12,7 +12,7 @@
 #'
 #'
 #' @examples
-norm_df <- function(data, var = c("raw", "poly", "gam", "linear", "quantile"), width, new = FALSE){
+norm_df <- function(data, var = c("raw", "poly", "gam", "linear", "quantile"), width){
 
   print("inside norm")
   print(data$coverslip)
@@ -22,7 +22,7 @@ norm_df <- function(data, var = c("raw", "poly", "gam", "linear", "quantile"), w
   cov_split <- split(data, data$coverslip)
   dim_list <- lapply(cov_split, function(x) dim(dplyr::filter(x, Cell_id == x$Cell_id[[1]]))[1])
 
-  data_z <- z_score_travaux(data, var = var, cov_split = cov_split, dim_list = dim_list, new = new)
+  data_z <- z_score(data, var = var, cov_split = cov_split, dim_list = dim_list)
   print("z score computed")
 
   data_d <- delta_f(data_z, var = var)
@@ -31,9 +31,9 @@ norm_df <- function(data, var = c("raw", "poly", "gam", "linear", "quantile"), w
 
    #smoothing the z score and the delta f variables
   smooth_df<- lapply(data_d, function(x) data.table::setDT(x)[, ':=' (smooth_z = gplots::wapply(time_frame,
-                                        z_score, fun = mean, n = length(time_frame), width = width, method = "nobs")[[2]],
+                                        z_score, fun = mean, n = length(time_frame), width = width, method = "nobs", drop.na = FALSE)[[2]],
                                         smooth_delta = gplots::wapply(time_frame,
-                                        delta_f_f, fun = mean, n = length(time_frame), width = width, method = "nobs")[[2]]),
+                                        delta_f_f, fun = mean, n = length(time_frame), width = width, method = "nobs", drop.na = FALSE)[[2]]),
                                         by = Cell_id])
 
 

@@ -8,164 +8,165 @@
 #' @export
 #'
 #' @examples
-Analyze_Responses <- function(data, df_clean, compare_groups = FALSE, one_cell = FALSE){
+Analyze_Responses <- function(data, df_clean, compare_groups = FALSE, one_cell = FALSE, marker = FALSE, var_list = NULL, simulation = FALSE){
 
   ### Adding a variable "Response" for each stimulus in df_clean
 
-  if(compare_groups == FALSE){
+  '%notin%' <- Negate('%in%')
 
-    d <- unique(df_clean[,c("Cell_id", "stimulus", "coverslip")])
+
+  if(simulation == TRUE){
+    d <- unique(df_clean[,c("Cell_id", "stimulus")])
+  }
+
+  else if(simulation == FALSE){
+
+    if(is.null(var_list) & compare_groups == FALSE) {
+    d <- unique(df_clean[,c("Cell_id", "stimulus")])
+    }
+
+
+    else if(is.null(var_list) & compare_groups == TRUE){
+
+      d <- unique(df_clean[,c("Cell_id", "stimulus", "group")])
+    }
+    else{
+
+      d <- unique(df_clean[,c("Cell_id","stimulus", var_list)])
+    }
+  }
+
     d_list <- split(d,cumsum(1:nrow(d) %in% seq(1:nrow(d))))
-
     d_list <- lapply(d_list, function(x) data.table::setDT(x)[, Response := ifelse(is.na(
       data[data$Cell_id == x$Cell_id &
-             data$Start_peak_stimulus == x$stimulus,]$Cell_id[1]),
+             data$spike_stimulus == x$stimulus,]$Cell_id[1]),
       FALSE, TRUE) ])
 
-
     d <- do.call(rbind, d_list)
 
+
     stim_list <- unique(d$stimulus)
+    n_cells_tot <- length(unique(d$Cell_id))
 
-    cov_list <- unique(d$coverslip)
+    if("marker_positive" %in% var_list){
+    marker_list <- unique(d$marker_positive)
+    n_cells_marker <- d[, .(n_cells = length(unique(Cell_id))), by = marker_positive]
+    }
 
-    n_cells <- length(unique(d$Cell_id))
+    if("coverslip" %in% var_list){
+      n_cells_cov <- d[, .(n_cells = length(unique(Cell_id))), by = coverslip]
+    }
 
-    n_cells_by_cov <- lapply(cov_list, function(x) length(unique(d[d$coverslip == x]$Cell_id)))
-
-    n_responders <- length(unique(d[d$Response == TRUE]$Cell_id))
-
-    prop_total <- n_responders / n_cells
-
-    stats <- data.table::setDT(list("n_cells" = n_cells, "n_responders" = n_responders, "Proportion" = prop_total))
-
-
-    n_responses_by_stim <- unlist(lapply(stim_list, function(x) sum(d$stimulus == x & d$Response == TRUE)))
-
-    resp_by_cov_and_stim <- unlist(lapply(cov_list, function(x) lapply(stim_list, function(y) sum(d$coverslip == x & d$stimulus == y & d$Response == TRUE))))
-
-    print(cov_list)
-    print(resp_by_cov_and_stim)
-
-    prop_by_stim <- n_responses_by_stim / n_cells
-    prop_by_stim_responders <- n_responses_by_stim / n_responders
-
-    prop_by_stim_cov <- resp_by_cov_and_stim / unlist(rep(n_cells_by_cov, each = length(stim_list)))
-
-    print(prop_by_stim_cov)
+    if("group" %in% var_list){
+      n_cells_grp <- d[, .(n_cells = length(unique(Cell_id))), by = group]
+      print(n_cells_grp)
+    }
 
 
-    df_final <- data.frame(Stimulus = stim_list)
-    df_final$Resp <- n_responses_by_stim
+    if(simulation == TRUE) {
+      print("second part of simulation")
+        data <- d[, .(Responders = sum(Response)), by = stimulus]
+        data <- data[, c("Prop", "n_cells_tot") := list(Responders/ n_cells_tot, n_cells_tot)]
+    }
+
+    else{
+    data <- d[, .(Responders = sum(Response)), by = var_list]
+
+    if("coverslip" %notin% var_list & "group" %notin% var_list & "marker_positive" %notin% var_list){
+      data <- data[, c("Prop", "n_cells_tot") := list(Responders/ n_cells_tot, n_cells_tot)]
+    }
+
+    if("coverslip" %notin% var_list & "stimulus" %notin% var_list & "group" %in% var_list & "marker_positive" %notin% var_list){
+      print(n_cells_grp)
+      print(n_cells_grp$n_cells)
+      data <- data[, c("Prop", "n_cells_grp") := list(Responders/ n_cells_grp$n_cells, n_cells_grp$n_cells)]
+    }
+
+    if("coverslip" %notin% var_list & "stimulus" %in% var_list & "group" %in% var_list & "marker_positive" %notin% var_list){
+      n_cells_grp <- rep(n_cells_grp$n_cells, each = length(stim_list))
+      data <- data[, c("Prop", "n_cells_grp") := list(Responders/ n_cells_grp, n_cells_grp)]
+    }
 
 
-    df_final$Proportion_of_responders <- prop_by_stim_responders
-    df_final$Proportion_of_total_cells <- prop_by_stim
+    if("coverslip" %notin% var_list & "stimulus" %notin% var_list & "group" %notin% var_list & "marker_positive" %in% var_list){
+      n_cells_tot <- rep(n_cells_tot, each = length(marker_list))
+      data <- data[, c("n_cells_tot", "Prop_tot", "n_cells_marker", "Prop_marker_resp", "Prop_marker")
+                   := list(n_cells_tot, Responders/ n_cells_tot, n_cells_marker$n_cells,
+                           Responders/ n_cells_marker$n_cells, n_cells_marker$n_cells/n_cells_tot )]
+    }
 
 
-    d$Response <- ifelse(d$Response == TRUE, 1,0)
+    if("coverslip" %notin% var_list & "group" %notin% var_list & "stimulus" %in% var_list & "marker_positive" %in% var_list){
+      n_cells_marker <- rep(n_cells_marker$n_cells, each = length(stim_list))
+      n_cells_tot <- rep(n_cells_tot, each = length(marker_list)*length(stim_list))
+      data <- data[, c("n_cells_tot", "Prop_tot", "n_cells_marker", "Prop_marker_resp", "Prop_marker")
+                   := list(n_cells_tot, Responders/ n_cells_tot, n_cells_marker,
+                           Responders/ n_cells_marker, n_cells_marker/n_cells_tot )]
+      }
 
+
+    if("coverslip" %notin% var_list & "group" %in% var_list & "stimulus" %in% var_list & "marker_positive" %in% var_list){
+      group_list <- unique(d$group)
+      n_cells_marker <- rep(n_cells_marker$n_cells, each = length(stim_list)*length(group_list))
+      n_cells_tot <- rep(n_cells_tot, each = length(marker_list)*length(stim_list))
+      n_cells_grp <- rep(n_cells_grp$n_cells, each = length(stim_list)*length(marker_list))
+      data <- data[, c("n_cells_tot", "Prop_tot", "n_cells_marker", "Prop_marker_resp", "Prop_marker")
+                   := list(n_cells_tot, Responders/ n_cells_tot, n_cells_marker,
+                           Responders/ n_cells_marker, n_cells_marker/n_cells_tot )]
+    }
+
+    if("coverslip" %notin% var_list & "group" %in% var_list & "stimulus" %notin% var_list & "marker_positive" %in% var_list){
+      group_list <- unique(d$group)
+      n_cells_marker <- rep(n_cells_marker$n_cells, times = length(group_list))
+      n_cells_tot <- rep(n_cells_tot, each = length(marker_list)*length(group_list))
+      n_cells_grp <- rep(n_cells_grp$n_cells, each = length(marker_list))
+      data <- data[, c("n_cells_grp", "Prop_tot", "n_cells_marker", "Prop_marker_resp", "Prop_marker")
+                   := list(n_cells_grp, Responders/ n_cells_grp, n_cells_marker,
+                           Responders/ n_cells_marker, n_cells_marker/n_cells_grp )]
+    }
+
+
+
+    if("coverslip" %in% var_list & "stimulus" %notin% var_list){
+       data <- data[, c("Prop", "n_cells_cov") := list(data$Responders/ n_cells_cov$n_cells, n_cells_cov$n_cells)]
+    }
+
+
+
+    if("coverslip" %in% var_list & "stimulus" %in% var_list){
+      n_cells_cov <- rep(n_cells_cov$n_cells, each = length(stim_list))
+      data <- data[, c("Prop", "n_cells_cov") := list(Responders/ n_cells_cov, n_cells_cov)]
+    }
+
+    if("coverslip" %in% var_list & "stimulus" %in% var_list & "marker_positive" %in% var_list){
+      n_cells_cov <- rep(n_cells_cov$n_cells, each = length(stim_list)* length(marker_list))
+      n_cells_marker <- rep(n_cells_marker$n_cells, each = length(stim_list))
+      data <- data[, c("Prop", "n_cells_cov") := list(Responders/ n_cells_cov, n_cells_cov)]
+    }
+
+
+
+}
 
     if(one_cell == FALSE){
-    res <- Compare_props(d)
-
+      res <- Compare_props(d)
     }
+
 
     if(one_cell == TRUE){
-    res = NULL
-
-
+      res = NULL
     }
-    ### Peak description by stimulus :
-
-    if(length(data$Cell_id) != 0){
-    data <- data.table::setDT(data)[, peak_duration := End_peak_frame - Start_peak_frame]
-}
-
-    df_by_cov <- data.frame(Coverslip = rep(cov_list, each = length(stim_list)))
-    df_by_cov$Stimulus <- rep(stim_list, times = length(cov_list))
-    df_by_cov$Responses <- resp_by_cov_and_stim
-    df_by_cov$Proportion <- prop_by_stim_cov
-    df_by_cov$n_cells <- unlist(rep(n_cells_by_cov, each = length(stim_list)))
-
-    df_by_cov <- df_by_cov[df_by_cov$Responses != 0, ]
-  }
-
-  if(compare_groups == TRUE) {
-
-    d <- unique(df_clean[,c("Cell_id", "stimulus", "group", "coverslip")])
 
 
-    d_list <- split(d,cumsum(1:nrow(d) %in% seq(1:nrow(d))))
-
-    d_list <- lapply(d_list, function(x) data.table::setDT(x)[, Response := ifelse(is.na(
-      data[data$Cell_id == x$Cell_id &
-             data$Start_peak_stimulus == x$stimulus &
-             data$group == x$group,]$Cell_id[1]),
-      FALSE, TRUE)])
-
-
-    d <- do.call(rbind, d_list)
-
-    stim_list <- unique(d$stimulus)
-    group_list <- unique(d$group)
-    cov_list <- unique(d$coverslip)
-
-    n_cov_by_group <- unlist(lapply(group_list, function(x) length(unique(d[d$group == x]$coverslip))))
-
-
-    n_cells <- length(unique(d$Cell_id))
-    n_cells_by_group <- lapply(group_list, function(x) as.character(dim(d[d$group == x, .(unique(Cell_id))])[1]))
-    n_cells_by_cov <- lapply(cov_list, function(x) length(unique(d[d$coverslip == x]$Cell_id)))
-
-    n_responders <- length(unique(d[d$Response == TRUE]$Cell_id))
-
-
-    # Réponses par groupe :
-
-    n_responses_by_group <- lapply(group_list, function(x) as.character(sum(d$group == x & d$Response == TRUE)))
-
-
-    prop_by_group <- as.character(as.numeric(n_responses_by_group) / as.numeric(unlist(n_cells_by_group)))
-
-
-    stats <- data.table::setDT(list("Group" = group_list, "n_cells" = n_cells_by_group, "n_responders" = n_responses_by_group,
-                                    "Proportion" = prop_by_group))
-
-
-    resp_by_group_and_stim <- unlist(lapply(group_list, function(x) lapply(stim_list, function(y) sum(d$group == x & d$stimulus == y & d$Response == TRUE))))
-
-    prop_by_group_and_stim_responders <- resp_by_group_and_stim / rep(unlist(as.numeric(n_responses_by_group)), each = length(stim_list))
-    prop_by_group_and_stim <- resp_by_group_and_stim / rep(unlist(as.numeric(n_cells_by_group)), each = length(stim_list))
-
-    resp_by_group_stim_cov <- unlist(lapply(cov_list,function(x) lapply(stim_list, function(y) sum(d$coverslip == x & d$stimulus == y & d$Response == TRUE))))
-
-
-    n_cells_by_cov <- rep(n_cells_by_cov, each = length(stim_list))
-
-    prop_by_group_stim_cov <- resp_by_group_stim_cov / unlist(n_cells_by_cov)
-
-    group_list <- rep(unlist(purrr::map2(group_list, n_cov_by_group, function(x,y) rep(x, y) )), each = length(stim_list))
-
-
-    df_by_cov <- data.frame(Coverslip = rep(cov_list, each = length(stim_list)))
-    df_by_cov$Group <- group_list
-    df_by_cov$Stimulus <- rep(stim_list, times = length(cov_list))
-    df_by_cov$Responses <- resp_by_group_stim_cov
-    df_by_cov$Proportion <- prop_by_group_stim_cov
-    df_by_cov$n_cells <- unlist(n_cells_by_cov)
-
-    df_by_cov <- df_by_cov[df_by_cov$Responses != 0, ]
+    if(compare_groups == TRUE){
+      res <- "NO STATS"
+    }
     #res <- glmer(Response ~ group * stimulus + (1|Cell_id), family = binomial, data = d)
-    res <- "NO STATS"
-  }
+
 
   print("Analyze Responses OK")
-  #return(list(data_count, data_count_stim[[2]], between_stim[[1]], between_stim[[2]]))
-  return(list(stats, df_by_cov, res))
+  return(list(data, res))
 }
-
-
 
 
 #' Compare_props
