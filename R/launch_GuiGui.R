@@ -234,6 +234,10 @@ border-top-color:#5499c7  ;
 
       shiny::fluidRow(
       shinydashboard::box(title = "Plot Window", width = 6, solidHeader = TRUE, status = "primary",
+                          shiny::selectInput(inputId = "cell_plot_var", label = NULL,
+                                             list("Mean_Grey" = "Mean_Grey", "Delta_F/F" = "delta_f_f", "z_score" = "z_score",
+                                                  "Smooth_Delta_F/F" = "smooth_delta", "First_Derivative" = "first_derivative",
+                                                  "Smooth_First_Derivative" = "smooth_Diff", "Deconvolved_trace" = "deconvolved_trace")),
                           shiny::plotOutput(outputId = "plot_cell_sim")),
       shinydashboard::box(title = "Plot Window", width = 6, solidHeader = TRUE, status = "primary",
                           shiny::plotOutput(outputId = "plot_cell_sim_bis"))),
@@ -277,11 +281,28 @@ border-top-color:#5499c7  ;
 
       shinydashboard::tabItem("viz_res",
                               shiny::fluidRow(
+                                shinydashboard::box(title = "Plotting Results", width = 12, solidHeader = TRUE, status = "primary",
+                                                    shiny::selectInput(inputId = "x", label = NULL, list("Group" = "group", "Coverslip" = "coverslip", "Stimulus" = "stimulus", "Marker" = "marker_positive")),
+                                                    shiny::selectInput(inputId = "y", label = NULL, list("Proportion Responders" = "Prop_marker_resp", "Responses" = "Responses", "Proportion Totale" = "Prop_tot", "Proportion Marker" = "Prop_marker" )),
+                                                    shiny::selectInput(inputId = "z", label = NULL, list("Group" = "group", "Coverslip" = "coverslip", "Stimulus" = "stimulus", "Marker" = "marker_positive")),
+                                                    plotly::plotlyOutput(outputId = "viz")),shiny::div(style = "height:1000px;")),
+
+                              shiny::fluidRow(
                                 shinydashboard::box(title = "Plotting Cells", width = 12, solidHeader = TRUE, status = "primary",
-                                                    shiny::selectInput(inputId = "x", label = NULL, list("Group" = "Group", "Coverslip" = "Coverslip", "Stimulus" = "Stimulus")),
-                                                    shiny::selectInput(inputId = "y", label = NULL, list("Proportion" = "Proportion", "Responses" = "Responses")),
-                                                    shiny::selectInput(inputId = "z", label = NULL, list("Group" = "Group", "Coverslip" = "Coverslip", "Stimulus" = "Stimulus")),
-                                                    plotly::plotlyOutput(outputId = "viz")),shiny::div(style = "height:1000px;")))
+                                                    shiny::selectInput(inputId = "x", label = NULL, list("Group" = "group", "Coverslip" = "coverslip", "Stimulus" = "stimulus", "Marker" = "marker_positive")),
+                                                    shiny::selectInput(inputId = "y", label = NULL, list("Proportion Responders" = "Prop_marker_resp", "Responses" = "Responses", "Proportion Totale" = "Prop_tot", "Proportion Marker" = "Prop_marker" )),
+                                                    shiny::selectInput(inputId = "z", label = NULL, list("Group" = "group", "Coverslip" = "coverslip", "Stimulus" = "stimulus", "Marker" = "marker_positive")),
+
+                                                    shiny::uiOutput('resp_viz'),
+                                                    shiny::uiOutput('non_resp_viz'),
+                                                    shiny::actionButton("plot_button", "Plot", align = "right"),
+                                                    shiny::actionButton("plot_button_bis", "Plot", align = "right"),
+
+
+
+                                                    shiny::plotOutput(outputId = "plot_resp_viz"),
+                                                    shiny::plotOutput(outputId = "plot_non_resp_viz")),shiny::div(style = "height:1000px;")),
+                              )
 
 
       )))
@@ -438,7 +459,7 @@ folder <- shiny::reactive({
         print(data[[1]])
         print(data[[2]])
 
-        p <- cell_plot(data[[2]], data[[1]], var = "Mean_Grey", cell = input$responders, line = "gam", show_peak = input$show_peak)
+        p <- cell_plot(data[[2]], data[[1]], var = input$cell_plot_var, cell = input$responders, line = "gam", show_peak = input$show_peak)
         p
 
 
@@ -451,7 +472,7 @@ folder <- shiny::reactive({
 
       output$plot_cell_sim <- shiny::renderPlot({
 
-        p <- cell_plot(data[[2]], data[[1]], var = "Mean_Grey", cell = input$non_responders,
+        p <- cell_plot(data[[2]], data[[1]], var = input$cell_plot_var, cell = input$non_responders,
                        line = "gam", show_peak = input$show_peak)
         p
 
@@ -469,7 +490,7 @@ folder <- shiny::reactive({
 
         print("df_sub ok")
 
-        res_sim$res_bis <- calipR::downstream_analysis(df_sub_bis, threshold = input$peak_thresh_bis,
+        res_sim$res_bis <- downstream_analysis(df_sub_bis, threshold = input$peak_thresh_bis,
                                                borders_range = input$rise_range_bis, lambda = input$lambda_bis,
                                                gam = input$gam_bis, false_pos = input$false_pos_bis, one_cell = TRUE)
 
@@ -516,26 +537,27 @@ folder <- shiny::reactive({
         print("input$groups")
 
         print(input$groups)
-        res <- downstream_analysis(df_full, threshold = input$peak_thresh_full,
+        res_f <- downstream_analysis(df_full, threshold = input$peak_thresh_full,
                                              borders_range = input$rise_full, lambda = input$lambda_full, gam = input$gam_full,
                                              false_pos = input$false_pos_full, compare_groups = input$groups)
 
 
         # Extracting and saving the data table containing one row for each peak with the informations
         #about the peak
-        res1 <- res[[1]]
+        res1 <- res_f[[1]]
         print(res1)
         print(str(res1))
         calipR::saveData(res1, "db_cq.sqlite", "peak_res")
 
         # Extracting and saving the full data table updated
-        res2 <- res[[2]]
+        res2 <- res_f[[2]]
+        res2 <- data.table::setDT(res2)[, peak_frames := NULL]
         print(res2)
         print(str(res2))
         calipR::saveData(res2, "db_cq.sqlite", "df_final")
 
 
-        res3_1 <- data.table::setDT(res[[3]][[1]])
+        res3_1 <- data.table::setDT(res_f[[3]][[1]])
         print(res3_1)
         print(str(res3_1))
         calipR::saveData(res3_1, "db_cq.sqlite", "stats_desc_final")
@@ -544,14 +566,16 @@ folder <- shiny::reactive({
 if(input$groups == TRUE){print( "it is true")}
         else{
           print("it is not true")
-        res3_3_1 <- data.table::setDT(res[[3]][[2]][[1]])
+          print(res_f[[3]][[2]][[1]])
+          print(str(res_f[[3]][[2]][[1]]))
+        res3_3_1 <- data.table::setDT(res_f[[3]][[2]][[1]])
         calipR::saveData(res3_3_1, "db_cq.sqlite", "overall_q")
 
-        res3_3_2 <- data.table::setDT(res[[3]][[2]][[2]])
+        res3_3_2 <- data.table::setDT(res_f[[3]][[2]][[2]])
         calipR::saveData(res3_3_2, "db_cq.sqlite", "pairwise")
         }
 
-        res
+        res_f
       })
 
 
@@ -597,6 +621,7 @@ if(input$groups == TRUE){print( "it is true")}
                         autoWidth = TRUE,
                         ordering = TRUE,
                         dom = 'tB',
+                        pageLength = 100,
                         c("copy", "csv")),
 
                       class = "display"
@@ -730,48 +755,108 @@ if(input$groups == TRUE){print( "it is true")}
       ### Ajouter des visualisations des pourcentages par groupe, par coverslip etc. :
 
 
+
         output$viz <- plotly::renderPlotly({
 
+          print(res()[[1]])
+          print(str(res()[[1]]))
           #res <- calipR::get_full_df("db_cq.sqlite", "stats_desc_by_cov_group")
 
              plotly::plot_ly(
 
-              type = 'box',
+              type = 'bar',
 
               x = res()[[1]][[input$x]],
 
               y = res()[[1]][[input$y]],
+              text = paste("Group: ", res()[[1]][["group"]],
 
-              text = paste("Group: ", res$Group,
+                           "<br>Stimulus:  ", res()[[1]][["stimulus"]],
 
-                           "<br>Stimulus:  ", res$Stimulus,
+                           "<br>Responders: ", res()[[1]][["Responses"]],
 
-                           "<br>Responders: ", res$Responses,
-
-                           "<br>Proportion: ", res$Proportion,
-                           "<br> Total cells: ", res$n_cells),
+                           "<br>Proportion: ", res()[[1]][["Prop"]],
+                           "<br> Total cells: ", res()[[1]][["n_cells_grp"]]),
 
               hoverinfo = 'text',
 
-              mode = 'markers',
-              boxpoints = "all",
-              jitter = 0.3,
-              pointpos = 0,
-
-              marker = list(size = 9, color = "black"),
-
+              marker = list(size = 2),
 
 
               color = res()[[1]][[input$z]],
 
             ) %>%
-               plotly::layout(boxmode ="group", yaxis = list(automargin = TRUE),
-                              xaxis = list(automargin = TRUE), boxgap = -2, boxgroupgap = 0)
+               plotly::layout(barmode ="group", yaxis = list(automargin = TRUE),
+                              xaxis = list(automargin = TRUE), bargap = -2, bargroupgap = 0)
 
 
 
 
       })
+
+        full <- calipR::get_full_df("db_cq.sqlite", "df_final")
+        peaks <- calipR::get_full_df("db_cq.sqlite", "peak_res")
+
+
+        if(is.null(full)){
+
+        }
+        else{
+          output$resp_viz <- shiny::renderUI({
+            data <- res_sim$res
+            responders <- unique(peaks$Cell_id)
+            shiny::selectInput(inputId = "resp_viz", "Responders", responders)
+
+          })
+        }
+
+
+        if(is.null(full)){
+
+        }
+        else{
+          output$non_resp_viz <- shiny::renderUI({
+            data <- res_sim$res
+            cells <- unique(full$Cell_id)
+            responders <- unique(peaks$Cell_id)
+            non_responders <- cells %in% responders
+            non_responders <- unlist(purrr::map2(cells, non_responders, function(x,y) if(y == FALSE){x}))
+            shiny::selectInput(inputId = "non_resp_viz", "Non Responders", non_responders)
+
+          })
+
+        }
+
+        shiny::observeEvent(input$plot_button,{
+
+        output$plot_resp_viz <- renderPlot({
+
+
+          # Opérer un tri sur les cellules regarder comment j'ai fais pour responders
+
+          p <- cell_plot(full, peaks, var = "Mean_Grey", cell = input$resp_viz, line = "gam", show_peak = FALSE)
+          p
+
+
+        })
+        })
+
+
+        shiny::observeEvent(input$plot_button_bis,{
+
+
+
+          output$plot_non_resp_viz <- renderPlot({
+
+          p <- cell_plot(full, peaks, var = "Mean_Grey", cell = input$non_resp_viz, line = "gam", show_peak = FALSE)
+          p
+
+
+
+})
+
+
+        })
 
 }
 shiny::shinyApp(ui, server)

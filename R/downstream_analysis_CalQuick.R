@@ -48,59 +48,45 @@ downstream_analysis <- function(data, moving_thresh = 0.1, outlier_thresh = 2, m
 
     print("cleaning = OK")
 
-  shiny::incProgress(1/6, detail = "Estimating Background")
+  shiny::incProgress(1/5, detail = "Estimating Background")
 
   back <- calipR::backEstimate(clean, method = method)
   print("back = OK")
 
-  shiny::incProgress(1/6, detail = "Normalizing Data")
+  shiny::incProgress(1/5, detail = "Normalizing Data")
 
   norm <- calipR::norm_df(back, var = norm_var, width = norm_width)
   print("norm = OK")
 
   print(norm)
 
-  shiny::incProgress(1/6, detail = "Performing Deconvolution")
+  shiny::incProgress(1/5, detail = "Performing Deconvolution")
 
   deconvolved <- deconvolve(norm, lambda = lambda, gam = gam, constraint = constraint,
                             threshold = threshold, var = deconvolve_var)
 
   print("deconvolved = ok")
   print(deconvolved[[1]]$Cell_id)
-  if(length(deconvolved[[1]]$Cell_id) == 0){
-  deconvolved[[1]] <- NULL
+
   print(deconvolved[[1]])
-  }
 
 
   if(length(deconvolved[[1]]$Cell_id) != 0){
 
   if(false_pos == TRUE){
-  best <- calipR::keep_best_peaks(deconvolved)
+  shiny::incProgress(1/5, detail = "Removing Estimated False Positives")
+
+  deconvolved <- keep_best_peaks(deconvolved)
 
   print("best = ok")
-  if(length(best[[1]]$Cell_id) == 0 ){
-    deconvolved[[1]] <- NULL
+}
+}
 
-  }
 
-  #else{
-  #shiny::incProgress(1/6, detail = "Finding Peaks Borders")
 
-  #borders <- calipR::find_borders(best, range = borders_range)
-#}
-  }
+  shiny::incProgress(1/5, detail = "Computing Statistics")
 
-  #if(false_pos == FALSE){
-  #shiny::incProgress(1/6, detail = "Finding Peaks Borders")
-
-  #borders <- calipR::find_borders(deconvolved, range = borders_range)
-  #}
-
-  }
-
-  shiny::incProgress(1/6, detail = "Computing Statistics")
-
+  print(deconvolved[[1]])
   res <- Analyze_Responses(deconvolved[[1]], clean, compare_groups = compare_groups,
                                    one_cell = FALSE, simulation = simulation)
   })
@@ -113,24 +99,20 @@ downstream_analysis <- function(data, moving_thresh = 0.1, outlier_thresh = 2, m
     deconvolved <- deconvolve(data, lambda = lambda, gam = gam, constraint = constraint,
                               threshold = threshold, var = deconvolve_var)
 
+    print("deconvolved :")
+    print(deconvolved)
     print("deconvolved = ok")
     print(deconvolved[[1]]$Cell_id)
-    if(length(deconvolved[[1]]$Cell_id) == 0){
-      deconvolved[[1]] <- NULL
-      print(deconvolved[[1]])
-    }
+
 
 
     if(length(deconvolved[[1]]$Cell_id) != 0){
 
       if(false_pos == TRUE){
-        best <- calipR::keep_best_peaks(deconvolved)
+        deconvolved <- keep_best_peaks(deconvolved)
 
-        print("best = ok")
-        if(length(best[[1]]$Cell_id) == 0 ){
-          deconvolved[[1]] <- NULL
+        print(deconvolved)
 
-        }
 
         #else{
           #shiny::incProgress(1/2, detail = "Finding Peaks Borders")
@@ -152,7 +134,9 @@ downstream_analysis <- function(data, moving_thresh = 0.1, outlier_thresh = 2, m
   }
 
 print("finished Downstream analysis")
-print(res)
-print(str(res))
-return(list(deconvolved[[1]], norm, res))
+print(deconvolved)
+
+
+print("YEAH")
+return(list(deconvolved[[1]], deconvolved[[2]], res))
 }

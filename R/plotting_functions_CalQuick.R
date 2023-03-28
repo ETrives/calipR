@@ -67,6 +67,7 @@ cell_plot <- function(full_data, peaks_data, cell, var, line = c(FALSE, "poly", 
 
   df <- full_data[full_data$Cell_id == cell,]
   print(peaks_data)
+  print("hey")
 
   if(is.null(peaks_data) == FALSE) {
   if(is.null(dim(peaks_data)) == FALSE | dim(peaks_data)[[1]] != 0){
@@ -103,7 +104,7 @@ cell_plot <- function(full_data, peaks_data, cell, var, line = c(FALSE, "poly", 
 
   }
 
-  if(line == "gam") {
+  if(line == "gam" & var == "Mean_Grey") {
 
     p <- p + ggplot2::geom_line( ggplot2::aes(y = gam_fit))
 
@@ -122,20 +123,30 @@ cell_plot <- function(full_data, peaks_data, cell, var, line = c(FALSE, "poly", 
 
   if(show_peak == TRUE & is.null(peak_info) == FALSE){
 
-      colors <- c("#FF0000", "#000000", "#009900", "#6600CC", "#00FFFF", "#FF66FF", "#999999", "#003333" )
-      #sub_colors <- colors[1:length(peak_info$Max_peak_frame)]
-
+    print(sapply(seq_along(1:length(peak_info$spike_frame)), function(x) peak_info$spike_frame[[x]]))
 
       q <- q +
         #sapply(seq_along(1:length(peak_info$Start_peak_frame)), function(x) ggplot2::geom_vline(ggplot2::aes(xintercept = peak_info$Start_peak_frame[[x]]), size = 1, group = x, colour = colors[[x]]))+
 
         #sapply(seq_along(1:length(peak_info$End_peak_frame)), function(x) ggplot2::geom_vline(ggplot2::aes(xintercept = peak_info$End_peak_frame[[x]]), size = 1, group = x, colour = colors[[x]]))+
-        sapply(seq_along(1:length(peak_info$spike_frame)), function(x) ggplot2::geom_point(ggplot2::aes(x = peak_info$spike_frame[[x]], y = peak_info$spike_smooth_z[[x]]), group = x, colour = colors[[x]],size = 2))
+        sapply(seq_along(1:length(peak_info$spike_frame)), function(x) ggplot2::geom_segment(ggplot2::aes(x = peak_info$spike_frame[[x]], y = min(df$smooth_z) - sd(df$smooth_z)/2, xend = peak_info$spike_frame[[x]], yend = min(df$smooth_z) - sd(df$smooth_z))))
 
+      print("ok")
+
+      print(sapply(seq_along(1:length(peak_info$spike_frame)), function(x) min(df[[var]]) - sd(df[[var]])/2))
+      print(sapply(seq_along(1:length(peak_info$spike_frame)), function(x) min(df[[var]]) - sd(df[[var]])))
+      print(sapply(seq_along(1:length(peak_info$spike_frame)), function(x) peak_info$spike_frame[[x]]))
+      print(df[[var]])
       p <- p +
-        #sapply(seq_along(1:length(peak_info$Start_peak_frame)), function(x) ggplot2::geom_vline(ggplot2::aes(xintercept = peak_info$Start_peak_frame[[x]]), size = 1, group = x, colour = colors[[x]]))+
-        #sapply(seq_along(1:length(peak_info$End_peak_frame)), function(x) ggplot2::geom_vline(ggplot2::aes(xintercept = peak_info$End_peak_frame[[x]]), size = 1, group = x, colour = colors[[x]]))+
-        sapply(seq_along(1:length(peak_info$spike_frame)), function(x) ggplot2::geom_point(ggplot2::aes(x = peak_info$spike_frame[[x]], y = peak_info[peak_info$spike_frame == peak_info$spike_frame[[x]]][[var]]), size = 2, group = x, colour = colors[[x]]))
+        sapply(seq_along(1:length(peak_info$spike_frame)), function(x)
+          ggplot2::geom_segment(ggplot2::aes(x = peak_info$spike_frame[[x]],
+          y = min(df[[var]]) - sd(df[[var]])/2, xend = peak_info$spike_frame[[x]],
+          yend = min(df[[var]]) - sd(df[[var]]))))
+
+        #sapply(seq_along(1:length(peak_info$spike_frame)), function(x)
+         # ggplot2::geom_segment(ggplot2::aes(x = peak_info$spike_frame[[x]],
+          #y = min(df[[var]]) - sd(df[[var]]),
+          #xend = peak_info$spike_frame[[x]], yend = min(df[[var]]) - sd(df[[var]])), size = 2))
 
       final <- gridExtra::grid.arrange(p,q, ncol = 2)
   }

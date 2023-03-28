@@ -128,6 +128,12 @@ prepareData <- function(folder_name, stim_number, frame_rate,  duration_in_secon
 
   df <- do.call(rbind, df_list)
 
+  df$marker_positive <- as.factor(df$marker_positive)
+  df$group <- as.factor(df$group)
+  df$stimulus <- as.factor(df$stimulus)
+  df$coverslip <- as.factor(df$coverslip)
+
+
   print(df)
   #write.csv(df, "df_manip_maxime.csv")
 
