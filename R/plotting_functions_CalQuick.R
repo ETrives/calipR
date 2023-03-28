@@ -70,8 +70,11 @@ cell_plot <- function(full_data, peaks_data, cell, var, line = c(FALSE, "poly", 
   print("hey")
 
   if(is.null(peaks_data) == FALSE) {
+    print("aie")
   if(is.null(dim(peaks_data)) == FALSE | dim(peaks_data)[[1]] != 0){
-  peak_info <- peaks_data[peaks_data$Cell_id == cell]
+    print("ouille")
+  peak_info <- peaks_data[peaks_data$Cell_id == cell, ]
+  print(peak_info)
 
   }
 
@@ -82,17 +85,20 @@ cell_plot <- function(full_data, peaks_data, cell, var, line = c(FALSE, "poly", 
     peak_info <- NULL
 }
 
+  print( "hiou")
   p <- ggplot2::ggplot(df, ggplot2::aes(x = time_frame, y = !!rlang::sym(var)))+
     ggplot2::geom_line( ggplot2::aes( color =stimulus),size = 1)+
     #geom_point(data = peak,size = 2)+
     ggplot2::facet_wrap(~df$Cell_id) +
     ggplot2::theme_classic()
 
+  print("hia")
   q <- ggplot2::ggplot(df, ggplot2::aes(x = time_frame, y = smooth_z))+
     ggplot2::geom_line( ggplot2::aes( color =stimulus),size = 1)+
     #geom_point(data = peak,size = 2)+
     ggplot2::facet_wrap(~df$Cell_id) +
     ggplot2::theme_classic()
+
 
   if(line == FALSE) {
 

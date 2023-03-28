@@ -295,13 +295,14 @@ border-top-color:#5499c7  ;
 
                                                     shiny::uiOutput('resp_viz'),
                                                     shiny::uiOutput('non_resp_viz'),
-                                                    shiny::actionButton("plot_button", "Plot", align = "right"),
-                                                    shiny::actionButton("plot_button_bis", "Plot", align = "right"),
+                                                    shiny::actionButton("plot_button", "Plot Responder", align = "right"),
+                                                    shiny::actionButton("plot_button_bis", "Plot Non Responder", align = "right"),
+                                                    shiny::checkboxInput("show_peaks_box", label = "Show Peaks"),
 
 
 
-                                                    shiny::plotOutput(outputId = "plot_resp_viz"),
-                                                    shiny::plotOutput(outputId = "plot_non_resp_viz")),shiny::div(style = "height:1000px;")),
+
+                                                    shiny::plotOutput(outputId = "plot_resp_viz")),shiny::div(style = "height:1000px;")),
                               )
 
 
@@ -794,27 +795,23 @@ if(input$groups == TRUE){print( "it is true")}
 
       })
 
-        full <- calipR::get_full_df("db_cq.sqlite", "df_final")
-        peaks <- calipR::get_full_df("db_cq.sqlite", "peak_res")
-
-
-        if(is.null(full)){
-
+        if(dim(calipR::checkTable("db_cq.sqlite", "'df_final'"))[1] == 0) {
         }
         else{
+
+          full <- calipR::get_full_df("db_cq.sqlite", "df_final")
+          peaks <- calipR::get_full_df("db_cq.sqlite", "peak_res")
+
           output$resp_viz <- shiny::renderUI({
             data <- res_sim$res
             responders <- unique(peaks$Cell_id)
             shiny::selectInput(inputId = "resp_viz", "Responders", responders)
 
           })
-        }
 
 
-        if(is.null(full)){
 
-        }
-        else{
+
           output$non_resp_viz <- shiny::renderUI({
             data <- res_sim$res
             cells <- unique(full$Cell_id)
@@ -827,6 +824,10 @@ if(input$groups == TRUE){print( "it is true")}
 
         }
 
+
+
+
+
         shiny::observeEvent(input$plot_button,{
 
         output$plot_resp_viz <- renderPlot({
@@ -834,7 +835,7 @@ if(input$groups == TRUE){print( "it is true")}
 
           # Opérer un tri sur les cellules regarder comment j'ai fais pour responders
 
-          p <- cell_plot(full, peaks, var = "Mean_Grey", cell = input$resp_viz, line = "gam", show_peak = FALSE)
+          p <- cell_plot(full, peaks, var = "Mean_Grey", cell = input$resp_viz, line = "gam", show_peak = input$show_peaks_box)
           p
 
 
@@ -846,9 +847,9 @@ if(input$groups == TRUE){print( "it is true")}
 
 
 
-          output$plot_non_resp_viz <- renderPlot({
+          output$plot_resp_viz <- renderPlot({
 
-          p <- cell_plot(full, peaks, var = "Mean_Grey", cell = input$non_resp_viz, line = "gam", show_peak = FALSE)
+          p <- cell_plot(full, peaks, var = "Mean_Grey", cell = input$non_resp_viz, line = "gam", show_peak = input$show_peaks_box)
           p
 
 
