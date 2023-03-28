@@ -67,6 +67,16 @@ prepareData <- function(folder_name, stim_number, frame_rate,  duration_in_secon
 
   letter_list <- LETTERS[seq(from = 1, to = length(myFiles))]
 
+  if(length(letter_list[which(is.na(letter_list))]) != 0){
+
+  na_cov <- length(letter_list[which(is.na(letter_list))])
+  second_letter_list <- LETTERS[seq(from = 1, to = length(na_cov))]
+  third_letter_list <- LETTERS[seq(from = 1, to = length(na_cov))]
+  dbl <- paste0(second_letter_list, third_letter_list)
+  letter_list[which(is.na(letter_list))] <- dbl
+
+  }
+
   coverslip_id <- purrr::map2(letter_list, coverslip_id, function(x,y) paste(x,y,sep =""))
 
 

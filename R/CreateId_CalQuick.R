@@ -10,7 +10,8 @@
 createId <- function(df, coverslip_id){
 
   cells <- names(table(df$Cell_id))
-
+  print(cells)
+  print("cells")
   # initializing an empty list
   id_list <- vector(mode = "list", length = length(cells))
 
