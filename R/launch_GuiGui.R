@@ -598,6 +598,8 @@ if(input$groups == TRUE){print( "it is true")}
       }
 
       else{
+        full <- calipR::get_full_df("db_cq.sqlite", "df_final")
+        peaks <- calipR::get_full_df("db_cq.sqlite", "peak_res")
         res <- Analyze_Responses(peaks, full, var_list = input$grouping_var)
       }
       print(res)
