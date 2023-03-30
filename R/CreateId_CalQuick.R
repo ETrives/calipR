@@ -10,8 +10,6 @@
 createId <- function(df, coverslip_id){
 
   cells <- names(table(df$Cell_id))
-  print(cells)
-  print("cells")
   # initializing an empty list
   id_list <- vector(mode = "list", length = length(cells))
 
@@ -25,7 +23,27 @@ createId <- function(df, coverslip_id){
 
   list_index = 1
   index1 = 1
-  w <- letters[coverslip_id]
+
+  if(is.na(coverslip_id)) {
+    a <- LETTERS[sample.int(26,1)]
+    b <- LETTERS[sample.int(26,1)]
+    c <- LETTERS[sample.int(26,1)]
+
+    w <- paste0(paste0(a,b),c)
+  }
+
+    else{
+  w <- df$coverslip[[1]]
+    }
+
+
+  if(length(w[which(is.na(w))]) != 0){
+    na_cov <- length(w[which(is.na(w))])
+    second_letter_list <- LETTERS[seq(from = 1, to = length(na_cov))]
+    third_letter_list <- LETTERS[seq(from = 1, to = length(na_cov))]
+    dbl <- paste0(second_letter_list, third_letter_list)
+    w[which(is.na(w))] <- dbl
+  }
 
   for(i in cells){
 
@@ -47,7 +65,9 @@ createId <- function(df, coverslip_id){
         z <- letters[index3]
 
 
+        #id <- paste0(w,x,y,z)
         id <- paste0(w,x,y,z)
+
         id_list[[list_index]] <- id
 
         list_index = list_index + 1

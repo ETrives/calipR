@@ -343,7 +343,7 @@ folder <- shiny::reactive({
   df_final <- shiny::eventReactive(input$launch, {
 
     if(input$trackbox == FALSE){
-      df <- calipR::prepareData(folder(), stim_numb(), as.numeric(input$frame_rate),
+      df <- prepareData(folder(), stim_numb(), as.numeric(input$frame_rate),
                         compare_groups = TRUE, marker_thresh = as.numeric(input$mark_thresh))
 
     }

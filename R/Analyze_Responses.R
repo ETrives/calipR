@@ -11,6 +11,8 @@
 Analyze_Responses <- function(data, df_clean, compare_groups = FALSE, one_cell = FALSE, marker = FALSE, var_list = NULL, simulation = FALSE){
 
 
+  data$spike_stimulus <- str_replace_all(data$spike_stimulus, "[123456789.]", "")
+  df_clean$stimulus <- str_replace_all(df_clean$stimulus, "[123456789.]", "")
 
   ### Adding a variable "Response" for each stimulus in df_clean
 
@@ -151,11 +153,11 @@ print(str(data))
 
     if("coverslip" %notin% var_list & "group" %notin% var_list & "stimulus" %in% var_list & "marker_positive" %in% var_list){
       print("y")
-      n_cells_cond <- rep(n_cells_cond$n_cells, each = length(stim_list))
+      #n_cells_cond <- rep(n_cells_cond$n_cells, each = length(stim_list))
       n_cells_tot <- rep(n_cells_tot, each = length(marker_list)*length(stim_list))
       data <- data[, c("n_cells_tot", "Prop_tot", "n_cells_marker", "Prop_marker_resp", "Prop_marker")
-                   := list(n_cells_tot, Responders/ n_cells_tot, n_cells_cond,
-                           Responders/ n_cells_cond, n_cells_cond/n_cells_tot )]
+                   := list(n_cells_tot, Responders/ n_cells_tot, n_cells_cond$n_cells,
+                           Responders/ n_cells_cond$n_cells, n_cells_cond$n_cells/n_cells_tot )]
       }
 
 

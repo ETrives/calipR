@@ -64,20 +64,30 @@ prepareData <- function(folder_name, stim_number, frame_rate,  duration_in_secon
   coverslip_id <- lapply(myFiles, function(x) as.integer(stringr::str_replace_all(stringr::str_split(x, "/")[[1]][index_cov], "[.csv.]", "")))
 
 
+  letter_list <- LETTERS[seq(from = 1, to = ceiling(length(myFiles)/9))]
+  cov_num <- rep(seq(from = 1, to = 9), times = length(letter_list))
 
-  letter_list <- LETTERS[seq(from = 1, to = length(myFiles))]
+  letter_list <- rep(letter_list, each = 9)
+
+
+
+
+
+
+  #letter_list <- LETTERS[seq(from = 1, to = length(myFiles))]
+
+
 
   if(length(letter_list[which(is.na(letter_list))]) != 0){
-
+  print( "HOUKAL")
   na_cov <- length(letter_list[which(is.na(letter_list))])
   second_letter_list <- LETTERS[seq(from = 1, to = length(na_cov))]
   third_letter_list <- LETTERS[seq(from = 1, to = length(na_cov))]
   dbl <- paste0(second_letter_list, third_letter_list)
   letter_list[which(is.na(letter_list))] <- dbl
-
   }
-
-  coverslip_id <- purrr::map2(letter_list, coverslip_id, function(x,y) paste(x,y,sep =""))
+print("houka")
+  coverslip_id <- purrr::map2(letter_list, cov_num, function(x,y) paste(x,y,sep =""))
 
 
   # Fetching the stimuli informations :
