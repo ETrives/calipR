@@ -46,20 +46,24 @@ deconvolve <- function(norm_data, gam = 0.95, lambda = 1, constraint = T, estima
   if(length(peaks_data$Cell_id) != 0) {
 
     peaks_data <- split(peaks_data,cumsum(1:nrow(peaks_data) %in% seq(1:nrow(peaks_data))))
+print( "yo")
 
-    print(length(lapply(peaks_data, function(x) data[data$smooth_z == max(data[data$Cell_id == x$Cell_id & data$time_frame %between%
-                                                                           list(x$time_frame, x$frame_window)]$smooth_z)[[1]]]$smooth_z[[1]])))
 
-    print(length(lapply(peaks_data, function(x) data[data$smooth_z == max(data[data$Cell_id == x$Cell_id & data$time_frame %between%
-                                                                                 list(x$time_frame, x$frame_window)]$smooth_z)[[1]]][1,]$smooth_z)))
 
+
+    print( "ya")
     smooth_z <- unlist(lapply(peaks_data, function(x) data[data$smooth_z == max(data[data$Cell_id == x$Cell_id & data$time_frame %between%
-                                   list(x$time_frame, x$frame_window)]$smooth_z)[[1]]]$smooth_z[[1]]))
+                                   list(x$time_frame, x$frame_window)]$smooth_z, na.rm = TRUE)[[1]],][1,]$smooth_z))
+    print( "yo")
 
     max_frame <- unlist(lapply(peaks_data, function(x) data[data$smooth_z == max(data[data$Cell_id == x$Cell_id & data$time_frame %between%
-                                                                                       list(x$time_frame, x$frame_window)]$smooth_z)[[1]]]$time_frame[[1]]))
+                                                                                       list(x$time_frame, x$frame_window)]$smooth_z, na.rm = TRUE)[[1]],][1,]$time_frame))
+
+    print( "yu")
 
     print(length(smooth_z))
+    print(length(max_frame))
+
     peaks_data <- do.call(rbind, peaks_data)
     print(length(peaks_data$Cell_id))
 
@@ -73,9 +77,26 @@ deconvolve <- function(norm_data, gam = 0.95, lambda = 1, constraint = T, estima
     #print(peaks_data)
   }
 
+  View(peaks_data)
+  print(peaks_data)
+
   peaks_data <- split(peaks_data,cumsum(1:nrow(peaks_data) %in% seq(1:nrow(peaks_data))))
 
-  peaks_data <- lapply(peaks_data, function(x) if(x$max_peak_smooth_z[[1]] >= threshold) {x} )
+  print(threshold)
+  lapply(peaks_data, function(x) if(is.na(x$max_peak_smooth_z[[1]])) {print(x)} else{})
+
+  print("youu")
+  peaks_data <- lapply(peaks_data, function(x) if(is.na(x$max_peak_smooth_z[[1]])) {} else{x})
+
+  print("youuD")
+
+  peaks_data <- do.call(rbind, peaks_data)
+  peaks_data <- split(peaks_data,cumsum(1:nrow(peaks_data) %in% seq(1:nrow(peaks_data))))
+
+
+  #lapply(peaks_data, function(x) print(x$max_peak_smooth_z[[1]] >= threshold))
+
+  peaks_data <- lapply(peaks_data, function(x) if(x$max_peak_smooth_z[[1]] >= threshold) {x} else{})
 
   peaks_data <- do.call(rbind, peaks_data)
 
