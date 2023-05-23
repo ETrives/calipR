@@ -10,12 +10,17 @@
 #' @examples
 dual_prop <- function(data, stim1, stim2){
 
-  #data$Start_peak_stimulus <- str_replace_all(data$Start_peak_stimulus, "[12345.]", "")
+  data$spike_stimulus <- str_replace_all(data$spike_stimulus, "[123456789.]", "")
+
+  stim1 <- str_replace_all(stim1, "[123456789.]", "")
+  stim2 <- str_replace_all(stim2, "[123456789.]", "")
 
 
   data <- data.table::setDT(data)
-  data <- data[, Stim1 := Start_peak_stimulus == stim1]
-  data <- data[, Stim2 := Start_peak_stimulus == stim2]
+  data <- data[, Stim1 := spike_stimulus == stim1]
+  data <- data[, Stim2 := spike_stimulus == stim2]
+
+  print(head(data))
 
   n_cells_stim1 <- length(unique(data[data$Stim1 == TRUE, ]$Cell_id))
   n_cells_stim2 <- length(unique(data[data$Stim2 == TRUE, ]$Cell_id))
@@ -27,7 +32,7 @@ dual_prop <- function(data, stim1, stim2){
 
   # stocker les noms des stimuli :
 
-  stim <- unique(data$Start_peak_stimulus)
+  stim <- unique(data$spike_stimulus)
 
   # Créer le tableau de contingence avec les deux stimuli
   df <- contingency(data)
@@ -129,7 +134,10 @@ compare_dual_prop <- function(res1, stim_pos, res2, stim_pos2) {
 #' @examples
 cross_prop.venn <- function(data, stim_list){
 
-  t <- data.table(table(test_borders_1Hz[[1]]$Start_peak_stimulus, test_borders_1Hz[[1]]$Cell_id))
+  data$spike_stimulus <- str_replace_all(data$spike_stimulus, "[123456789.]", "")
+  stim_list <- str_replace_all(stim_list, "[123456789.]", "")
+
+  t <- data.table(table(data$spike_stimulus, data$Cell_id))
 
   data <- lapply(stim_list, function(x) unique(t[t$N != 0 & t$V1 == x,]$V2))
 
@@ -137,4 +145,54 @@ cross_prop.venn <- function(data, stim_list){
 
   p <- ggvenn::ggvenn(data)
   return(p)
+}
+
+
+
+dual_prop <- function(data, stim_list){
+
+  data$spike_stimulus <- str_replace_all(data$spike_stimulus, "[123456789.]", "")
+
+  stim_list <- unique(str_replace_all(stim_list, "[123456789.]", ""))
+
+  data <- data.table::setDT(data)
+
+  data_list <- lapply(seq(1,length(stim_list)), function(x) data[, paste0("stim",x)
+                                                     := spike_stimulus == stim_list[x]] )
+
+  data <- data_list[[length(data_list)]]
+
+  n_resp_tot <- length(unique(data$Cell_id))
+  #n_cells_list <- lapply(seq(1,length(stim_list)), function(x)
+                   # length(unique(data[data[[paste0("stim",x)]] == TRUE, ]$Cell_id)))
+
+
+  #n_cells_joint_resp <- lapply(seq(1,length(stim_list)), function(x)
+    #length(unique(data[data[[paste0("stim",x)]] == TRUE, ]$Cell_id)))
+
+  # Créer le tableau de contingence avec les deux stimuli
+  d#f <- contingency(data)
+
+  t <- data.table(table(data$spike_stimulus, data$Cell_id))
+
+  data <- lapply(stim_list, function(x) unique(t[t$N != 0 & t$V1 == x,]$V2))
+
+  names(data) <- stim_list
+
+  print(data)
+  # Filter cells responding to both stimuli
+
+  print(data[stim_list])
+
+  n_cells_tot <- 1000
+  n_resp <- c(length(data[[1]]), length(data[[2]]))
+
+  dual_resp <- length(unlist(intersect(data[[1]], data[[2]])))
+
+  table_final <- data.table(n_resp, n_resp_tot, dual_resp )
+  rownames(table_final) <- c(stim_list[[1]], stim_list[[2]])
+  colnames(table_final) <- c("N_Responders", "N_Responders_Tot", "Common_Response")
+
+  return(table_final)
+
 }

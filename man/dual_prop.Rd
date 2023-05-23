@@ -4,7 +4,7 @@
 \alias{dual_prop}
 \title{dual_prop}
 \usage{
-dual_prop(data, stim1, stim2)
+dual_prop(data, stim_list)
 }
 \arguments{
 \item{stim2}{}

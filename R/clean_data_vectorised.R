@@ -22,36 +22,47 @@ clean_data <- function(data, moving_threshold, outlier_threshold ,mean_width, CN
 
   print(paste("Number of cells before cleaning", ncells_before, sep = ": " ))
 
-  # Splitting the data frame by cell_id
-  cell_split <- split(data, data$Cell_id)
-
-
   # Removing Cells with too much Nas :
 
-  #cell_split <- lapply(cell_split, function(x) if(length(do.call(rbind, lapply(is.na(x$Mean_Grey), function(x) if(x == TRUE) x))[,1])/length(x$Mean_Grey) < moving_threshold) {x} )
+  na_sum <- data[, .(NA_sum = sum(is.na(get("Mean_Grey")))), by = Cell_id ]
+  frame_sum <- data[, .(frame_sum = length(get("Mean_Grey"))), by = Cell_id ]
+  na_ratio <- na_sum$NA_sum / frame_sum$frame_sum
+  data$na_ratio <- rep(na_ratio, each = frame_sum$frame_sum[1])
+  data <- data[na_ratio < moving_threshold]
 
-  cell_split <- lapply(cell_split, function(x) if((length(do.call(rbind, lapply(is.na(x$Mean_Grey), function(x) if(x == TRUE) x))[,1]) / length(x$Mean_Grey)) < moving_threshold) x)
 
-  cell_split <- cell_split[cell_split != "NULL"]
+  # Removing cells that moved too much (fluorescence down to zero)
+
+  zero_sum <- data[, .(zero_sum = sum((get("Mean_Grey") == 0))), by = Cell_id ]
+
+  zero_ratio <- zero_sum$zero_sum / frame_sum$frame_sum
+  data$zero_ratio <- rep(zero_ratio, each = frame_sum$frame_sum[1])
+  data <- data[zero_ratio < moving_threshold]
 
   # Computing a local mean for each data.table
-  cell_split <- lapply(cell_split, function(x) data.table::setDT(x)[, local_mean := gplots::wapply(x$time_frame, x$Mean_Grey, fun = mean, n=length(x$time_frame), width = mean_width, method = "nobs")[[2]]])
 
+  local_mean_fct <- function(x,y,z) gplots::wapply(x, y, fun = mean, n=length(z), width = mean_width, method = "nobs")[[2]]
 
+  data <- data[, local_mean := data[, .(local_mean = local_mean_fct(get("time_frame"), get("Mean_Grey"), get("time_frame"))), by = Cell_id]$local_mean]
 
-  #cell_split <- lapply(cell_split, function(x) x$Mean_Grey[x$time_frame == 1 & x$Mean_Grey == 0] <- x$local_mean[x$time_frame == 1 & x$Mean_Grey == 0])
-  cell_split <- lapply(cell_split, function(x) x[, Mean_Grey := replace(Mean_Grey, time_frame == 1 & Mean_Grey == 0, local_mean[1])])
+  data <- data[, Mean_Grey := data[, .(Mean_Grey = replace(get("Mean_Grey"), get("time_frame") == 1
+                                                             & get("Mean_Grey") == 0, get("local_mean")[1])), by = Cell_id]$Mean_Grey]
 
 
   # Computing first derivative
-  cell_split <- lapply(cell_split, function(x) data.table::setDT(x)[, first_derivative := doremi::calculate.gold(time = x$time_seconds, signal = x$local_mean,
-                                                                                                                 embedding = 2, n = 1)$dsignal[,2]])
+
+  first_d_fct <- function(x,y) doremi::calculate.gold(time = x, signal = y,
+                                                      embedding = 2, n = 1)$dsignal[,2]
+
+  data <- data[, first_derivative := data[, .(first_derivative = first_d_fct(get("time_seconds"), get("local_mean"))), by = Cell_id]$first_derivative]
 
 
-  cell_split <- lapply(cell_split, function(x) x[ , smooth_Diff := gplots::wapply(x$time_frame, x$first_derivative, fun = mean, n =length(data$time_frame), width = mean_width_diff, method = "nobs", drop.na = FALSE)[[2]]])
+  local_mean_diff_fct <- function(x,y,z) gplots::wapply(x, y, fun = mean, n=length(z), width = mean_width_diff, method = "nobs", drop.na = FALSE)[[2]]
 
-  print(cell_split[[1]])
+  data <- data[, smooth_Diff := data[, .(smooth_Diff = local_mean_diff_fct(get("time_frame"), get("first_derivative"), get("time_frame"))), by = Cell_id]$smooth_Diff]
 
+
+  cell_split <- split(data, data$Cell_id)
   cell_split <- lapply(cell_split, function(x) data.table::setDT(x)[, c("DPA", "CN_DPA") := list(DPA(x, DPA_width),  CN_DPA(x, CN_DPA_width))])
 
 
@@ -76,25 +87,16 @@ clean_data <- function(data, moving_threshold, outlier_threshold ,mean_width, CN
                                                                                    Mean_Grey < (mean(Mean_Grey) - 1.5*stats::sd(Mean_Grey)),
                                                                                  NaN)])
 
-  print(cell_split[[1]])
 
   cell_split <- lapply(cell_split, function(x) x[, Mean_Grey_wo_peaks := replace(Mean_Grey_wo_peaks, time_frame == max(time_frame) & is.na(Mean_Grey_wo_peaks), local_mean[ max(time_frame)])])
   cell_split <- lapply(cell_split, function(x) x[, Mean_Grey_wo_peaks := replace(Mean_Grey_wo_peaks, time_frame == 1 & is.na(Mean_Grey_wo_peaks), local_mean[1])])
 
-  print(cell_split[[1]])
 
   lapply(cell_split, function(x) if(length(is.na(x$Mean_Grey_wo_peaks)[is.na(x$Mean_Grey_wo_peaks)[TRUE]]) == length(x$Mean_Grey_wo_peaks)) {print(x)})
-
-  #cell_split <- lapply(cell_split, function(x) x[, Mean_Grey_wo_peaks := replace(Mean_Grey, smooth_DPA > quantile_speed(smooth_DPA, probs = .5)
-                                                                                # |Mean_Grey < (mean(Mean_Grey) - 2*stats::sd(Mean_Grey)),
-                                                                                # NaN)])
-
 
 
 
   cell_split <- lapply(cell_split, function(x) x[, Mean_Grey_wo_peaks := approxfun(which(!is.na(Mean_Grey_wo_peaks)), na.omit(Mean_Grey_wo_peaks))(seq_along(Mean_Grey_wo_peaks))])
-
-print("OKKKK")
 
   data <- do.call(rbind, cell_split)
 
@@ -112,7 +114,7 @@ print("OKKKK")
 
   cell_split <- split(data, data$Cell_id)
 
-  data <- moving_cells_old(cell_split, threshold = moving_threshold)
+  data <- lapply(cell_split, function(x) data.table::setDT(x)[, Anormal_variation := LaplacesDemon::is.bimodal(Mean_Grey)])
 
   data <- do.call(rbind, cell_split)
 
@@ -125,28 +127,4 @@ print("OKKKK")
   return(data)
 
 }
-
-
-
-
-
-#' moving_cells
-#'
-#' @param data
-#' @param threshold An optional parameter defining over how many standard deviations (of the baseline)
-#' a decrease in median during a stimulus will be considered a moving cell and thus discarded.
-#'
-#' @return a data frame with all moving cells removed
-#' @export
-#'
-#' @examples
-moving_cells_old <- function(data, threshold = 0.1){
-
-  data <- lapply(data, function(x) data.table::setDT(x)[, Moving_cells := sum(Mean_Grey == 0) / sum(Mean_Grey >= 0) > threshold])
-
-  data <- lapply(data, function(x) data.table::setDT(x)[, Anormal_variation := LaplacesDemon::is.bimodal(Mean_Grey)])
-
-  return(data)
-}
-
 

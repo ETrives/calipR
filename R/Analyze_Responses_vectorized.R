@@ -17,24 +17,19 @@ Analyze_Responses <- function(data, df_clean, compare_groups = FALSE, one_cell =
   ### Adding a variable "Response" for each stimulus in df_clean
 
   '%notin%' <- Negate('%in%')
-  #data$marker_positive <- as.factor(data$marker_positive)
   mark_lev <- unique(df_clean$marker_positive)
   df_clean$marker_positive <- factor(df_clean$marker_positive, levels = mark_lev, ordered = TRUE)
 
-  #data$group <- as.factor(data$group)
   group_lev <- unique(df_clean$group)
   df_clean$group  <- factor(df_clean$group, levels = group_lev, ordered = TRUE)
 
 
-  #data$stimulus <- as.factor(data$stimulus)
   stim_lev <- unique(df_clean$stimulus)
   df_clean$stimulus  <- factor(df_clean$stimulus, levels = stim_lev, ordered = TRUE)
 
-  #data$coverslip <- as.factor(data$coverslip)
   cov_lev <- unique(df_clean$coverslip)
   df_clean$coverslip  <- factor(df_clean$coverslip, levels = cov_lev, ordered = TRUE)
 
-print(str(data))
 
   if(simulation == TRUE){
     d <- unique(df_clean[,c("Cell_id", "stimulus")])
@@ -44,8 +39,7 @@ print(str(data))
 
     if(is.null(var_list) & compare_groups == FALSE) {
     d <- unique(df_clean[,c("Cell_id", "stimulus")])
-    print(d)
-    print("hiou")
+
     }
 
 
@@ -56,24 +50,21 @@ print(str(data))
     else{
 
       d <- unique(df_clean[,c(c("Cell_id","stimulus"), var_list)])
-      #print(df_clean)
-      #d <- unique(d[,c(c("Cell_id", "Response"), ..var_list)])
 
     }
   }
 
 
-    d_list <- split(d,cumsum(1:nrow(d) %in% seq(1:nrow(d))))
+    setkey(d, Cell_id, stimulus)
+    setkey(data, Cell_id, spike_stimulus)
 
-    d_list <- lapply(d_list, function(x) data.table::setDT(x)[, Response := ifelse(is.na(
-      data[data$Cell_id == x$Cell_id &
-             data$spike_stimulus == x$stimulus,]$Cell_id[1]),
-      FALSE, TRUE) ])
+    response_indices <- unique(d[data, which = TRUE])
+    print(response_indices)
+    print(d[response_indices])
 
-    d <- do.call(rbind, d_list)
+    d$Response <- FALSE
+    d$Response[response_indices] <- TRUE
 
-    print(d)
-    print("haiou")
 
     stim_list <- unique(d$stimulus)
 
@@ -94,8 +85,6 @@ print(str(data))
     }
 
     n_cells_cond <- d[, .(n_cells = length(unique(Cell_id))), by = var_list]
-  print(d)
-    print(n_cells_cond)
 
     if(simulation == TRUE) {
       print("second part of simulation")

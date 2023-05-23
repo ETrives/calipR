@@ -21,7 +21,7 @@ print(str(borders))
 cell_split <- split(borders, borders$Cell_id)
 
 
-base.rm <- lapply(cell_split, function(x) if ("1.Baseline" %notin% x$Start_peak_stimulus) {x})
+base.rm <- lapply(cell_split, function(x) if ("1.Baseline" %notin% x$spike_stimulus) {x})
 
 base_resp <- names(base.rm[lengths(base.rm) == 0])
 

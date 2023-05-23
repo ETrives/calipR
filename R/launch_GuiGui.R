@@ -537,6 +537,11 @@ folder <- shiny::reactive({
         print("df_full ok")
         print("input$groups")
 
+        ### Pour parallelisation : Splitter le df par coverslip :
+
+        cov_list <- split(df_full, df_full$coverslip)
+
+
         print(input$groups)
         res_f <- downstream_analysis(df_full, threshold = input$peak_thresh_full,
                                              borders_range = input$rise_full, lambda = input$lambda_full, gam = input$gam_full,
