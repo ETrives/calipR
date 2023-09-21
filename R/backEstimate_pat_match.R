@@ -1,5 +1,7 @@
 ### Fonctions Pattern Matching 12/09/23
 
+
+
 #' patDetectR
 #' 
 #' Computes the dynamic time warping distance between all the rolling subsequences 
@@ -303,7 +305,7 @@ interpolR <- function(list, len, type = c("one","multiple")){
 #' @param patdet_out 
 #'
 #' @return a data table with the estimated background trace in a new column called
-#' "background" 
+#' "background" and the detrended Mean Grey values in a column called "background detrended"
 #' @export
 #'
 #' @examples
@@ -373,8 +375,10 @@ backEstimatR <- function(dt, patdet_out) {
   full_dt[, background := gplots::wapply(time_frame, mean_grey_wo_peaks_new_new,fun = median,
                                          n = length(time_frame),  width = 30, method = "nobs")[[2]], by = Cell_id]
   
+  full_dt[, background_detrended := Mean_Grey - background, by = .(Cell_id, stimulus)]
+  
   final_dt <- full_dt[, .(Cell_id, Mean_Grey, time_frame, stimulus, local_mean, 
-                          first_derivative, smooth_Diff, signal, background)]
+                          first_derivative, smooth_Diff, signal, background, background_detrended)]
   
   return(final_dt)
 }

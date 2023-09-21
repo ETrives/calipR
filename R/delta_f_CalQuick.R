@@ -10,7 +10,7 @@
 #' @export
 #'
 #' @examples
-delta_f <- function(cov_split, var = c("poly", "gam", "linear", "quantile")){
+delta_f <- function(cov_split, var = c("poly", "gam", "linear", "quantile", "back")){
 
   if(var == "poly"){
     cov_split <- lapply(cov_split, function(x) x[, delta_f_f := poly_detrended / poly_fit, by = Cell_id])
@@ -26,6 +26,10 @@ delta_f <- function(cov_split, var = c("poly", "gam", "linear", "quantile")){
 
   if(var == "quantile"){
     cov_split <- lapply(cov_split, function(x) x[, delta_f_f := quantile_detrended / local_quantile, by = Cell_id])
+  }
+
+  if(var == "back"){
+    cov_split <- lapply(cov_split, function(x) x[, delta_f_f := background_detrended / background, by = Cell_id])
   }
 
   return(cov_split)

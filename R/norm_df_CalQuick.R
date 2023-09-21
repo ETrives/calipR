@@ -12,7 +12,7 @@
 #'
 #'
 #' @examples
-norm_df <- function(data, var = c("raw", "poly", "gam", "linear", "quantile"), width){
+norm_df <- function(data, var = c("raw", "poly", "gam", "linear", "quantile","back"), width){
 
   print("inside norm")
   print(data$coverslip)

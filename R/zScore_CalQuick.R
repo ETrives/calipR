@@ -15,7 +15,7 @@
 #'
 #'
 #' @examples
-z_score <- function(data, var = c("raw", "poly", "gam", "linear", "quantile"), cov_split, dim_list ) {
+z_score <- function(data, var = c("raw", "poly", "gam", "linear", "quantile", "back"), cov_split, dim_list ) {
 
   print("computing_z_score")
 
@@ -118,6 +118,27 @@ z_score <- function(data, var = c("raw", "poly", "gam", "linear", "quantile"), c
     dt <- dt[, sd_baseline := unlist(purrr::map2(sd_base_list, dim_list_final, function(x,y) rep(x$sd[[1]], times = y)))]
 
     z_score <- dt[, z_score := (quantile_detrended - mean_baseline) / sd_baseline, by = list(Cell_id, stimulus)]
+
+  }
+
+
+
+  if(var == "back"){
+
+    mean <- dt[, .(mean = mean(background_detrended)), .(Cell_id, stimulus)][stimulus == "1.Baseline"]
+    mean_base_list <- split(mean, mean$Cell_id)
+
+    # Creating a vector of mean baseline for each coverslip, that has the same number of lines as each coverslip
+    #mean_vec_list <- vector(mode = "list", length = length(mean_baseline$mean)*sum(unlist(dim_list)))
+
+    dt <- dt[, mean_baseline := unlist(purrr::map2(mean_base_list, dim_list_final, function(x,y) rep(x$mean[[1]], times = y)))]
+
+    sd <- dt[, .(sd = stats::sd(Mean_Grey)), .(Cell_id, stimulus)][stimulus == "1.Baseline"]
+    sd_base_list <- split(sd, sd$Cell_id)
+
+    dt <- dt[, sd_baseline := unlist(purrr::map2(sd_base_list, dim_list_final, function(x,y) rep(x$sd[[1]], times = y)))]
+
+    z_score <- dt[, z_score := (background_detrended - mean_baseline) / sd_baseline, by = list(Cell_id, stimulus)]
 
   }
 
