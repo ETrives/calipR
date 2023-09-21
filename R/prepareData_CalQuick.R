@@ -20,6 +20,7 @@ prepareData <- function(folder_name, stim_number, frame_rate,  duration_in_secon
   # Get the file names and store the content in a list of df :
   myFiles <- list.files(folder_name, pattern = "\\.csv", recursive = T, full.names = T)
   len_before <- length(myFiles)
+
   # Removing the meta_data file :
 
   myFiles <- myFiles[!stringr::str_detect(myFiles,pattern="meta") & !stringr::str_detect(myFiles,pattern="marker")]
@@ -36,11 +37,10 @@ prepareData <- function(folder_name, stim_number, frame_rate,  duration_in_secon
   df_list <- lapply(df_list, function(x) x[,2:length(x)])
   df_list <- lapply(df_list, function(x) data.table::setnames(x, paste0(rep("Mean", length(x)), seq(1: length(x)))))
 
-
+print(df_list)
   # Checking if marker files have been added
 
   if(len_before - len_after > 1){
-    print("yes")
     marker <- list.files(folder_name, pattern = "marker", recursive = T, full.names = T)
 
     # Reading the files
@@ -55,14 +55,13 @@ prepareData <- function(folder_name, stim_number, frame_rate,  duration_in_secon
   }
 
 
-
   # Code pour récupérer uniquement le numéro du coverslip et lui ajouter une lettre :
 
+print(myFiles[[1]])
 
   index_cov <-length(stringr::str_split(myFiles[[1]], "/")[[1]])
 
   coverslip_id <- lapply(myFiles, function(x) as.integer(stringr::str_replace_all(stringr::str_split(x, "/")[[1]][index_cov], "[.csv.]", "")))
-
 
   letter_list <- LETTERS[seq(from = 1, to = ceiling(length(myFiles)/9))]
   cov_num <- rep(seq(from = 1, to = 9), times = length(letter_list))
@@ -79,23 +78,27 @@ prepareData <- function(folder_name, stim_number, frame_rate,  duration_in_secon
 
 
   if(length(letter_list[which(is.na(letter_list))]) != 0){
-  print( "HOUKAL")
+
   na_cov <- length(letter_list[which(is.na(letter_list))])
   second_letter_list <- LETTERS[seq(from = 1, to = length(na_cov))]
   third_letter_list <- LETTERS[seq(from = 1, to = length(na_cov))]
   dbl <- paste0(second_letter_list, third_letter_list)
   letter_list[which(is.na(letter_list))] <- dbl
   }
-print("houka")
+
   coverslip_id <- purrr::map2(letter_list, cov_num, function(x,y) paste(x,y,sep =""))
 
 
   # Fetching the stimuli informations :
 
   meta_df <- data.table::fread(meta)
-  stimuli <- meta_df$stimuli
+  stimuli <- unique(meta_df$stimuli)
+  print(stimuli)
+  stim_number <- length(stimuli)
+  print(stim_number)
   stimuli <- split(stimuli, ceiling(seq_along(stimuli)/stim_number))
 
+  #stimuli <- paste(seq(1,stim_number), stimuli, sep = ".")
 
   stimuli <- lapply(stimuli, function(x) purrr::map2(seq_along(1:stim_number), x, function(y, z) paste(y,z, sep=".")))
 
@@ -107,8 +110,15 @@ print("houka")
 
   # Get the pattern to find in the colnames for the cell_srt function :
 
-  pattern <- substr(colnames(df_list[[1]])[2], 1,4)
+  print("df_list[[1]]")
+  print(df_list[[1]])
+  print(colnames(df_list[[1]]))
+  #pattern <- substr(colnames(df_list[[1]])[2], 1,4)
+  pattern <- substr(colnames(df_list[[1]])[[1]], 1,4)
 
+  print("pattern")
+
+  print(pattern)
   ### Code pour récupérer uniquement le groupe auquel appartient un coverslip
 
   index_gr <-length(stringr::str_split(myFiles[[1]], "/")[[1]])-2

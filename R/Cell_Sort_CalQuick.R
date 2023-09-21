@@ -80,7 +80,7 @@ cell_sort <- function(df,pat,  duration_in_seconds, frame_rate, id,
 
   # Adding a variable tracking the frame with each stimulus being the zero reference :
 
-  data_fus <- data.table::setDT(data_fus)[, Time_frame_stim := seq(c(1:length(stimulus)))]
+  data_fus <- data.table::setDT(data_fus)[, Time_frame_stim := seq(1:length(Mean_Grey)), by = .(Cell_id, stimulus)]
   data_fus <- data_fus[, Stimulation := Time_frame_stim <= duration]
 
   return(data_fus)

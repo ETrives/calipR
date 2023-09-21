@@ -65,7 +65,7 @@ Analyze_Responses <- function(data, df_clean, compare_groups = FALSE, one_cell =
     d$Response <- FALSE
     d$Response[response_indices] <- TRUE
 
-
+print(d)
     stim_list <- unique(d$stimulus)
 
     n_cells_tot <- length(unique(d$Cell_id))
@@ -98,7 +98,7 @@ Analyze_Responses <- function(data, df_clean, compare_groups = FALSE, one_cell =
         d <- unique(d[,c("Cell_id", "Response", "stimulus")])
         print(d)
         print("houla")
-        data <- d[, .(Responders = sum(Response))]
+        data <- d[, .(Responders = sum(Response)), by = stimulus]
 
 
       }
@@ -109,10 +109,7 @@ Analyze_Responses <- function(data, df_clean, compare_groups = FALSE, one_cell =
       }
 
 
-  print(data)
-  print("diii")
-
-    if("coverslip" %notin% var_list & "group" %notin% var_list & "marker_positive" %notin% var_list){
+    if("coverslip" %notin% var_list & "group" %notin% var_list & "marker_positive" %notin% var_list ){
       print("yyrhy")
       data <- data[, c("Prop", "n_cells_tot") := list(Responders/ n_cells_tot, n_cells_tot)]
     }

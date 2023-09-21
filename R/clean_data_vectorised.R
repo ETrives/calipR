@@ -16,7 +16,8 @@
 #' @export
 #'
 #' @examples
-clean_data <- function(data, moving_threshold, outlier_threshold ,mean_width, CN_DPA_width, DPA_width, mean_width_diff){
+clean_data <- function(data, moving_threshold, outlier_threshold ,mean_width,
+                       CN_DPA_width, DPA_width, mean_width_diff, method = "DPA") {
 
   ncells_before <- length(unique(data$Cell_id))
 
@@ -62,6 +63,7 @@ clean_data <- function(data, moving_threshold, outlier_threshold ,mean_width, CN
   data <- data[, smooth_Diff := data[, .(smooth_Diff = local_mean_diff_fct(get("time_frame"), get("first_derivative"), get("time_frame"))), by = Cell_id]$smooth_Diff]
 
 
+  if(method == "DPA") {
   cell_split <- split(data, data$Cell_id)
   cell_split <- lapply(cell_split, function(x) data.table::setDT(x)[, c("DPA", "CN_DPA") := list(DPA(x, DPA_width),  CN_DPA(x, CN_DPA_width))])
 
@@ -117,6 +119,8 @@ clean_data <- function(data, moving_threshold, outlier_threshold ,mean_width, CN
   data <- lapply(cell_split, function(x) data.table::setDT(x)[, Anormal_variation := LaplacesDemon::is.bimodal(Mean_Grey)])
 
   data <- do.call(rbind, cell_split)
+
+  }
 
   print(paste("Number of cells after cleaning", length(unique(data$Cell_id)), sep = ": " ))
 
