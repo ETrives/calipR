@@ -63,7 +63,7 @@ svg_responders <- function(full_data, peaks_data, var,
 #' @export
 #'
 #' @examples
-cell_plot <- function(full_data, peaks_data, cell, var, line = c(FALSE, "poly", "gam"), show_peak = FALSE) {
+cell_plot <- function(full_data, peaks_data, cell, var, line = c(FALSE, "poly", "gam", "back"), show_peak = FALSE) {
 
   df <- full_data[full_data$Cell_id == cell,]
   print(peaks_data)
@@ -110,11 +110,18 @@ cell_plot <- function(full_data, peaks_data, cell, var, line = c(FALSE, "poly", 
 
   }
 
-  if(line == "gam" & var == "Mean_Grey") {
+  if(line == "gam") {
 
     p <- p + ggplot2::geom_line( ggplot2::aes(y = gam_fit))
 
   }
+
+  if(line == "back") {
+
+    p <- p + ggplot2::geom_line( ggplot2::aes(y = background))
+
+  }
+
 
 
   if(is.null(peak_info) == FALSE) {

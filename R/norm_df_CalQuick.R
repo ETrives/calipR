@@ -29,12 +29,12 @@ norm_df <- function(data, var = c("raw", "poly", "gam", "linear", "quantile","ba
   print("delta f / f computed")
 
 
-   #smoothing the z score and the delta f variables
+  #smoothing the z score and the delta f variables
   smooth_df<- lapply(data_d, function(x) data.table::setDT(x)[, ':=' (smooth_z = gplots::wapply(time_frame,
-                                        z_score, fun = mean, n = length(time_frame), width = width, method = "nobs", drop.na = FALSE)[[2]],
-                                        smooth_delta = gplots::wapply(time_frame,
-                                        delta_f_f, fun = mean, n = length(time_frame), width = width, method = "nobs", drop.na = FALSE)[[2]]),
-                                        by = Cell_id])
+                                                                                                z_score, fun = mean, n = length(time_frame), width = width, method = "nobs", drop.na = FALSE)[[2]],
+                                                                      smooth_delta = gplots::wapply(time_frame,
+                                                                                                    delta_f_f, fun = mean, n = length(time_frame), width = width, method = "nobs", drop.na = FALSE)[[2]]),
+                                                              by = Cell_id])
 
 
   smooth_df <- do.call(rbind, smooth_df)

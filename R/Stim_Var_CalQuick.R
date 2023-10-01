@@ -29,6 +29,7 @@ stim_var <- function(data, stimuli, each, frame_rate, coverslip_id){
 
   frame_list <- append(frame_list, dim(data)[1])
 
+
   rep_each <- list()
   count <- 0
 
@@ -50,6 +51,7 @@ stim_var <- function(data, stimuli, each, frame_rate, coverslip_id){
     index = index + 1
   }
 
+  View(data)
   data$stimulus <- unlist(stimuli_full)
 
   data$coverslip <- rep(coverslip_id, dim(data)[1])
@@ -59,7 +61,6 @@ stim_var <- function(data, stimuli, each, frame_rate, coverslip_id){
   #for (i in stimuli){
     #print(dim(dplyr::filter(data, stimulus == i))[1])
   #}
-
 
 
   return(data)

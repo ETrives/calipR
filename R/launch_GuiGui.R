@@ -8,7 +8,8 @@
 #' @export
 #'
 #' @examples
-  launch_GuiGui <- function(){
+  launch_GuiGui_bis <- function(){
+
 
 
 ui <-
@@ -72,6 +73,8 @@ ui <-
                                    shiny::textInput("lambda_full", label = "Lambda"),
                                    shiny::textInput("gam_full", label = "gam"),
                                    shiny::checkboxInput("false_pos_full", label = "False Positives Estimation"),
+                                   shiny::checkboxInput("patMatch", label = "Background Estimation with Pattern Matching"),
+
 
 
                                    shiny::checkboxInput("groups", label = "Compare groups"),
@@ -204,6 +207,8 @@ border-top-color:#5499c7  ;
             shiny::textInput("n_cells", label = "Number of cells", placeholder = "Enter the number of cells you want to run the stimulation on"),
 
             shiny::checkboxInput("false_pos", label = "Estimate False Positives"),
+            shiny::checkboxInput("patMatch_opt", label = "Background Estimation with Pattern Matchhing"),
+
             shiny::checkboxInput("show_peak", label = "Show Peaks"),
 
             shiny::uiOutput('responders'),
@@ -226,6 +231,8 @@ border-top-color:#5499c7  ;
             shiny::textInput("gam_bis", label = "Gam", placeholder = "Enter the Gam parameter for the Deconvolution (double between 0-1)"),
 
             shiny::checkboxInput("false_pos_bis", label = "Estimate False Positives"),
+            shiny::checkboxInput("patMatch_opt_bis", label = "Background Estimation with Pattern Matchhing"),
+
             shiny::checkboxInput("show_peak_bis", label = "Show Peaks"),
 
 
@@ -302,7 +309,7 @@ border-top-color:#5499c7  ;
 
 
 
-                                                    shiny::plotOutput(outputId = "plot_resp_viz")),shiny::div(style = "height:1000px;")),
+                                                    shiny::plotOutput(outputId = "plot_resp_viz")),shiny::div(style = "height:1000px;"))
                               )
 
 
@@ -404,7 +411,7 @@ folder <- shiny::reactive({
 
       res_sim$res <- downstream_analysis(df_sub, threshold = input$peak_thresh,
                                          borders_range = input$rise_range, lambda = input$lambda, gam = input$gam,
-                                         false_pos = input$false_pos, simulation = TRUE)
+                                         false_pos = input$false_pos, simulation = TRUE, pattern_matching = input$patMatch_opt)
 
    })
 
@@ -460,8 +467,16 @@ folder <- shiny::reactive({
         print(data[[1]])
         print(data[[2]])
 
-        p <- cell_plot(data[[2]], data[[1]], var = input$cell_plot_var, cell = input$responders, line = "gam", show_peak = input$show_peak)
+        input$patMatch_opt
+        if(input$patMatch_opt == TRUE){
+        p <- cell_plot(data[[2]], data[[1]], var = input$cell_plot_var, cell = input$responders, line = "back", show_peak = input$show_peak)
         p
+        }
+
+        if(input$patMatch_opt == FALSE){
+          p <- cell_plot(data[[2]], data[[1]], var = input$cell_plot_var, cell = input$responders, line = "gam", show_peak = input$show_peak)
+          p
+        }
 
 
     })
@@ -473,9 +488,15 @@ folder <- shiny::reactive({
 
       output$plot_cell_sim <- shiny::renderPlot({
 
-        p <- cell_plot(data[[2]], data[[1]], var = input$cell_plot_var, cell = input$non_responders,
-                       line = "gam", show_peak = input$show_peak)
-        p
+        if(input$patMatch_opt == TRUE){
+          p <- cell_plot(data[[2]], data[[1]], var = input$cell_plot_var, cell = input$non_responders, line = "back", show_peak = input$show_peak)
+          p
+        }
+
+        if(input$patMatch_opt == FALSE){
+          p <- cell_plot(data[[2]], data[[1]], var = input$cell_plot_var, cell = input$non_responders, line = "gam", show_peak = input$show_peak)
+          p
+        }
 
 
       })
@@ -493,7 +514,8 @@ folder <- shiny::reactive({
 
         res_sim$res_bis <- downstream_analysis(df_sub_bis, threshold = input$peak_thresh_bis,
                                                borders_range = input$rise_range_bis, lambda = input$lambda_bis,
-                                               gam = input$gam_bis, false_pos = input$false_pos_bis, one_cell = TRUE)
+                                               gam = input$gam_bis, false_pos = input$false_pos_bis, one_cell = TRUE,
+                                               pattern_matching = input$patMatch_opt_bis)
 
       })
 
@@ -504,11 +526,18 @@ folder <- shiny::reactive({
 
         data <- res_sim$res_bis
 
+
         output$plot_cell_sim_bis <- shiny::renderPlot({
 
-          p <- cell_plot(data[[2]], data[[1]], var = "Mean_Grey", cell = input$cell_opt, line = "gam", show_peak = input$show_peak_bis)
-          p
+          if(input$patMatch_opt_bis == TRUE){
+            p <- cell_plot(data[[2]], data[[1]], var = input$cell_plot_var, cell = input$cell_opt, line = "back", show_peak = input$show_peak_bis)
+            p
+          }
 
+          if(input$patMatch_opt_bis == FALSE){
+            p <- cell_plot(data[[2]], data[[1]], var = input$cell_plot_var, cell = input$cell_opt, line = "gam", show_peak = input$show_peak_bis)
+            p
+          }
 
         })
   })
@@ -545,7 +574,8 @@ folder <- shiny::reactive({
         print(input$groups)
         res_f <- downstream_analysis(df_full, threshold = input$peak_thresh_full,
                                              borders_range = input$rise_full, lambda = input$lambda_full, gam = input$gam_full,
-                                             false_pos = input$false_pos_full, compare_groups = input$groups)
+                                             false_pos = input$false_pos_full, compare_groups = input$groups,
+                                     pattern_matching = input$patMatch)
 
 
         # Extracting and saving the data table containing one row for each peak with the informations

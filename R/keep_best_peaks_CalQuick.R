@@ -17,7 +17,6 @@ keep_best_peaks <- function(data){
   #peaks_list <- split(peaks_data,cumsum(1:nrow(peaks_data) %in% seq(1:nrow(peaks_data))))
   peaks_list <- split(data[[1]],cumsum(1:nrow(data[[1]]) %in% seq(1:nrow(data[[1]]))))
 
-print(peaks_list)
 
   peaks_list <- lapply(peaks_list, function(x) x[, infValue :=  inferiorValues(x, data[[2]])])
 
@@ -30,7 +29,6 @@ print(peaks_list)
   model <- readRDS(system.file("model/model.rds", package = "calipR"))
 
   data_peaks[, Prediction := stats::predict(model, data_peaks, type="response")]
-print(data_peaks)
   data_final <- data_peaks[data_peaks$Prediction > 0.5,]
 print("yooo")
 print(data_final)

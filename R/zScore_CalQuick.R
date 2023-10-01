@@ -74,7 +74,7 @@ z_score <- function(data, var = c("raw", "poly", "gam", "linear", "quantile", "b
 
     dt <- dt[, mean_baseline := unlist(purrr::map2(mean_base_list, dim_list_final, function(x,y) rep(x$mean[[1]], times = y)))]
 
-    sd <- dt[, .(sd = stats::sd(Mean_Grey)), .(Cell_id, stimulus)][stimulus == "1.Baseline"]
+    sd <- dt[, .(sd = stats::sd(poly_detrended)), .(Cell_id, stimulus)][stimulus == "1.Baseline"]
     sd_base_list <- split(sd, sd$Cell_id)
 
     dt <- dt[, sd_baseline := unlist(purrr::map2(sd_base_list, dim_list_final, function(x,y) rep(x$sd[[1]], times = y)))]
@@ -93,7 +93,7 @@ z_score <- function(data, var = c("raw", "poly", "gam", "linear", "quantile", "b
 
     dt <- dt[, mean_baseline := unlist(purrr::map2(mean_base_list, dim_list_final, function(x,y) rep(x$mean[[1]], times = y)))]
 
-    sd <- dt[, .(sd = stats::sd(Mean_Grey)), .(Cell_id, stimulus)][stimulus == "1.Baseline"]
+    sd <- dt[, .(sd = stats::sd(gam_detrended)), .(Cell_id, stimulus)][stimulus == "1.Baseline"]
     sd_base_list <- split(sd, sd$Cell_id)
 
     dt <- dt[, sd_baseline := unlist(purrr::map2(sd_base_list, dim_list_final, function(x,y) rep(x$sd[[1]], times = y)))]
@@ -112,7 +112,7 @@ z_score <- function(data, var = c("raw", "poly", "gam", "linear", "quantile", "b
 
     dt <- dt[, mean_baseline := unlist(purrr::map2(mean_base_list, dim_list_final, function(x,y) rep(x$mean[[1]], times = y)))]
 
-    sd <- dt[, .(sd = stats::sd(Mean_Grey)), .(Cell_id, stimulus)][stimulus == "1.Baseline"]
+    sd <- dt[, .(sd = stats::sd(quantile_detrended)), .(Cell_id, stimulus)][stimulus == "1.Baseline"]
     sd_base_list <- split(sd, sd$Cell_id)
 
     dt <- dt[, sd_baseline := unlist(purrr::map2(sd_base_list, dim_list_final, function(x,y) rep(x$sd[[1]], times = y)))]
@@ -125,6 +125,8 @@ z_score <- function(data, var = c("raw", "poly", "gam", "linear", "quantile", "b
 
   if(var == "back"){
 
+    print("dt")
+    print(dt)
     mean <- dt[, .(mean = mean(background_detrended)), .(Cell_id, stimulus)][stimulus == "1.Baseline"]
     mean_base_list <- split(mean, mean$Cell_id)
 
@@ -133,7 +135,7 @@ z_score <- function(data, var = c("raw", "poly", "gam", "linear", "quantile", "b
 
     dt <- dt[, mean_baseline := unlist(purrr::map2(mean_base_list, dim_list_final, function(x,y) rep(x$mean[[1]], times = y)))]
 
-    sd <- dt[, .(sd = stats::sd(Mean_Grey)), .(Cell_id, stimulus)][stimulus == "1.Baseline"]
+    sd <- dt[, .(sd = stats::sd(background_detrended)), .(Cell_id, stimulus)][stimulus == "1.Baseline"]
     sd_base_list <- split(sd, sd$Cell_id)
 
     dt <- dt[, sd_baseline := unlist(purrr::map2(sd_base_list, dim_list_final, function(x,y) rep(x$sd[[1]], times = y)))]

@@ -93,14 +93,21 @@ print(myFiles[[1]])
 
   meta_df <- data.table::fread(meta)
   stimuli <- unique(meta_df$stimuli)
+
+  stimuli <- split(meta_df, meta_df$coverslip)
+  stimuli <- lapply(stimuli, function(x) x$stimuli)
+
   print(stimuli)
-  stim_number <- length(stimuli)
+  stim_number <- length(stimuli[[1]])
+  print("stim_number")
   print(stim_number)
+
   stimuli <- split(stimuli, ceiling(seq_along(stimuli)/stim_number))
 
   #stimuli <- paste(seq(1,stim_number), stimuli, sep = ".")
 
-  stimuli <- lapply(stimuli, function(x) purrr::map2(seq_along(1:stim_number), x, function(y, z) paste(y,z, sep=".")))
+  stimuli <- lapply(stimuli, function(x) lapply(x, function(y)
+    unlist(purrr::map2(seq_along(1:stim_number), y, function(z, a) paste(z,a, sep=".")), recursive = FALSE)))
 
 
   # now the time informations :
@@ -126,7 +133,20 @@ print(myFiles[[1]])
   group_list <- lapply(myFiles, function(x) stringr::str_split(x, "/")[[1]][index_gr])
 
 
+print("stimuli")
+print(stimuli)
 
+print("each")
+print(each)
+
+print("coverslip_id")
+print(coverslip_id)
+
+print("group_list")
+print(group_list)
+
+print("marker_list")
+print(marker_list)
 
   if(compare_groups == TRUE) {
 
@@ -134,7 +154,7 @@ print(myFiles[[1]])
 
       # voir pour executer tidy_df sur chaque élément de df_list via un pmap ? :
 
-      df_list[[i]] <- tidy_df(df_list[[i]],stimuli[[i]], each[[i]], pattern,
+      df_list[[i]] <- tidy_df(df_list[[i]],stimuli[[1]][[i]], each[[i]], pattern,
                               duration_in_seconds, frame_rate, coverslip_id = coverslip_id[[i]], id = i,
                               multiple = TRUE, compare_groups = TRUE, group_list[[i]], marker_list[[i]], marker_thresh)
 
@@ -148,14 +168,14 @@ print(myFiles[[1]])
 
     for(i in 1:length(df_list)){
 
-      df_list[[i]] <- tidy_df(df_list[[i]],stimuli[[i]], each[[i]], pattern, duration_in_seconds,
+      df_list[[i]] <- tidy_df(df_list[[i]],stimuli[[1]][[i]], each[[i]], pattern, duration_in_seconds,
                       frame_rate, coverslip_id = i, id = i, multiple = TRUE, compare_groups = FALSE,
                       group_list[[i]], marker_list[[i]], marker_thresh)
 
     }
   }
 
-
+print("yoooooooooo")
   df <- do.call(rbind, df_list)
 
   df$marker_positive <- as.factor(df$marker_positive)
@@ -167,6 +187,7 @@ print(myFiles[[1]])
   print(df)
   #write.csv(df, "df_manip_maxime.csv")
 
+  print("prepare_data finished" )
   return(df)
 }
 
