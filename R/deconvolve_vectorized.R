@@ -121,14 +121,16 @@ deconvolve <- function(norm_data, gam = 0.95, lambda = 1, constraint = T, estima
 
   #peaks_data[, new_new_stimulus := ifelse(new_new_stimulus != new_stimulus & new_new_stimulus != Prev_stim, new_stimulus, new_new_stimulus), by = .(Cell_id, labels)]
   #peaks_data <- peaks_data[, new_stimulus := ifelse(any(Time_frame_stim < 3), Prev_stim, spike_stimulus )]
+  peaks <- TRUE
   }
 
 
   else{
   print("Passed the condition")
+  peaks <- FALSE
   }
 
-  return(list(peaks_data, data))
+  return(list(peaks_data, data, peaks))
 }
 
 

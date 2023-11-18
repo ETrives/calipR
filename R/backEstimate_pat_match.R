@@ -32,8 +32,8 @@ patDetectR <- function(dt, window, step, posBank, negBank, new_len, Var, Norm = 
   data <- subinoR(dt, window, step, new_len, posBank, negBank, var = Var, norm = Norm)
 
   # DTW distance computing between each subsequence and each pattern
-  pos <- distcomputR(data[[2]], data[[1]], step, window, data[[4]])
-  neg <- distcomputR(data[[3]], data[[1]], step, window, data[[4]])
+  pos <- distcomputR(data[[2]], data[[1]], step, window)
+  neg <- distcomputR(data[[3]], data[[1]], step, window)
 
 
   # Median distance extraction by index and Ratio between pos and neg median dist
@@ -72,14 +72,29 @@ subinoR <- function(dt, window, step, new_len, posBank, negBank, norm = TRUE, va
 
   # Subsequence segmentation for each chosen window, for each cell in the dt :
 
+  print("before subseq")
+
+  # Extracting the minimum time series size to resize them
+  resizing <- min(unlist(lapply(split(dt, dt$coverslip), function(x) x[, .N ,by = Cell_id]$N[[1]])))
+
+  print("resizing")
+   print(resizing)
   subseq_list <- lapply(seq(1,length(window)), function(x)dt[, subsequencR(get(var),
-                                                                           window[[x]], step[[x]]), by = Cell_id])
+                                                                           window[[x]], step[[x]], resizing), by = Cell_id])
+
+  print("after subseq")
 
   n_sub_seq_list <- lapply(subseq_list, function(x) length(names(x)) -1)
 
+  print("after n_subseq_list")
+
 
   # Intrerpolation to standardize requests and banks lengths:
+
   interp_patBank2 <- data.table::as.data.table(interpolR(posBank, new_len))
+
+  print("after interp_patBank2")
+
   interp_anomBank <- data.table::as.data.table(interpolR(negBank, new_len))
 
   interp_subseq_vec_list <- lapply(subseq_list, function(x)
@@ -149,7 +164,7 @@ mdRatio <- function(pos, neg){
 #' @export
 #'
 #' @examples
-distcomputR_fast <- function(patMat, subseqMat, step, window){
+distcomputR <- function(patMat, subseqMat, step, window){
 
 
   pos_dist_list <- lapply(subseqMat, function(x) x[,  lapply(.SD, function(y)
@@ -231,7 +246,7 @@ matFillR_bis_bis <- function(dt){
 #' @export
 #'
 #' @examples
-subsequencR <- function(time_series, window, step){
+subsequencR <- function(time_series, window, step, resizing){
 
   if(window > length(time_series)){
     stop("Window length cannot be bigger than time series length")
@@ -240,6 +255,14 @@ subsequencR <- function(time_series, window, step){
   if(step > length(time_series)){
     stop("step length cannot be bigger than time series length")
   }
+
+  print("time_series")
+  print(time_series)
+
+  time_series <- interpolR(list(time_series), resizing)
+
+  print("time_series2")
+  print(time_series)
 
   s0 <- seq(0,window)
 
@@ -251,8 +274,14 @@ subsequencR <- function(time_series, window, step){
 
   # créer un dt avec une colonne = la séquence de base, une autre = chaque sous séquence
 
+  print("sub_seqs")
+  print(sub_seqs)
+
   sub_dt <- data.table::data.table("orig_seq" = list(time_series),
                                    "sub_seq" = sub_seqs)[, id := seq(1,.N)]
+
+  print("sub_dt")
+  print(sub_dt)
 
   # Implémentation vectorisée pour le subset des sous séquences
   sub_dt[, sub_seq_final := .(.(unlist(.(.(orig_seq)[1])[[1]])[sub_seq[[1]]])), by = id]
@@ -260,6 +289,10 @@ subsequencR <- function(time_series, window, step){
   #mat <- as.matrix(data.table::setDT(sub_dt$sub_seq_final))
 
   dt <- data.table::setDT(sub_dt$sub_seq_final)
+
+  print("dt")
+  print(dt)
+
 
   return(dt)
 
@@ -279,11 +312,16 @@ subsequencR <- function(time_series, window, step){
 #' @examples
 interpolR <- function(list, len, type = c("one","multiple")){
 
+  print("yi")
   dt <- data.table::data.table(list)[, id := seq(1,.N)]
+
+  print("yo")
 
   dt[,  final := .(.(approx(seq(1,length(unlist(.(.(list)[1])[[1]]))),
                             unlist(.(.(list)[1])[[1]]), method = "linear", ties = mean,
                             n = len)$y)), by = id]
+
+  print("ya")
 
   mat <- do.call(cbind, dt$final)
 
@@ -322,6 +360,9 @@ backEstimatR <- function(dt, patdet_out) {
   data.table::setkey(patdet_out, Cell_id, time_frame)
 
   full_dt <- patdet_out[dt, on = c("Cell_id", "time_frame")]
+
+  print("fullt_dt")
+  print(full_dt)
 
   full_dt[, signal := ifelse(smooth_min_ratio > 0.95 & smooth_Diff < 2*median(smooth_Diff),
                              'Noise', ifelse(smooth_min_ratio < 0.95 & local_mean > median(local_mean),  'Signal', NA)), by = Cell_id]

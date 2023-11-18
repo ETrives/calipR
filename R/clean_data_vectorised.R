@@ -28,7 +28,12 @@ clean_data <- function(data, moving_threshold, outlier_threshold ,mean_width,
   na_sum <- data.table::setDT(data)[, .(NA_sum = sum(is.na(get("Mean_Grey")))), by = Cell_id ]
   frame_sum <- data[, .(frame_sum = length(get("Mean_Grey"))), by = Cell_id ]
   na_ratio <- na_sum$NA_sum / frame_sum$frame_sum
-  data$na_ratio <- rep(na_ratio, each = frame_sum$frame_sum[1])
+  print("frame_sum")
+
+  print(frame_sum)
+  data$na_ratio <- unlist(purrr::map2(na_ratio, frame_sum$frame_sum, function(x,y)
+                   rep(x,times = y)))
+  print(data$na_ratio)
   data <- data[na_ratio < moving_threshold]
 
 
@@ -37,8 +42,12 @@ clean_data <- function(data, moving_threshold, outlier_threshold ,mean_width,
   zero_sum <- data[, .(zero_sum = sum((get("Mean_Grey") == 0))), by = Cell_id ]
 
   zero_ratio <- zero_sum$zero_sum / frame_sum$frame_sum
-  data$zero_ratio <- rep(zero_ratio, each = frame_sum$frame_sum[1])
+
+
+  data$zero_ratio <- unlist(purrr::map2(zero_ratio, frame_sum$frame_sum, function(x,y)
+    rep(x,times = y)))
   data <- data[zero_ratio < moving_threshold]
+
 
   # Computing a local mean for each data.table
 
@@ -127,7 +136,7 @@ clean_data <- function(data, moving_threshold, outlier_threshold ,mean_width,
   print(paste("Removed", ncells_before - length(unique(data$Cell_id)), "cells", sep = " " ))
 
 
-
+print(data)
   return(data)
 
 }

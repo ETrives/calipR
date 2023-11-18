@@ -86,6 +86,8 @@ cell_plot <- function(full_data, peaks_data, cell, var, line = c(FALSE, "poly", 
 }
 
   print( "hiou")
+
+  print(df$stimulus)
   p <- ggplot2::ggplot(df, ggplot2::aes(x = time_frame, y = !!rlang::sym(var)))+
     ggplot2::geom_line( ggplot2::aes( color =stimulus),size = 1)+
     #geom_point(data = peak,size = 2)+

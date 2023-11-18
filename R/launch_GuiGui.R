@@ -411,7 +411,8 @@ folder <- shiny::reactive({
 
       res_sim$res <- downstream_analysis(df_sub, threshold = input$peak_thresh,
                                          borders_range = input$rise_range, lambda = input$lambda, gam = input$gam,
-                                         false_pos = input$false_pos, simulation = TRUE, pattern_matching = input$patMatch_opt)
+                                         false_pos = input$false_pos, simulation = TRUE, pattern_matching = input$patMatch_opt,
+                                         posBank = posBank, negBank = anomBank)
 
    })
 
@@ -514,8 +515,8 @@ folder <- shiny::reactive({
 
         res_sim$res_bis <- downstream_analysis(df_sub_bis, threshold = input$peak_thresh_bis,
                                                borders_range = input$rise_range_bis, lambda = input$lambda_bis,
-                                               gam = input$gam_bis, false_pos = input$false_pos_bis, one_cell = TRUE,
-                                               pattern_matching = input$patMatch_opt_bis)
+                                               gam = input$gam_bis, false_pos = input$false_pos_bis,simulation = TRUE, one_cell = TRUE,
+                                               pattern_matching = input$patMatch_opt_bis, posBank = posBank, negBank = anomBank)
 
       })
 
@@ -575,7 +576,7 @@ folder <- shiny::reactive({
         res_f <- downstream_analysis(df_full, threshold = input$peak_thresh_full,
                                              borders_range = input$rise_full, lambda = input$lambda_full, gam = input$gam_full,
                                              false_pos = input$false_pos_full, compare_groups = input$groups,
-                                     pattern_matching = input$patMatch)
+                                     pattern_matching = input$patMatch, posBank = posBank, negBank = anomBank)
 
 
         # Extracting and saving the data table containing one row for each peak with the informations
