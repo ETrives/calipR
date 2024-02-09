@@ -77,7 +77,8 @@ print("patdec ok" )
 
   shiny::incProgress(1/5, detail = "Performing Deconvolution")
 
-  deconvolved <- deconvolve(norm, var = "background_detrended")
+  deconvolved <- deconvolve(norm, lambda = lambda, gam = gam, constraint = constraint,
+                            threshold = threshold,var = "background_detrended")
 
   print("deconvolve ok" )
 
@@ -159,7 +160,9 @@ print("patdec ok" )
 
         norm <- norm_df(back, var = "back", width = norm_width)
 
-        deconvolved <- deconvolve(norm, var = "background_detrended")
+        deconvolved <- deconvolve(norm, lambda = lambda,gam = gam,
+                                  constraint = constraint,threshold = threshold,
+                                  var = "background_detrended")
 
 
       }

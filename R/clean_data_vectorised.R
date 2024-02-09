@@ -15,7 +15,7 @@
 #' @return
 #' @export
 #'
-#' @examples
+#' @examples ## the one that is working !!! (function clean data below is not)
 clean_data <- function(data, moving_threshold, outlier_threshold ,mean_width,
                        CN_DPA_width, DPA_width, mean_width_diff, method = "DPA") {
 

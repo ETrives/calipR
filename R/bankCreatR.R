@@ -7,6 +7,8 @@ cells <- unique(d$Cell_id)
 
 #DF <- data.frame(x = d[Cell_id == "1aaa"]$time_frame, y = d[Cell_id == "1aaa"]$Mean_Grey)
 
+bankCreatR <- function(db_name) {
+
 ui <- fluidPage(
   textInput("bankName", "How do you want to call this bank ?"),
 
@@ -50,10 +52,14 @@ server <- function(input, output, session) {
 
 
 
+  df_full <- calipR::get_full_df(paste0(db_name, ".sqlite"), "df_full")
+  print(df_full)
+  cells <- unique(df_full$Cell_id)
 
-  new_DF <- reactiveVal(DF)
 
-  #clickposition_history <- reactiveVal(DF)
+  new_DF <- reactiveVal(df_full)
+
+  #clickposition_history <- reactiveVal(df_full)
 
 
   #clickposition_history <- reactiveVal(initDF)
@@ -77,6 +83,10 @@ server <- function(input, output, session) {
 
   counter <- reactiveValues(value = 0)
 
+  test <- reactiveValues(value = "empty")
+
+
+
   observeEvent(input$submitPattern, {
     counter$value <- counter$value + 1
     start <- as.integer(new_DF()$x[length(new_DF()$x) -1])
@@ -86,6 +96,10 @@ server <- function(input, output, session) {
     print(pattern)
     pattern_list[[as.character(counter$value)]] <- pattern
 
+    test$value <- new_DF()
+
+    print("test")
+    print(test$value[['x']])
 
     })
 
@@ -96,30 +110,41 @@ server <- function(input, output, session) {
     end <-  as.integer(new_DF()$x[length(new_DF()$x)])
 
     pattern <- new_DF()$y[start:end]
-    pattern_viewer[['1']] <- pattern
+    whole_trace <- new_DF()$y
+
+    whole_trace[c(1:start,end:length(new_DF()$x))] <- min(pattern, na.rm = TRUE)
+
+    pattern_viewer[['1']] <- whole_trace
 
   })
 
   observeEvent(input$printList,{
   test <- reactiveValuesToList(pattern_list)
-  print("test")
-  print(test)
+
 })
 
+
+
   output$myPlot <- renderPlotly({
-    plot_ly(initDF, x = ~x, y = ~y, type = "scatter", mode = input$displayType) %>%
+    print("new_DF")
+    print(new_DF())
+    plot_ly(new_DF(), x = ~x, y = ~y, type = "scatter", mode = input$displayType) %>%
       onRender(js, data = "clickposition")
   })
 
   output$pattern <- renderPlotly({
-    fluo <-  c(pattern_viewer[['1']], rep(0, 100))
-    print(fluo)
-    plot_ly(as.data.frame(y = fluo, x = seq(1,length(fluo))), x = ~x, y = ~fluo, type = "scatter", mode = "line")
+    end <-  as.integer(new_DF()$x[length(new_DF()$x)])
+    pattern_len <- length(pattern_viewer[['1']])
+    to_add <- end - pattern_len
+    fluo <- pattern_viewer[['1']]
+    time <- seq(1,length(fluo))
+    df <- as.data.frame(y = fluo, x = time)
+    plot_ly(df, x = ~time, y = ~fluo, type = "scatter", mode = "line")
   })
 
   observeEvent(input$cell, {
-    new_DF(data.frame(x = d[Cell_id == cells[[input$cell]]]$time_frame,
-                      y = d[Cell_id == cells[[input$cell]]]$Mean_Grey ))
+    new_DF(data.frame(x = data.table::setDT(df_full)[Cell_id == cells[[input$cell]]]$time_frame,
+                      y = data.table::setDT(df_full)[Cell_id == cells[[input$cell]]]$Mean_Grey ))
   })
 
   myPlotProxy <- plotlyProxy("myPlot", session)
@@ -135,6 +160,6 @@ server <- function(input, output, session) {
 }
 
 shinyApp(ui, server)
-
+}
 
 bank <- readRDS("bank_test")
