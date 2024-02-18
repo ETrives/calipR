@@ -1,5 +1,10 @@
 #' createId
 #'
+#' Creates a unique identifier for each Cell which keeps the original
+#' cell order in the raw csv file. The identifier contains the coverslip
+#  id coupled with a combination of 3 letters. This prevents alphanumeric reordering
+#' of the cells. 
+#'
 #' @param df
 #' @param coverslip_id
 #'

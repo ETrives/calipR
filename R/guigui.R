@@ -1,5 +1,5 @@
 
-#' launch_GuiGui
+#' guigui
 #'
 #' Exectue this function without any argument to launch the Graphical User Interface (GUI)
 #'
@@ -8,7 +8,7 @@
 #' @export
 #'
 #' @examples
-  launch_GuiGui_bis <- function(){
+  guigui <- function(){
 
 
 

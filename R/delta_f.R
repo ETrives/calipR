@@ -1,12 +1,13 @@
 #' delta_f
 #'
+#' Normalizes the denoised fluorescence trace with the delta f/f method taking the predicted background as a local baseline
+#'
 #' @param data a dataframe output from back_estimate function
 #' @param var the variable which will be normalized (one of poly, gam, linear, quantile)
 #' @param cov_split a list of data table, each element being one coverslip (one technical replicate)
 #'
 #'
-#' @return a vector of the normalized fluorescence values with the delta f / f
-#'method, taking the predicted background as a local baseline
+#' @return the cov_split list within which, each datatable has a new column : the normalized fluorescence values
 #' @export
 #'
 #' @examples

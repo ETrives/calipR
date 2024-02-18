@@ -1,16 +1,12 @@
-### Fonctions Pattern Matching 12/09/23
-
-
-
 #' patDetectR
 #'
 #' Computes the dynamic time warping distance between all the rolling subsequences
 #' of a given length (or several given lengths) and all the patterns in two pattern
 #' banks: a positive bank and a negative bank (and returns the distance for the
-#' best match in each bank).So each index end up
-#' with two distance values for each specified length (window). The value couple (pos;neg)
+#' best match in each bank).So each index end up with two distance values for each 
+#' specified length (window). The value couple (pos;neg)
 #' containing the value that is minimal, is kept. This value couple is then
-#' used to compute a ratio (pos/neg), indicating if the index belongs to signal
+#' used to compute a ratio (pos/neg), used to infer if the index belongs to signal
 #' or noise
 #'
 #' @param dt
@@ -44,7 +40,7 @@ patDetectR <- function(dt, window, step, posBank, negBank, new_len, Var, Norm = 
 
 }
 
-# Dépendences : -------------
+# Depends on : -------------
 
 #' subinoR
 #'
@@ -72,28 +68,20 @@ subinoR <- function(dt, window, step, new_len, posBank, negBank, norm = TRUE, va
 
   # Subsequence segmentation for each chosen window, for each cell in the dt :
 
-  print("before subseq")
 
   # Extracting the minimum time series size to resize them
   resizing <- min(unlist(lapply(split(dt, dt$coverslip), function(x) x[, .N ,by = Cell_id]$N[[1]])))
 
-  print("resizing")
-   print(resizing)
+
   subseq_list <- lapply(seq(1,length(window)), function(x)dt[, subsequencR(get(var),
                                                                            window[[x]], step[[x]], resizing), by = Cell_id])
 
-  print("after subseq")
-
   n_sub_seq_list <- lapply(subseq_list, function(x) length(names(x)) -1)
-
-  print("after n_subseq_list")
 
 
   # Intrerpolation to standardize requests and banks lengths:
 
   interp_patBank2 <- data.table::as.data.table(interpolR(posBank, new_len))
-
-  print("after interp_patBank2")
 
   interp_anomBank <- data.table::as.data.table(interpolR(negBank, new_len))
 
@@ -149,7 +137,7 @@ mdRatio <- function(pos, neg){
   return(pos2)
 }
 
-#' distcomputR_fast
+#' distcomputR
 #'
 #'Computing and extracting the distance between each subsequence and
 # the positive and negative banks. The distance with the pattern which is minimal
@@ -209,8 +197,6 @@ matFillR_bis_bis <- function(dt){
   mat_pos <- matrix(nrow = length(dt$sub_seq), ncol = max(unlist(dt$sub_seq)))
   mat_neg <- mat_pos
 
-  #bef <- Sys.time()
-
   for(i in seq(1,length(dt$value))){
 
     mat_pos[i,idx[,i]] <- dt$value[i]
@@ -223,10 +209,6 @@ matFillR_bis_bis <- function(dt){
 
 
   dt_pos <- data.table::as.data.table(pos_val)[, c("neg_val", "idx") := list( neg_val, seq(1,.N))]
-
-  #af <- Sys.time()
-  #print(paste("after matFillR pos", af, sep = ":"))
-  #print(af - bef)
 
 
   return(dt_pos)
@@ -256,13 +238,9 @@ subsequencR <- function(time_series, window, step, resizing){
     stop("step length cannot be bigger than time series length")
   }
 
-  print("time_series")
-  print(time_series)
 
   time_series <- interpolR(list(time_series), resizing)
 
-  print("time_series2")
-  print(time_series)
 
   s0 <- seq(0,window)
 
@@ -272,27 +250,18 @@ subsequencR <- function(time_series, window, step, resizing){
   it <- seq(1,l-window, by = step)
   sub_seqs <- lapply(it, function(x) s0 + x)
 
-  # créer un dt avec une colonne = la séquence de base, une autre = chaque sous séquence
-
-  print("sub_seqs")
-  print(sub_seqs)
+  # Creating a 2-column dt: 1 is the base sequence the other contains a list with all subsequences
 
   sub_dt <- data.table::data.table("orig_seq" = list(time_series),
                                    "sub_seq" = sub_seqs)[, id := seq(1,.N)]
 
-  print("sub_dt")
-  print(sub_dt)
+ 
+  # Vectorized implementation to subset subsequences
 
-  # Implémentation vectorisée pour le subset des sous séquences
   sub_dt[, sub_seq_final := .(.(unlist(.(.(orig_seq)[1])[[1]])[sub_seq[[1]]])), by = id]
 
-  #mat <- as.matrix(data.table::setDT(sub_dt$sub_seq_final))
 
   dt <- data.table::setDT(sub_dt$sub_seq_final)
-
-  print("dt")
-  print(dt)
-
 
   return(dt)
 
@@ -312,16 +281,14 @@ subsequencR <- function(time_series, window, step, resizing){
 #' @examples
 interpolR <- function(list, len, type = c("one","multiple")){
 
-  print("yi")
+
   dt <- data.table::data.table(list)[, id := seq(1,.N)]
 
-  print("yo")
 
   dt[,  final := .(.(approx(seq(1,length(unlist(.(.(list)[1])[[1]]))),
                             unlist(.(.(list)[1])[[1]]), method = "linear", ties = mean,
                             n = len)$y)), by = id]
 
-  print("ya")
 
   mat <- do.call(cbind, dt$final)
 
@@ -331,7 +298,6 @@ interpolR <- function(list, len, type = c("one","multiple")){
 
 
 
-### Estimation du background :
 #' backEstimatR
 #'
 #' Estimates background fluorescence changes not related to the signal identified
@@ -361,9 +327,6 @@ backEstimatR <- function(dt, patdet_out) {
 
   full_dt <- patdet_out[dt, on = c("Cell_id", "time_frame")]
 
-  print("fullt_dt")
-  print(full_dt)
-
   full_dt[, signal := ifelse(smooth_min_ratio > 0.95 & smooth_Diff < 2*median(smooth_Diff),
                              'Noise', ifelse(smooth_min_ratio < 0.95 & local_mean > median(local_mean),  'Signal', NA)), by = Cell_id]
 
@@ -373,12 +336,12 @@ backEstimatR <- function(dt, patdet_out) {
 
   full_dt[, mean_grey_wo_peaks_new_new := ifelse(signal %in% c("Noise", NA), Mean_Grey, NA), by = Cell_id]
 
-  # Si toutes les valeurs ont été enlevées : fixer la première et la dernière valeur
+  # If all values have been removed : fix the first and last values
 
   full_dt[, mean_grey_wo_peaks_new_new := ifelse(time_frame %in% c(1,.N), rolling_min_new, mean_grey_wo_peaks_new_new), by = Cell_id]
 
 
-  # Interpolation linéaire des valeurs qui ont été enlevées :
+  # Linear interpolation between removed values
 
   full_dt[,labels := cumsum(!is.na(mean_grey_wo_peaks_new_new)) , by = Cell_id]
   full_dt[,labels2 := seq(1,.N) , by = .(Cell_id, labels)]
@@ -397,7 +360,7 @@ backEstimatR <- function(dt, patdet_out) {
   full_dt[, mean_grey_wo_peaks_new_new := approxfun(which(!is.na(mean_grey_wo_peaks_new_new)), na.omit(mean_grey_wo_peaks_new_new))(seq_along(mean_grey_wo_peaks_new_new)), by = Cell_id]
 
 
-  # Estimation du background via une médiane glissante
+  # Background estimation through a rolling median (1st round) :
 
 
   full_dt[, rolling_med_new := gplots::wapply(time_frame, mean_grey_wo_peaks_new_new,fun = median,
@@ -406,13 +369,15 @@ backEstimatR <- function(dt, patdet_out) {
 
   full_dt[, below_med := ifelse(mean_grey_wo_peaks_new_new < rolling_med_new, TRUE, FALSE), by = Cell_id]
 
+  # Removing values upper the rolling median :
   full_dt[, mean_grey_wo_peaks_new_new := ifelse(below_med == TRUE, mean_grey_wo_peaks_new_new, NA)]
 
   full_dt[, mean_grey_wo_peaks_new_new := ifelse(time_frame %in% c(1,.N), rolling_min_new, mean_grey_wo_peaks_new_new), by = Cell_id]
 
-  # Interpolation linéaire des valeurs qui ont été enlevées :
+  # Linear interpolation of removed values :
   full_dt[, mean_grey_wo_peaks_new_new := approxfun(which(!is.na(mean_grey_wo_peaks_new_new)), na.omit(mean_grey_wo_peaks_new_new))(seq_along(mean_grey_wo_peaks_new_new)), by = Cell_id]
 
+  # Last rolling median to estimate the background
   full_dt[, background := gplots::wapply(time_frame, mean_grey_wo_peaks_new_new,fun = median,
                                          n = length(time_frame),  width = 30, method = "nobs")[[2]], by = Cell_id]
 

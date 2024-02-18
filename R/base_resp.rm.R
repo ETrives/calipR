@@ -1,17 +1,15 @@
 
 #' base_resp.rm
 #'
+#' Identifies and removes baseline responders from the full and the peaks datatable
 #' @param borders
 #'
-#' @return The dataset containing the peaks informations without the peaks of
-#' the cells that responded to baseline.
+#' @return each dataset without data of cells responding to baseline
 #' @export
 #'
 #' @examples
 base_resp.rm <- function(borders, full){
 
-print(borders)
-print(str(borders))
 
 #cell_split <- split(borders[[1]], borders[[1]]$Cell_id)
 

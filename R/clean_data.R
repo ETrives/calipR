@@ -15,7 +15,7 @@
 #' @return
 #' @export
 #'
-#' @examples ## the one that is working !!! (function clean data below is not)
+#' @examples
 clean_data <- function(data, moving_threshold, outlier_threshold ,mean_width,
                        CN_DPA_width, DPA_width, mean_width_diff, method = "DPA") {
 
@@ -28,20 +28,14 @@ clean_data <- function(data, moving_threshold, outlier_threshold ,mean_width,
 
   na_sum <- data.table::setDT(data)[, .(NA_sum = sum(is.na(get("Mean_Grey")))), by = Cell_id ]
 
-  print("na_sum")
-  print(na_sum)
 
   frame_sum <- data[, .(frame_sum = length(get("Mean_Grey"))), by = Cell_id ]
-  print("frame_sum")
-  print(frame_sum)
+
 
   na_ratio <- na_sum$NA_sum / frame_sum$frame_sum
-  print("frame_sum")
 
-  print(frame_sum)
   data$na_ratio <- unlist(purrr::map2(na_ratio, frame_sum$frame_sum, function(x,y)
                    rep(x,times = y)))
-  print(data$na_ratio)
 
 
   # Removing cells that moved too much (fluorescence down to zero)
@@ -83,10 +77,6 @@ clean_data <- function(data, moving_threshold, outlier_threshold ,mean_width,
   cell_split <- split(data, data$Cell_id)
   cell_split <- lapply(cell_split, function(x) data.table::setDT(x)[, c("DPA", "CN_DPA") := list(DPA(x, DPA_width),  CN_DPA(x, CN_DPA_width))])
 
-
-  print("DPA DOOONE")
-
-  print("CN_DPA DOOONE")
 
   cell_split <- lapply(cell_split, function(x) x[, c("DPA", "CN_DPA") :=
                             list(replace(DPA, is.na(DPA),quantile_speed(DPA, probs = .5)),
@@ -143,7 +133,6 @@ clean_data <- function(data, moving_threshold, outlier_threshold ,mean_width,
   print(paste("Removed", ncells_before - length(unique(data$Cell_id)), "cells", sep = " " ))
 
 
-print(data)
   return(data)
 
 }

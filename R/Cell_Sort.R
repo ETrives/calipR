@@ -1,6 +1,8 @@
-library(tidyr)
 
 #' cell_sort
+#'
+#' Transforms the raw datatable in long format, creates a unique Identifier for each cell
+#' and adds coverslip, timing, grouping and molecular marker informations.
 #'
 #' @param df
 #' @param pat
@@ -10,8 +12,12 @@ library(tidyr)
 #' @param multiple
 #' @param compare_groups
 #' @param groups
+#' @param marker
+#' @param marker_thresh
 #'
-#' @return
+#' @return A long format data table with 8 columns : Mean_Grey, Cell_id, stimulus, coverslip, time_frame, 
+#' time_seconds, time_frame_stim, marker, marker_positive
+
 #' @export
 #' @importFrom data.table :=
 
@@ -45,12 +51,10 @@ cell_sort <- function(df,pat,  duration_in_seconds, frame_rate, id,
   long_marker <- tidyr::gather(marker,
                                key = "Cell_id",
                                value = "Mean_Grey", 1:dim[2])
-  print("long_marker")
-  print(long_marker)
-  print(dim)
+
   data_fus$marker <- rep(long_marker$Mean_Grey, each = dim[1])
   data_fus$marker_positive <-  data_fus$marker > marker_thresh
-  print(data_fus)
+
 }
 
 
