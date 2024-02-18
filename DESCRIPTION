@@ -35,6 +35,7 @@ Imports:
   shiny,
   DT,
   shinycssloaders,
-  plotly
+  plotly,
+  proxy
 Remotes:
   jewellsean/FastLZeroSpikeInference
