@@ -26,7 +26,7 @@ calipR is a free and open source software dedicated to calcium imaging data anal
 
 -   Basic Statistics
 
--   Clustering Analysis [(dtw_clust package)](https://github.com/asardaes/dtwclust)-- in development
+-   <in development> Clustering Analysis [(dtwclust package)](https://github.com/asardaes/dtwclust)
 
 ## Project Goals
 
@@ -46,11 +46,18 @@ calipR is a free and open source software dedicated to calcium imaging data anal
 
 ## Windows Application Installation
 
-To install the Graphical User Interface (GUI) based version for windows, you only need to download and execute the last version of the calipR.exe file available here. Once installed, just run the program and start your data analysis !
+To install the Graphical User Interface (GUI) based version for windows, you only need to download and execute the last version of the calipR.exe file available in the [release section](https://github.com/ETrives/calipR/releases). Once installed, just run the program and start your data analysis!
 
 ## R package Installation
 
-You can download the last version from github with devtools
+You can download the latest version from r-universe
+
+``` r
+
+install.packages('calipR', repos = c('https://etrives.r-universe.dev', 'https://cloud.r-project.org'))
+```
+
+or from github with devtools
 
 ``` r
 # Install devtools if necessary
@@ -62,26 +69,3 @@ library(devtools)
 #install calipR from github
 install_github("ETrives/calipR")
 ```
-
-## Usage
-
-``` python
-import foobar
-
-# returns 'words'
-foobar.pluralize('word')
-
-# returns 'geese'
-foobar.pluralize('goose')
-
-# returns 'phenomenon'
-foobar.singularize('phenomena')
-```
-
-## Contributing
-
-Pull requests are welcome. For major changes, please open an issue first to discuss what you would like to change.
-
-## License
-
-[MIT](https://choosealicense.com/licenses/mit/)
