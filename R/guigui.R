@@ -34,8 +34,6 @@ ui <-
 
       #shiny::tags$style(".left-side, .main-sidebar {padding-top: 180px}"),
       shinydashboard::sidebarMenu(id = "sidebarid",
-                                  shinydashboard::menuItem(
-                                    "Description", tabName = "des"),
 
                                   shinydashboard::menuItem(
                                     "Prepare Your Data", tabName = "prep", expandedName = "Prepare Your Data"),
@@ -99,52 +97,6 @@ ui <-
 
       shinydashboard::tabItems(
 
-        shinydashboard::tabItem("des",
-
-        shiny::fluidRow(
-
-          shiny::img(src = "logo/calipR_logo.png",
-                     style = "border: 1px;
-    color: white;
-    position: absolute;
-    top : 100px;
-    left: 300px;
-    right: 0;
-    margin: 0 auto;
-    max-width: 250px;"), shiny::div(style = "height:1000px;")),
-
-
-        shiny::fluidRow(
-
-        shiny::HTML( "<center> <p style = 'font-size: 20px; word-wrap: break-word;
-        width: 1000px; align: justify; color: black; padding-top: 50px;
-    position: absolute;
-    top: 400px;
-    left: 250px;
-    right: 0;
-    margin: 0 auto;
-    max-width: 600px;'> <b> calipR </b> is an open source software designed to facilitate calcium imaging data analysis.
-                      It is fully written in the R programming language.
-                      With this Graphical User Interface (GUI) you can analyze your data
-                      without any programming skills.<br> <br>
-                      Two workflows are available: one that allows you to automatize
-                     ROIs detection with the Trackmate imageJ plugin and another
-                     one that takes the output from manual ROI detection in ImageJ.
-                     To start with your first analysis you can go on to the Tutorial page.</p> </center>"),
-
-
-        ),
-        shiny::fluidRow(shiny::tags$br()),
-        shiny::fluidRow(shiny::tags$br()),
-        shiny::fluidRow(shiny::tags$br()),
-
-        ),
-
-
-
-        shinydashboard::tabItem("ana", shiny::fluidRow(shiny::div(style = "height:1000px;"))),
-
-        shinydashboard::tabItem("tuto", shiny::fluidRow(shiny::div(style = "height:1000px;"))),
 
         shinydashboard::tabItem("prep",
 

@@ -18,5 +18,8 @@ Analyze_Responses(
 \item{compare_groups}{}
 }
 \description{
-Analyze_Responses
+Takes the full data table after the cleaning step and the peaks data table
+(one line per calcium event) to provide counts and proportions of responding cells as a function of
+a (combination of) user defined variable(s). If values are repeated measures, a cochran q test evaluates difference in at
+least one condition then post hoc pairwise comparisons are calculated with a mcnemar test.
 }

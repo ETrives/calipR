@@ -16,9 +16,9 @@ A data table containing the ratio for each index and related informations
 Computes the dynamic time warping distance between all the rolling subsequences
 of a given length (or several given lengths) and all the patterns in two pattern
 banks: a positive bank and a negative bank (and returns the distance for the
-best match in each bank).So each index end up
-with two distance values for each specified length (window). The value couple (pos;neg)
+best match in each bank).So each index end up with two distance values for each
+specified length (window). The value couple (pos;neg)
 containing the value that is minimal, is kept. This value couple is then
-used to compute a ratio (pos/neg), indicating if the index belongs to signal
+used to compute a ratio (pos/neg), used to infer if the index belongs to signal
 or noise
 }

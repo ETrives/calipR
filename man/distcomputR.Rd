@@ -2,7 +2,7 @@
 % Please edit documentation in R/backEstimate_pat_match.R
 \name{distcomputR}
 \alias{distcomputR}
-\title{distcomputR_fast}
+\title{distcomputR}
 \usage{
 distcomputR(patMat, subseqMat, step, window)
 }

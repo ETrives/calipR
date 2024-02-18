@@ -10,9 +10,8 @@ base_resp.rm(borders, full)
 \item{borders}{}
 }
 \value{
-The dataset containing the peaks informations without the peaks of
-the cells that responded to baseline.
+each dataset without data of cells responding to baseline
 }
 \description{
-base_resp.rm
+Identifies and removes baseline responders from the full and the peaks datatable
 }

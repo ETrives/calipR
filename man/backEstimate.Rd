@@ -12,10 +12,12 @@ backEstimate(data, smooth = 50, method = c("smooth", "gam"))
 \item{method}{One method among the 4 possible options : "linear", "polynomial", "gam", "quantile"}
 }
 \value{
-a data table object with 5 new columns : a local mean, the first derivative, the DPA, the mean grey values with peak values replaced by 10th percentile and the fitted values with the chosen method (the background estimation)
+a data table object with 5 new columns : a local mean, the first derivative, the DPA,
+the mean grey values with peak values replaced and the fitted values with the chosen method (the background estimation)
 }
 \description{
 Function to estimate the background (the low frequency changes) of each ROI
-with 4 available methods : simple linear regression, polynomial regression,
-generalized additive model (GAM) or 8th percentile.
+with 2 available methods : a running average or a generalized additive model (GAM).
+These variables are computed on the Mean Gray fluorescence values in which probable peaks have been removed
+within the previous function(clean_data).
 }

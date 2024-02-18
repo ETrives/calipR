@@ -2,7 +2,7 @@
 % Please edit documentation in R/CN_DPA.R
 \name{CN_DPA}
 \alias{CN_DPA}
-\title{DPA}
+\title{CN_DPA}
 \usage{
 CN_DPA(data, CN_DPA_width)
 }
