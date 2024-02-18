@@ -37,6 +37,8 @@ Imports:
   shinycssloaders,
   plotly,
   proxy,
-  matrixprofiler
+  matrixprofiler,
+  rucrdtw,
+  robustbase
 Remotes:
   jewellsean/FastLZeroSpikeInference
