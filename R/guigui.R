@@ -36,7 +36,7 @@ ui <-
       shinydashboard::sidebarMenu(id = "sidebarid",
 
                                   shinydashboard::menuItem(
-                                    "Prepare Your Data", tabName = "prep", expandedName = "Prepare Your Data"),
+                                    "Prepare Your Data", tabName = "prep"),
                                   shiny::conditionalPanel( 'input.sidebarid === "prep"',
                                                            shiny::checkboxInput("create", label = "Create New Project"),
                                                            shiny::checkboxInput("load", label = "Load Existing Project")),
@@ -50,8 +50,8 @@ ui <-
                                   shiny::conditionalPanel( 'input.sidebarid === "bank"',
                                                            shiny::textInput("db_name", label = NULL, placeholder = "Database name"),
                                                            shiny::textInput("bankName", "How do you want to call this bank ?"),
-                                                           shiny::actionButton("start_creation", "Load Data", align = "center")
-                                  ),
+                                                           shiny::actionButton("start_creation", "Load Data", align = "center")),
+
                                   shinydashboard::menuItem(
                                     "Optimize Analysis Parameters", tabName = "opt"),
                                   shinydashboard::menuItem(
@@ -78,8 +78,8 @@ ui <-
 
 
 
-    shinydashboard::dashboardBody(
 
+    shinydashboard::dashboardBody(
 
       shiny::tags$head(shiny::tags$style(shiny::HTML("
 
@@ -95,39 +95,12 @@ ui <-
 
                                     "))),
 
+
       shinydashboard::tabItems(
 
 
         shinydashboard::tabItem("prep",
 
-        shiny::tags$style(shiny::HTML("
-
-
-.box.box-solid.box-primary>.box-header {
-  color:#fff;
-  background:#5499c7
-                    }
-
-.box.box-solid.box-primary{
-border-bottom-color:#5499c7  ;
-border-left-color:#5499c7  ;
-border-right-color:#5499c7  ;
-border-top-color:#5499c7  ;
-}
-
-.box.box-primary>.box-header {
-  color:#000000;
-  background:#fff
-                    }
-
-.box.box-primary{
-border-bottom-color:#5499c7  ;
-border-left-color:#5499c7  ;
-border-right-color:#5499c7  ;
-border-top-color:#5499c7  ;
-}
-
-                                    ")),
 
         shiny::fluidRow(shiny::column(12,
         shinydashboard::box(title = "Project", width = 12,
@@ -142,7 +115,7 @@ border-top-color:#5499c7  ;
         shiny::fluidRow(shiny::column(12,
         shinydashboard::box(title = "Dataset Prepared", width = 12, solidHeader = TRUE, status = "primary", collapsible = T,
             shiny::dataTableOutput("df_created"),
-            shiny::dataTableOutput("df_loaded"))))),
+            shiny::dataTableOutput("df_loaded"),shiny::div(style = "height:1000px"))))),
 
       shinydashboard::tabItem("bank",
             shiny::fluidRow(
