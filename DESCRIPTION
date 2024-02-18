@@ -1,6 +1,6 @@
 Package: calipR
 Title: Calcium Imaging Analysis Pipeline in R 
-Version: 1.0.0
+Version: 1.0.0-alpha
 Authors@R: 
     person("Elliott", "Trives", , "triveselliott@hotmail.fr", role = c("aut", "cre"),
            comment = c(ORCID = "https://orcid.org/0009-0009-2683-4859"))
