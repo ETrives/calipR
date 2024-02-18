@@ -39,6 +39,7 @@ Imports:
   proxy,
   matrixprofiler,
   rucrdtw,
-  robustbase
+  robustbase,
+  dtwclust
 Remotes:
   jewellsean/FastLZeroSpikeInference

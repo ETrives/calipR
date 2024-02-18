@@ -24,7 +24,7 @@ calipR is a free and open source software dedicated to calcium imaging data anal
 
 -   Basic Statistics
 
--   Clustering Analysis [(dtw_clust package)](https://github.com/asardaes/dtwclust)-- in development
+-   \< in development \> Clustering Analysis [(dtwclust package)](https://github.com/asardaes/dtwclust)
 
 ## Project Goals
 
