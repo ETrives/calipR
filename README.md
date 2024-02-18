@@ -4,7 +4,7 @@
 
 A **Cal**cium **I**maging Data Analysis **P**ipeline in **R**
 
-calipR is a free and open source software dedicated to calcium imaging data analysis. It is fully coded in R and is distributed both as an R package and as a standalone windows application.\
+calipR is a free and open source software dedicated to calcium imaging data analysis. It is fully coded in R and is distributed both as an R package and as a standalone windows application.
 
 ## Key Features
 
@@ -44,7 +44,7 @@ calipR is a free and open source software dedicated to calcium imaging data anal
 
 ## Windows Application Installation
 
-To install the Graphical User Interface (GUI) based version for windows, you only need to download and execute the last version of the calipR.exe file available here. Once installed, just run the program and start your data analysis !
+To install the Graphical User Interface (GUI) based version for windows, you only need to download and execute the last version of the calipR.exe file available [in the release section](https://github.com/ETrives/calipR/releases). Once installed, just run the program and start your data analysis !
 
 ## R package Installation
 
@@ -60,4 +60,3 @@ library(devtools)
 #install calipR from github
 install_github("ETrives/calipR")
 ```
-
