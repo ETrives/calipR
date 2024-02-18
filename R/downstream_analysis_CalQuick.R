@@ -35,7 +35,7 @@
 downstream_analysis <- function(data, moving_thresh = 0.1, outlier_thresh = 2, mean_width = 20, DPA_width = 10, CN_DPA_width = 20,
                                 mean_width_diff = 10, method = "gam", norm_var = "gam",
                                 norm_width = 10, lambda = 100,
-                                gam = 0.97, constraint = T, threshold = 3,
+                                gam = 0.97, constraint = T, z_thresh = 3, delta_thresh = 0,
                                 deconvolve_var = "gam_detrended", borders_range = 50,
                                 time_thresh = 1, compare_groups = FALSE, false_pos = c(TRUE, FALSE), one_cell = FALSE, simulation = FALSE,
                                 pattern_matching = FALSE, posBank = list(),
@@ -45,10 +45,10 @@ downstream_analysis <- function(data, moving_thresh = 0.1, outlier_thresh = 2, m
   print(lambda)
   gam <- as.numeric(gam)
   print(gam)
-  threshold <- as.numeric(threshold)
-  print(threshold)
-  borders_range <- as.integer(borders_range)
-  print(borders_range)
+  #threshold <- as.numeric(threshold)
+  print(z_thresh)
+  #borders_range <- as.integer(borders_range)
+  #print(borders_range)
 
 
 
@@ -78,7 +78,7 @@ print("patdec ok" )
   shiny::incProgress(1/5, detail = "Performing Deconvolution")
 
   deconvolved <- deconvolve(norm, lambda = lambda, gam = gam, constraint = constraint,
-                            threshold = threshold,var = "background_detrended")
+                            threshold = z_thresh, delta_threshold = delta_thresh, var = "background_detrended")
 
   print("deconvolve ok" )
 
@@ -106,7 +106,7 @@ print("patdec ok" )
   shiny::incProgress(1/5, detail = "Performing Deconvolution")
 
   deconvolved <- deconvolve(norm, lambda = lambda, gam = gam, constraint = constraint,
-                            threshold = threshold, var = deconvolve_var)
+                            threshold = z_thresh, delta_threshold = delta_thresh, var = deconvolve_var)
   }
 
 
@@ -161,7 +161,8 @@ print("patdec ok" )
         norm <- norm_df(back, var = "back", width = norm_width)
 
         deconvolved <- deconvolve(norm, lambda = lambda,gam = gam,
-                                  constraint = constraint,threshold = threshold,
+                                  constraint = constraint,threshold = z_thresh,
+                                  delta_threshold = delta_thresh,
                                   var = "background_detrended")
 
 
@@ -185,7 +186,8 @@ print("patdec ok" )
         print(norm)
 
         deconvolved <- deconvolve(norm, lambda = lambda, gam = gam, constraint = constraint,
-                                  threshold = threshold, var = deconvolve_var)
+                                  threshold = z_thresh, delta_threshold = delta_thresh,
+                                  var = deconvolve_var)
 
       }
 

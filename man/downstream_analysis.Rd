@@ -18,18 +18,24 @@ downstream_analysis(
   lambda = 100,
   gam = 0.97,
   constraint = T,
-  threshold = 3,
+  z_thresh = 3,
+  delta_thresh = 0,
   deconvolve_var = "gam_detrended",
   borders_range = 50,
   time_thresh = 1,
   compare_groups = FALSE,
   false_pos = c(TRUE, FALSE),
   one_cell = FALSE,
-  simulation = FALSE
+  simulation = FALSE,
+  pattern_matching = FALSE,
+  posBank = list(),
+  negBank = list(),
+  windows = c(30, 70, 100),
+  steps = c(5, 10, 50)
 )
 }
 \arguments{
-\item{compare_groups}{}
+\item{steps}{}
 }
 \description{
 downstream_analysis

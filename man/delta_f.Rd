@@ -4,7 +4,7 @@
 \alias{delta_f}
 \title{delta_f}
 \usage{
-delta_f(cov_split, var = c("poly", "gam", "linear", "quantile"))
+delta_f(cov_split, var = c("poly", "gam", "linear", "quantile", "back"))
 }
 \arguments{
 \item{cov_split}{a list of data table, each element being one coverslip (one technical replicate)}

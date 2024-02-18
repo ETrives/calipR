@@ -34,55 +34,49 @@ ui <-
 
       #shiny::tags$style(".left-side, .main-sidebar {padding-top: 180px}"),
       shinydashboard::sidebarMenu(id = "sidebarid",
-                  shinydashboard::menuItem(
-                    "Description", tabName = "des"),
+                                  shinydashboard::menuItem(
+                                    "Description", tabName = "des"),
+
+                                  shinydashboard::menuItem(
+                                    "Prepare Your Data", tabName = "prep", expandedName = "Prepare Your Data"),
+                                  shiny::conditionalPanel( 'input.sidebarid === "prep"',
+                                                           shiny::checkboxInput("create", label = "Create New Project"),
+                                                           shiny::checkboxInput("load", label = "Load Existing Project")),
+
+                                  shinydashboard::menuItem(
+                                    "Visualize Raw Data", tabName = "viz"),
+                                  shiny::conditionalPanel( 'input.sidebarid === "viz"'),
+
+                                  shinydashboard::menuItem(
+                                    "Create Your Banks", tabName = "bank"),
+                                  shiny::conditionalPanel( 'input.sidebarid === "bank"',
+                                                           shiny::textInput("db_name", label = NULL, placeholder = "Database name"),
+                                                           shiny::textInput("bankName", "How do you want to call this bank ?"),
+                                                           shiny::actionButton("start_creation", "Load Data", align = "center")
+                                  ),
+                                  shinydashboard::menuItem(
+                                    "Optimize Analysis Parameters", tabName = "opt"),
+                                  shinydashboard::menuItem(
+                                    "Launch Full Analysis", tabName = "ana_full"),
+                                  shiny::conditionalPanel( 'input.sidebarid === "ana_full"',
+                                                           shiny::numericInput("peak_thresh_full_z", label = "Peak Threshold (z)", value = 0, min = 0),
+                                                           shiny::numericInput("peak_thresh_full_delta", label = "Peak Threshold (deltaf/f)", value = 0, min =0),
+                                                           shiny::textInput("lambda_full", label = "Lambda"),
+                                                           shiny::textInput("gam_full", label = "gam"),
+                                                           shiny::checkboxInput("false_pos_full", label = "False Positives Estimation"),
+                                                           shiny::checkboxInput("patMatch", label = "Background Estimation with Pattern Matching"),
+                                                           shiny::uiOutput('posBank_field_full'),
+                                                           shiny::uiOutput('negBank_field_full'),
+                                                           shiny::uiOutput('window_field_full'),
 
 
-                  shinydashboard::menuItem(
-                    "Tutorial", tabName = "tuto"),
-
-                  shinydashboard::menuItem(
-                    "Analyze Your Data", tabName = "ana"),
-
-                  shinydashboard::menuSubItem("Prepare Data", tabName = "prep"),
-                  shinydashboard::menuSubItem("Visualize Raw Data", tabName = "viz"),
-                  shinydashboard::menuSubItem("Optimize Analysis Parameters", tabName = "opt"),
-                  shinydashboard::menuSubItem("Analyze data", tabName = "ana_full"),
-                  shinydashboard::menuSubItem("Visualize Results", tabName = "viz_res"),
+                                                           shiny::checkboxInput("groups", label = "Compare groups"),
+                                                           shiny::actionButton("ana_full_button", "Launch Full Analysis", align = "center")),
+                                  shinydashboard::menuItem(
+                                    "Visualize Results", tabName = "viz_res")
 
 
-
-                  shiny::conditionalPanel( 'input.sidebarid == "prep"',
-                                   shiny::selectInput("stim_num", label ="Stimuli number (/cell)", c("1" = "1", "2" = "2", "3" = "3",
-                                                                                                                     "4" = "4", "5" = "5", "6"="6", "7"="7",
-                                                                                                                      "8"="8", "9"="9","10"="10")),
-                                   shiny::textInput("frame_rate", label = "Enter your frame rate (Hz)", placeholder = "e.g. 0.5" ),
-                                   shiny::textInput("folder", label = NULL, placeholder = "Write folder's name (where all the files are)"),
-                                   shiny::textInput("mark_thresh", label = "if you have a cellular marker, enter your threshold", placeholder = "e.g. 30"),
-                                   shiny::checkboxInput("trackbox", label = "Check if you did ROI detection with Trackmate"),
-
-                                   shiny::actionButton("launch", "Load & Tidy Data", align = "center")),
-
-                 shiny::conditionalPanel( 'input.sidebarid == "viz"',
-                                   ),
-
-
-                 shiny::conditionalPanel( 'input.sidebarid == "ana_full"',
-                                   shiny::textInput("peak_thresh_full", label = "Peak Threshold", placeholder = "Peak Threshold"),
-                                   shiny::textInput("rise_full", label = "Borders Range", placeholder = "Frame before peak"),
-                                   shiny::textInput("lambda_full", label = "Lambda"),
-                                   shiny::textInput("gam_full", label = "gam"),
-                                   shiny::checkboxInput("false_pos_full", label = "False Positives Estimation"),
-                                   shiny::checkboxInput("patMatch", label = "Background Estimation with Pattern Matching"),
-                                   shiny::uiOutput('posBank_field_full'),
-                                   shiny::uiOutput('negBank_field_full'),
-                                   shiny::uiOutput('window_field_full'),
-
-
-                                   shiny::checkboxInput("groups", label = "Compare groups"),
-                                   shiny::actionButton("ana_full_button", "Launch Full Analysis", align = "center"))
-
-                            )),
+      )),
 
 
 
@@ -183,47 +177,55 @@ border-top-color:#5499c7  ;
 
                                     ")),
 
-      shiny::fluidRow(class = "myRow1",
-                 shiny::column(12,
+        shiny::fluidRow(shiny::column(12,
+        shinydashboard::box(title = "Project", width = 12,
+                            solidHeader = TRUE, status = "primary", collapsible = T,
+
+        shiny::uiOutput("project_creation"),
+        shiny::uiOutput("project_loading")
+        ))),
+
+
+
+        shiny::fluidRow(shiny::column(12,
         shinydashboard::box(title = "Dataset Prepared", width = 12, solidHeader = TRUE, status = "primary", collapsible = T,
-            DT::dataTableOutput("df_sql")),
+            shiny::dataTableOutput("df_created"),
+            shiny::dataTableOutput("df_loaded"))))),
 
-        shiny::textInput("db_name", label = NULL, placeholder = "Enter the name of the database you want to use to create your bank"),
-        shiny::actionButton("start_creation", "Create Bank", align = "center"),
-        textInput("bankName", "How do you want to call this bank ?"),
-
-
-        actionButton("viewPattern", "View Selected Pattern"),
-        actionButton("submitPattern", "Submit Pattern to Bank"),
-
-        actionButton("printList", "Print Bank"),
-        actionButton("saveNewBank", "Save Bank"),
-        actionButton("start_newbank", "Start New Bank"),
-
-        numericInput("cell",label = "cell_number", value = 1),
-        selectInput("displayType", "Type of data display", choices = list("points" = "markers", "line" = "line",
+      shinydashboard::tabItem("bank",
+            shiny::fluidRow(
+            shinydashboard::box(title = "Select Patterns by clicking on the graph", width = 12, solidHeader = TRUE, status = "primary",
+        shiny::numericInput("cell",label = "cell_number", value = 1),
+        shiny::selectInput("displayType", "Type of data display", choices = list("points" = "markers", "line" = "line",
                                                                           "both" = "lines+markers"),selected = "points" ),
-        plotlyOutput("myPlot"),
-        plotlyOutput("pattern"),
+        plotly::plotlyOutput("myPlot")),
 
-        verbatimTextOutput("click"),
+        shinydashboard::box(title = "View and Add Patterns to Bank", width = 12, solidHeader = TRUE, status = "primary",
+        shiny::actionButton("viewPattern", "View Selected Pattern"),
+        shiny::actionButton("submitPattern", "Submit Pattern to Bank"),
+        plotly::plotlyOutput("pattern"),
+        shiny::actionButton("printList", "Print Bank"),
+        shiny::actionButton("saveNewBank", "Save Bank"),
+        shiny::actionButton("start_newbank", "Start New Bank"),
 
-        shiny::div(style = "height:1000px;")))),
+        #shiny::verbatimTextOutput("click"),
+
+        #shiny::div(style = "height:1000px;")
+        ))),
 
 
       shinydashboard::tabItem("viz",
       shiny::fluidRow(
-        shinydashboard::box(title = "Plotting Cells", width = 6, solidHeader = TRUE, status = "primary",
-            shiny::textInput("cell_viz", label = NULL, placeholder = "Enter the name of the cell you want to plot"),
-            shiny::actionButton("cell_click", "Plot Cell", align = "center"),
+        shinydashboard::box(title = "Plotting Cells", width = 12, solidHeader = TRUE, status = "primary",
+            shiny::numericInput("cell_num",label = "cell_number", value = 1),
             shiny::plotOutput(outputId = "plot_cell")), shiny::div(style = "height:1000px"))),
 
       shinydashboard::tabItem("opt",
 
       shiny::fluidRow(
       shinydashboard::box(title = "Optimize Parameters", width = 6, solidHeader = TRUE, status = "primary",
-            shiny::textInput("peak_thresh", label = "Peak Threshold", placeholder = "Enter the peak threshold you want to try (z score)"),
-            shiny::textInput("rise_range", label = "Range", placeholder = "Enter the range taken to find a peak start (integer between 5 and 60)"),
+            shiny::numericInput("peak_thresh", label = "Peak Threshold (z score)", value = 0, min = 0),
+            shiny::numericInput("peak_thresh_delta", label = "Peak Threshold (delta f/f)", value = 0, min = 0),
             shiny::textInput("lambda", label = "Lambda", placeholder = "Enter the Lambda parameter for the Deconvolution (integer)"),
             shiny::textInput("gam", label = "Gam", placeholder = "Enter the Gam parameter for the Deconvolution (double between 0-1)"),
             shiny::textInput("n_cells", label = "Number of cells", placeholder = "Enter the number of cells you want to run the stimulation on"),
@@ -254,8 +256,8 @@ border-top-color:#5499c7  ;
       shinydashboard::box(title = "Try other parameters on a given cell", width = 6, solidHeader = TRUE, status = "primary",
             shiny::textInput("cell_opt", label = "Cell", placeholder = "On which cell do you want to try new parameters ?"),
 
-            shiny::textInput("peak_thresh_bis", label = "Threshold", placeholder = "Enter the peak threshold you want to try (z score)"),
-            shiny::textInput("rise_range_bis", label = "Range", placeholder = "Enter the range taken to find a peak start (integer between 5 and 60)"),
+            shiny::numericInput("peak_thresh_bis", label = "Threshold (z_score)", value = 0, min = 0),
+            shiny::numericInput("peak_thresh_bis_delta", label = "Threshold (delta f/f)", value = 0, min = 0),
 
             shiny::textInput("lambda_bis", label = "Lambda", placeholder = "Enter the Lambda parameter for the Deconvolution (integer)"),
             shiny::textInput("gam_bis", label = "Gam", placeholder = "Enter the Gam parameter for the Deconvolution (double between 0-1)"),
@@ -284,7 +286,7 @@ border-top-color:#5499c7  ;
                           shiny::plotOutput(outputId = "plot_cell_sim_bis"))),
 
       shiny::fluidRow(
-        shinydashboard::box(title = "Statistics", width = 6, solidHeader = TRUE, status = "primary",
+        shinydashboard::box(title = "Statistics", width = 12, solidHeader = TRUE, status = "primary",
                             DT::dataTableOutput("stats_opt")))),
 
 
@@ -318,7 +320,7 @@ border-top-color:#5499c7  ;
               shiny::checkboxInput("base_resp_dual", label = "Remove Baseline Responders"),
 
               shiny::br(),
-              DT::dataTableOutput("dual_prop")),shiny::div(style = "height:1000px;")),
+              DT::dataTableOutput("dual_prop"))),
 
 
       ### Clustering module :
@@ -332,11 +334,7 @@ border-top-color:#5499c7  ;
                             shiny::uiOutput('seed_field'),
 
                             shiny::selectInput("dist_type", "Distance Measure to Use",
-                                               list("Euclidean" = "Euclidean",
-                                                    "Dynamic Time Warping" = "dtw",
-                                                    "Global Alignment Kernels" = "gak",
-                                                    "Manhattan" = "Manhattan",
-                                                    "Shape Based Distance" = "sbd")),
+                                               proxy::pr_DB$get_entry_name()),
                             shiny::actionButton("clustplot_button", "Launch Clustering", align = "right"),
 
                             shiny::plotOutput(outputId = "clustplot")),shiny::div(style = "height:1000px;"))),
@@ -347,16 +345,13 @@ border-top-color:#5499c7  ;
       shinydashboard::tabItem("viz_res",
                               shiny::fluidRow(
                                 shinydashboard::box(title = "Plotting Results", width = 12, solidHeader = TRUE, status = "primary",
-                                                    shiny::selectInput(inputId = "x", label = NULL, list("Group" = "group", "Coverslip" = "coverslip", "Stimulus" = "stimulus", "Marker" = "marker_positive")),
-                                                    shiny::selectInput(inputId = "y", label = NULL, list("Proportion Responders" = "Prop_marker_resp", "Responses" = "Responses", "Proportion Totale" = "Prop_tot", "Proportion Marker" = "Prop_marker" )),
-                                                    shiny::selectInput(inputId = "z", label = NULL, list("Group" = "group", "Coverslip" = "coverslip", "Stimulus" = "stimulus", "Marker" = "marker_positive")),
-                                                    plotly::plotlyOutput(outputId = "viz")),shiny::div(style = "height:1000px;")),
+                                                    shiny::uiOutput("var_selector"),
+                                                    plotly::plotlyOutput(outputId = "viz"))),
+
+                                #shiny::div(style = "height:1000px;")),
 
                               shiny::fluidRow(
                                 shinydashboard::box(title = "Plotting Cells", width = 12, solidHeader = TRUE, status = "primary",
-                                                    shiny::selectInput(inputId = "x", label = NULL, list("Group" = "group", "Coverslip" = "coverslip", "Stimulus" = "stimulus", "Marker" = "marker_positive")),
-                                                    shiny::selectInput(inputId = "y", label = NULL, list("Proportion Responders" = "Prop_marker_resp", "Responses" = "Responses", "Proportion Totale" = "Prop_tot", "Proportion Marker" = "Prop_marker" )),
-                                                    shiny::selectInput(inputId = "z", label = NULL, list("Group" = "group", "Coverslip" = "coverslip", "Stimulus" = "stimulus", "Marker" = "marker_positive")),
 
                                                     shiny::uiOutput('resp_viz'),
                                                     shiny::uiOutput('non_resp_viz'),
@@ -378,6 +373,64 @@ border-top-color:#5499c7  ;
 server <- function(input, output, session){
 
 sqlitePath <- getwd()
+
+project <- reactiveValues(dir_path = "")
+
+#### Data Preparation ##############
+
+shiny::observeEvent(input$create, {
+
+  if(input$create == TRUE){
+
+  output$project_creation <- shiny::renderUI( {
+
+  list(
+  shiny::textInput("proj_name", label = "Project Name" ),
+
+
+  shiny::selectInput("stim_num", label ="Stimuli number (/cell)", c("1" = "1", "2" = "2", "3" = "3",
+                                                                  "4" = "4", "5" = "5", "6"="6", "7"="7",
+                                                                  "8"="8", "9"="9","10"="10")),
+  shiny::textInput("frame_rate", label = "Enter your frame rate (Hz)", placeholder = "e.g. 0.5" ),
+  shiny::textInput("folder", label = NULL, placeholder = "Write folder's name (where all the files are)"),
+  shiny::textInput("mark_thresh", label = "if you have a cellular marker, enter your threshold", placeholder = "e.g. 30"),
+  shiny::checkboxInput("trackbox", label = "Check if you did ROI detection with Trackmate"),
+
+  shiny::actionButton("creating", "Load & Tidy Data", align = "center"))
+  })
+  }
+
+  else{
+
+  output$project_creation <- NULL
+
+  }
+
+})
+
+
+
+shiny::observeEvent(input$load, {
+
+  if(input$load == TRUE){
+
+    output$project_loading <- shiny::renderUI({
+
+
+      list(
+      shiny::textInput("proj_name_load", label = "Project Name" ),
+      shiny::actionButton("load_button", "Load Project", align = "center"))
+
+    })
+  }
+
+  else{
+
+    output$project_loading <- NULL
+  }
+
+  })
+
 
 
 folder <- shiny::reactive({
@@ -405,7 +458,7 @@ folder <- shiny::reactive({
 
   })
 
-  df_final <- shiny::eventReactive(input$launch, {
+  observeEvent(input$creating, {
 
     if(input$trackbox == FALSE){
       df <- prepareData(folder(), stim_numb(), as.numeric(input$frame_rate),
@@ -420,24 +473,40 @@ folder <- shiny::reactive({
 
     }
 
-      calipR::saveData(df, "db_cq.sqlite", "df_full")
+    project$name <- input$proj_name
 
-      df
+    project$dir_path <- paste(getwd(), project$name, sep = "/")
+
+    project$db_file <- paste0(project$name, ".sqlite")
+
+    dir.create(project$dir_path, showWarnings = TRUE, recursive = FALSE, mode = "0777")
+
+    calipR::saveData(df, paste(project$dir_path, project$db_file, sep = "/"), "df_full")
+
+    df <- calipR::loading100(paste(project$dir_path, project$db_file, sep = "/"), "df_full")
+
+    output$df_created <- shiny::renderDataTable({df},
+                                               options = list(scrollX = TRUE))
+
     })
 
+   observeEvent(input$load_button, {
 
+    print("yooooooo")
 
+    project$name <- input$proj_name_load
 
-  output$df_sql <- DT::renderDataTable({
+    project$dir_path <- paste(getwd(), project$name, sep = "/")
 
-  if(is.null(df_final())) {return()}
+    project$db_file <- paste0(project$name, ".sqlite")
 
-  else{
-  df <- calipR::loading100("db_cq.sqlite", "df_full")
-  df <- DT::datatable(df)
-  df
-  }
+    df <- calipR::loading100(paste(project$dir_path, project$db_file, sep = "/"), "df_full")
+
+    output$df_loaded <- shiny::renderDataTable({df},
+                                            options = list(scrollX = TRUE))
+
   })
+
 
 
 ############### Module to create the banks ######################
@@ -463,7 +532,7 @@ folder <- shiny::reactive({
   }
   "
 
-  db_name <- reactiveValues(name = "yo")
+  db_name <- shiny::reactiveValues()
 
   shiny::observeEvent(input$start_creation, {
 
@@ -475,7 +544,9 @@ folder <- shiny::reactive({
 
   df_full <- shiny::eventReactive(input$start_creation, {
 
-    df_full <- calipR::get_full_df(paste0(db_name$name, ".sqlite"), "df_full")
+    db_path <- paste(paste(getwd(), db_name$name, sep = "/"),db_name$name, sep = "/")
+
+    df_full <- calipR::get_full_df(paste0(db_path, ".sqlite"), "df_full")
     df_full
   })
 
@@ -483,10 +554,18 @@ folder <- shiny::reactive({
   print("yaaa")
 
 
-  new_DF <- reactiveValues(data = data.frame(x = seq(1,10), y = seq(1,10)))
+  new_DF <- shiny::reactiveValues(data = data.frame(x = seq(1,10), y = seq(1,10)))
   shiny::observeEvent(input$start_creation, {
 
     new_DF$data <- df_full()
+
+    print("yuu")
+    print(new_DF$data)
+
+    new_DF$data <- data.frame(x = data.table::setDT(df_full())[Cell_id == unique(df_full()$Cell_id)[[1]]]$time_frame,
+                              y = data.table::setDT(df_full())[Cell_id == unique(df_full()$Cell_id)[[1]]]$Mean_Grey )
+
+
   })
 
   print("yii")
@@ -496,6 +575,7 @@ folder <- shiny::reactive({
   observeEvent(input$clickposition, {
     new_DF$data <- rbind(new_DF$data, input$clickposition)
 
+    plotly::plotlyProxyInvoke(myPlotProxy, "restyle", list(x = list(new_DF$data[['x']]), y = list(new_DF$data[['y']])))
 
 
   })
@@ -506,7 +586,7 @@ folder <- shiny::reactive({
   observeEvent(input$saveNewBank, {
 
     final_bank <- reactiveValuesToList(pattern_list)
-    saveRDS(final_bank, file = paste(input$bankName))
+    saveRDS(final_bank, file = paste(project$dir_path,input$bankName, sep = "/"))
 
   })
 
@@ -558,63 +638,108 @@ folder <- shiny::reactive({
 
 
 
-  output$myPlot <- renderPlotly({
+  output$myPlot <- plotly::renderPlotly({
     print("new_DF")
     print(new_DF$data)
-    plot_ly(new_DF$data, x = ~x, y = ~y, type = "scatter", mode = input$displayType) %>%
-      onRender(js, data = "clickposition")
+    plotly::plot_ly(new_DF$data, x = ~x, y = ~y, type = "scatter", mode = input$displayType) %>%
+      htmlwidgets::onRender(js, data = "clickposition")
   })
 
-  output$pattern <- renderPlotly({
+  output$pattern <- plotly::renderPlotly({
     end <-  as.integer(new_DF$data[['x']][length(new_DF$data[['x']])])
     pattern_len <- length(pattern_viewer[['1']])
     to_add <- end - pattern_len
     fluo <- pattern_viewer[['1']]
     time <- seq(1,length(fluo))
     df <- as.data.frame(y = fluo, x = time)
-    plot_ly(df, x = ~time, y = ~fluo, type = "scatter", mode = "line")
+    plotly::plot_ly(df, x = ~time, y = ~fluo, type = "scatter", mode = "line")
   })
 
 
-  observeEvent(input$cell, {
-    print(new_DF$data)
-    new_DF$data <- data.frame(x = data.table::setDT(df_full())[Cell_id == unique(df_full()$Cell_id)[[input$cell]]]$time_frame,
-                      y = data.table::setDT(df_full())[Cell_id == unique(df_full()$Cell_id)[[input$cell]]]$Mean_Grey )
-  })
+  myPlotProxy <- plotly::plotlyProxy("myPlot", session)
 
-  myPlotProxy <- plotlyProxy("myPlot", session)
 
-  observe({
+  observeEvent(input$cell,{
     print("yuu")
     print(new_DF$data)
-    plotlyProxyInvoke(myPlotProxy, "restyle", list(x = list(new_DF$data[['x']]), y = list(new_DF$data[['y']])))
-  })
 
-  output$click <- renderPrint({
+    new_DF$data <- data.frame(x = data.table::setDT(df_full())[Cell_id == unique(df_full()$Cell_id)[[input$cell]]]$time_frame,
+                              y = data.table::setDT(df_full())[Cell_id == unique(df_full()$Cell_id)[[input$cell]]]$Mean_Grey )
+
+
+     })
+
+
+  #observe({
+  #  plotly::plotlyProxyInvoke(myPlotProxy, "restyle", list(x = list(new_DF$data[['x']]), y = list(new_DF$data[['y']])))
+  #})
+
+  #output$click <- renderPrint({
     #clickposition_history()
-    new_DF$data
-  })
+  #  new_DF$data
+  #})
 
 
 ### End of the module to create the banks
 
-    df_plot <- shiny::eventReactive(input$cell_click, {
+  db <- shiny::reactiveValues()
 
-      df <- calipR::get_cell(input$cell_viz, "db_cq.sqlite", "df_full")
-
-      df
-    })
+  db$load <- c(1,2)
+  db$create <- c(1,2)
 
 
-    output$plot_cell <- shiny::renderPlot({
 
-      p <- cell_plot_shiny(df_plot())
-      p
+   shiny::observeEvent(input$load_button, {
 
+     db$load <- data.table::setDT(calipR::get_full_df(paste(project$dir_path, project$db_file,sep = "/"), "df_full"))
+
+  })
+
+  shiny::observeEvent(input$creating, {
+
+    db$create <- data.table::setDT(calipR::get_full_df(paste(project$dir_path, project$db_file,sep = "/"), "df_full"))
 
   })
 
 
+    shiny::observeEvent(input$cell_num, {
+
+      'isnotdt' <- Negate('is.data.table')
+      print(length(db$load))
+      print(length(db$create))
+
+      if(length(db$load) != 2) {
+        print("yoss")
+
+      df <- db$load[Cell_id == unique(db$load[["Cell_id"]])[[input$cell_num]]]
+
+      output$plot_cell <- shiny::renderPlot({
+
+        p <- cell_plot_shiny(df)
+        p
+
+
+      })
+
+      }
+
+      if(length(db$create) != 2) {
+
+        print("yass")
+        df <- db$create[Cell_id == unique(db$create[["Cell_id"]])[[input$cell_num]]]
+
+        output$plot_cell <- shiny::renderPlot({
+
+          p <- cell_plot_shiny(df)
+          p
+
+
+        })
+
+      }
+
+
+    })
 
     res_sim <- shiny::reactiveValues(res = NULL)
 
@@ -660,12 +785,13 @@ folder <- shiny::reactive({
    shiny::observeEvent(input$sim, {
 
       print("Simulation started")
-      df_sub <- calipR::get_sub_df("db_cq.sqlite", "df_full", input$n_cells)
+      df_sub <- calipR::get_sub_df(paste(project$dir_path, project$db_file,sep = "/"),
+                                   "df_full", input$n_cells)
 
 
       if(input$patMatch_opt == TRUE){
-      posBank <- readRDS(input$posBank)
-      negBank <- readRDS(input$negBank)
+      posBank <- readRDS(paste(project$dir_path, input$posBank, sep = "/"))
+      negBank <- readRDS(paste(project$dir_path, input$negBank, sep = "/"))
 
       posBank <- Filter(Negate(is.null), posBank)
       negBank <- Filter(Negate(is.null), negBank)
@@ -677,8 +803,8 @@ folder <- shiny::reactive({
       }
 
 
-      res_sim$res <- downstream_analysis(df_sub, threshold = input$peak_thresh,
-                                         borders_range = input$rise_range, lambda = input$lambda, gam = input$gam,
+      res_sim$res <- downstream_analysis(df_sub, z_thresh = input$peak_thresh,
+                                         delta_thresh = input$peak_thresh_delta, lambda = input$lambda, gam = input$gam,
                                          false_pos = input$false_pos, simulation = TRUE, pattern_matching = input$patMatch_opt,
                                          posBank = posBank, negBank = negBank, windows = as.integer(input$windows))
 
@@ -694,12 +820,8 @@ folder <- shiny::reactive({
         responders <- unique(data[[1]]$Cell_id)
         shiny::selectInput(inputId = "responders", "Responders", responders)
       })
-   }
 
-   if(is.null(res_sim)){
 
-   }
-   else{
     output$non_responders <- shiny::renderUI({
       data <- res_sim$res
       cells <- unique(data[[2]]$Cell_id)
@@ -709,16 +831,12 @@ folder <- shiny::reactive({
       shiny::selectInput(inputId = "non_responders", "Non Responders", non_responders)
     })
 
-}
 
-   if(is.null(res_sim)){
-
-   }
-   else{
     output$stats_opt <- DT::renderDataTable({
       data <- res_sim$res
-      res2 <- data[[3]][[2]]
-      res2
+
+      res2_1 <- data[[3]][[1]]
+
 
     })
 }
@@ -733,32 +851,42 @@ folder <- shiny::reactive({
 
       output$plot_cell_sim <- shiny::renderPlot({
 
-        print(data[[1]])
-        print(data[[2]])
+      cnames <- colnames(data[[2]])
+      print(cnames)
+      back_estim_opt <- c("gam_fit", "background")
 
-        input$patMatch_opt
-        if(input$patMatch_opt == TRUE){
-        p <- cell_plot(data[[2]], data[[1]], var = input$cell_plot_var, cell = input$responders, line = "back", show_peak = input$show_peak)
+      cnames_check <- back_estim_opt %in% cnames
+      print(cnames_check)
+      back_var <- back_estim_opt[[which(cnames_check == TRUE)]]
+
+
+        p <- cell_plot(data[[2]], data[[1]], var = input$cell_plot_var,
+                       cell = input$responders, line = back_var,
+                       show_peak = input$show_peak)
         p
-        }
-
-        if(input$patMatch_opt == FALSE){
-          p <- cell_plot(data[[2]], data[[1]], var = input$cell_plot_var, cell = input$responders, line = "gam", show_peak = input$show_peak)
-          p
-        }
-
 
     })
     })
 
       shiny::observeEvent(input$plot_non_responders, {
 
-        data <- res_sim$res
+      data <- res_sim$res
+
+      cnames <- colnames(data[[2]])
+      print(cnames)
+      back_estim_opt <- c("gam_fit", "background")
+
+      cnames_check <- back_estim_opt %in% cnames
+      print(cnames_check)
+      back_var <- back_estim_opt[[which(cnames_check == TRUE)]]
+
 
       output$plot_cell_sim <- shiny::renderPlot({
 
         if(input$patMatch_opt == TRUE){
-          p <- cell_plot(data[[2]], data[[1]], var = input$cell_plot_var, cell = input$non_responders, line = "back", show_peak = input$show_peak)
+          p <- cell_plot(data[[2]], data[[1]], var = input$cell_plot_var,
+                         cell = input$non_responders, line = back_var,
+                         show_peak = input$show_peak)
           p
         }
 
@@ -824,8 +952,8 @@ folder <- shiny::reactive({
 
 
         if(input$patMatch_opt_bis == TRUE){
-          posBank <- readRDS(input$posBank_bis)
-          negBank <- readRDS(input$negBank_bis)
+          posBank <- readRDS(paste(project$dir_path, input$posBank_bis, sep = "/"))
+          negBank <- readRDS(paste(project$dir_path, input$negBank_bis, sep = "/"))
 
           posBank <- Filter(Negate(is.null), posBank)
           negBank <- Filter(Negate(is.null), negBank)
@@ -837,8 +965,8 @@ folder <- shiny::reactive({
         }
         print("df_sub ok")
 
-        res_sim$res_bis <- downstream_analysis(df_sub_bis, threshold = input$peak_thresh_bis,
-                                               borders_range = input$rise_range_bis, lambda = input$lambda_bis,
+        res_sim$res_bis <- downstream_analysis(df_sub_bis, z_thresh = input$peak_thresh_bis,
+                                               delta_thresh = input$peak_thresh_bis_delta, lambda = input$lambda_bis,
                                                gam = input$gam_bis, false_pos = input$false_pos_bis,simulation = TRUE, one_cell = TRUE,
                                                pattern_matching = input$patMatch_opt_bis,
                                                posBank = posBank, negBank = negBank,
@@ -930,18 +1058,16 @@ folder <- shiny::reactive({
 
 
         print("inside anafull")
-        df_full <- calipR::get_full_df("db_cq.sqlite", "df_full")
+        df_full <- calipR::get_full_df(paste(project$dir_path,project$db_file,sep="/"),
+                                       "df_full")
         print("df_full ok")
         print("input$groups")
 
-        ### Pour parallelisation : Splitter le df par coverslip :
-
-        #cov_list <- split(df_full, df_full$coverslip)
 
 
         if(input$patMatch == TRUE){
-          posBank <- readRDS(input$posBank_full)
-          negBank <- readRDS(input$negBank_full)
+          posBank <- readRDS(paste(project$dir_path, input$posBank_full, sep = "/"))
+          negBank <- readRDS(paste(project$dir_path, input$negBank_full, sep = "/"))
 
           posBank <- Filter(Negate(is.null), posBank)
           negBank <- Filter(Negate(is.null), negBank)
@@ -953,8 +1079,8 @@ folder <- shiny::reactive({
         }
 
         print(input$groups)
-        res_full$res <- downstream_analysis(df_full, threshold = input$peak_thresh_full,
-                                             borders_range = input$rise_full, lambda = input$lambda_full, gam = input$gam_full,
+        res_full$res <- downstream_analysis(df_full, z_thresh = input$peak_thresh_full_z,
+                                             delta_thresh = input$peak_thresh_full_delta, lambda = input$lambda_full, gam = input$gam_full,
                                              false_pos = input$false_pos_full, compare_groups = input$groups,
                                      pattern_matching = input$patMatch, posBank = posBank, negBank = negBank,
                                      windows = as.integer(input$windows_full))
@@ -965,20 +1091,21 @@ folder <- shiny::reactive({
         res1 <- res_full$res[[1]]
         print(res1)
         print(str(res1))
-        calipR::saveData(res1, "db_cq.sqlite", "peak_res")
+
+        calipR::saveData(res1, paste(project$dir_path,project$db_file, sep ="/"), "peak_res")
 
         # Extracting and saving the full data table updated
         res2 <- res_full$res[[2]]
         res2 <- data.table::setDT(res2)[, peak_frames := NULL]
         print(res2)
         print(str(res2))
-        calipR::saveData(res2, "db_cq.sqlite", "df_final")
+        calipR::saveData(res2, paste(project$dir_path,project$db_file, sep ="/"), "df_final")
 
 
         res3_1 <- data.table::setDT(res_full$res[[3]][[1]])
         print(res3_1)
         print(str(res3_1))
-        calipR::saveData(res3_1, "db_cq.sqlite", "stats_desc_final")
+        calipR::saveData(res3_1, paste(project$dir_path,project$db_file, sep ="/"), "stats_desc_final")
 
 
 if(input$groups == TRUE){print( "it is true")}
@@ -987,36 +1114,55 @@ if(input$groups == TRUE){print( "it is true")}
           print(res_full$res[[3]][[2]][[1]])
           print(str(res_full$res[[3]][[2]][[1]]))
         res3_3_1 <- data.table::setDT(res_full$res[[3]][[2]][[1]])
-        calipR::saveData(res3_3_1, "db_cq.sqlite", "overall_q")
+        calipR::saveData(res3_3_1, paste(project$dir_path,project$db_file, sep ="/"), "overall_q")
 
         res3_3_2 <- data.table::setDT(res_full$res[[3]][[2]][[2]])
-        calipR::saveData(res3_3_2, "db_cq.sqlite", "pairwise")
+        calipR::saveData(res3_3_2, paste(project$dir_path,project$db_file, sep ="/"), "pairwise")
         }
 
       })
 
 
       # retrieving full dataset and peaks dataset :
-      if(dim(calipR::checkTable("db_cq.sqlite", "'df_final'"))[1] == 0) {
-        }
-      else{
-      full <- calipR::get_full_df("db_cq.sqlite", "df_final")
-      peaks <- calipR::get_full_df("db_cq.sqlite", "peak_res")
-}
+
+
+      result <- reactiveValues()
 
       res <- shiny::eventReactive(input$update_button,{
 
+        if(dim(calipR::checkTable(paste(project$dir_path,project$db_file, sep ="/"), "'df_final'"))[1] == 0) {
+        }
+        else{
+
+          path <- paste(project$dir_path,project$db_file, sep ="/")
+
+          print("path")
+          print(path)
+
+          full <- calipR::get_full_df(path, "df_final")
+          peaks <- calipR::get_full_df(path, "peak_res")
+
+          result$full <- full
+          result$peaks <- peaks
+
+          print("full")
+          print(full)
+
+          print("peaks")
+          print(peaks)
+
+        }
+
       if(input$base_resp == TRUE){
-      peaks_wo_base <- calipR::base_resp.rm(peaks, full)[[1]]
-      full_wo_base <- calipR::base_resp.rm(peaks, full)[[2]]
+      peaks_wo_base <- data.table::setDT(calipR::base_resp.rm(result$peaks, result$full)[[1]])
+      full_wo_base <- data.table::setDT(calipR::base_resp.rm(peaks, full)[[2]])
 
       res <- Analyze_Responses(peaks_wo_base, full_wo_base, var_list = input$grouping_var)
       }
 
       else{
-        full <- calipR::get_full_df("db_cq.sqlite", "df_final")
-        peaks <- calipR::get_full_df("db_cq.sqlite", "peak_res")
-        res <- Analyze_Responses(peaks, full, var_list = input$grouping_var)
+        print("yamako")
+        res <- Analyze_Responses(result$peaks, full, var_list = input$grouping_var)
       }
       print(res)
       res
@@ -1028,10 +1174,12 @@ if(input$groups == TRUE){print( "it is true")}
       output$resp_count <- DT::renderDataTable({
 
 
-        if(dim(calipR::checkTable("db_cq.sqlite", "'stats_desc_final'"))[1] == 0) {}
+        if(dim(calipR::checkTable(paste(project$dir_path,project$db_file, sep ="/"), "'stats_desc_final'"))[1] == 0) {}
         else{
 
-        DT::datatable({res()[[1]]},
+        result$resp_desc <- res()[[1]]
+
+        DT::datatable({result$resp_desc},
                       extensions = 'Buttons',
                       options = list(
                         paging = TRUE,
@@ -1057,8 +1205,9 @@ if(input$groups == TRUE){print( "it is true")}
        # if(dim(calipR::checkTable("db_cq.sqlite", "'overall_q'"))[1] == 0) {}
        # else{
 
+        result$general_model <- res()[[2]][[1]]
 
-        DT::datatable({res()[[2]][[1]]},
+        DT::datatable({result$general_model},
                       extensions = 'Buttons',
                       options = list(
                         paging = TRUE,
@@ -1080,6 +1229,8 @@ if(input$groups == TRUE){print( "it is true")}
 
 #        if(dim(calipR::checkTable("db_cq.sqlite", "'pairwise'"))[1] == 0) {}
         #else{
+
+        result$pw_mcnemar <- res()[[2]][[2]]
 
         DT::datatable({res()[[2]][[2]]},
                       extensions = 'Buttons',
@@ -1104,50 +1255,49 @@ if(input$groups == TRUE){print( "it is true")}
 
       output$stim_list_1 <- shiny::renderUI({
 
-        if(dim(calipR::checkTable("db_cq.sqlite", "'peak_res'"))[1] == 0) {}
+        if(dim(calipR::checkTable(paste(project$dir_path,project$db_file, sep ="/"), "'peak_res'"))[1] == 0) {}
         else{
 
-        e <- calipR::get_full_df("db_cq.sqlite", "peak_res")
+        stim_list <- unique(result$peaks[["spike_stimulus"]])
 
-
-
-        stim_list <- unique(e$Start_peak_stimulus)
 
         shiny::selectInput(inputId = "stim_list_1", "Stimulus 1", stim_list)
+
+
         }
       })
 
 
       output$stim_list_2 <- shiny::renderUI({
 
-        if(dim(calipR::checkTable("db_cq.sqlite", "'peak_res'"))[1] == 0) {}
+        if(dim(calipR::checkTable(paste(project$dir_path,project$db_file, sep ="/"), "'peak_res'"))[1] == 0) {}
         else{
 
-        f <- calipR::get_full_df("db_cq.sqlite", "peak_res")
 
-
-        stim_list <- unique(f$Start_peak_stimulus)
-
+        stim_list <- unique(result$peaks[["spike_stimulus"]])
 
         shiny::selectInput(inputId = "stim_list_2", "Stimulus 2", stim_list)
         }
-      })
+    })
 
 
       t <- shiny::eventReactive(input$dual_button, {
 
-        if(dim(calipR::checkTable("db_cq.sqlite", "'peak_res'"))[1] == 0) {}
+        if(dim(calipR::checkTable(paste(project$dir_path,project$db_file, sep ="/"), "'peak_res'"))[1] == 0) {}
         else{
 
-        g <- calipR::get_full_df("db_cq.sqlite", "peak_res")
+        g <- result$peaks
 
         if(input$base_resp_dual == TRUE){
-        g <- calipR::base_resp.rm(peaks, full)[[1]]
+        g <- calipR::base_resp.rm(result$peaks, result$full)[[1]]
 
 
         }
 
-        t <- calipR::dual_prop(g, input$stim_list_1, input$stim_list_2)
+        print("input$stim_list_1")
+
+        print(input$stim_list_1)
+        t <- dual_prop(g, input$stim_list_1, input$stim_list_2)
 }
       })
 
@@ -1173,26 +1323,42 @@ if(input$groups == TRUE){print( "it is true")}
 })
       ### Ajouter des visualisations des pourcentages par groupe, par coverslip etc. :
 
+        output$var_selector <- shiny::renderUI({
+
+          list(
+          shiny::selectInput(inputId = "x_var", label = NULL, names(result$resp_desc)),
+          shiny::selectInput(inputId = "y_var", label = NULL, names(result$resp_desc)),
+          shiny::selectInput(inputId = "z_var", label = NULL, names(result$resp_desc))
+          )
+        })
 
 
         output$viz <- plotly::renderPlotly({
 
           print(res()[[1]])
           print(str(res()[[1]]))
+
+          print("result$resp_desc")
+          print(result$resp_desc)
+
+          print("result$resp_desc[[input$x]]")
+          print(result$resp_desc[[input$x_var]])
+          print("result$resp_desc[[input$y]]")
+          print(result$resp_desc[[input$y_var]])
           #res <- calipR::get_full_df("db_cq.sqlite", "stats_desc_by_cov_group")
 
              plotly::plot_ly(
 
               type = 'bar',
 
-              x = res()[[1]][[input$x]],
+              x = result$resp_desc[[input$x_var]],
 
-              y = res()[[1]][[input$y]],
-              text = paste("Group: ", res()[[1]][["group"]],
+              y = result$resp_desc[[input$y_var]],
+              text = paste("Group: ", result$resp_desc[["group"]],
 
                            "<br>Stimulus:  ", res()[[1]][["stimulus"]],
 
-                           "<br>Responders: ", res()[[1]][["Responses"]],
+                          "<br>Responders: ", res()[[1]][["Responses"]],
 
                            "<br>Proportion: ", res()[[1]][["Prop"]],
                            "<br> Total cells: ", res()[[1]][["n_cells_grp"]]),
@@ -1202,45 +1368,49 @@ if(input$groups == TRUE){print( "it is true")}
               marker = list(size = 2),
 
 
-              color = res()[[1]][[input$z]],
+              color = res()[[1]][[input$z_var]],
 
-            ) %>%
+            )  %>%
                plotly::layout(barmode ="group", yaxis = list(automargin = TRUE),
                               xaxis = list(automargin = TRUE), bargap = -2, bargroupgap = 0)
 
 
 
 
+
       })
 
-        if(dim(calipR::checkTable("db_cq.sqlite", "'df_final'"))[1] == 0) {
-        }
-        else{
-
-          full <- calipR::get_full_df("db_cq.sqlite", "df_final")
-          peaks <- calipR::get_full_df("db_cq.sqlite", "peak_res")
 
           output$resp_viz <- shiny::renderUI({
-            data <- res_sim$res
-            responders <- unique(peaks$Cell_id)
-            shiny::selectInput(inputId = "resp_viz", "Responders", responders)
 
+            if(dim(calipR::checkTable(paste(project$dir_path,project$db_file, sep ="/"), "'df_final'"))[1] == 0) {
+            }
+            else{
+
+            responders <- unique(result$peaks[["Cell_id"]])
+            shiny::selectInput(inputId = "resp_viz", "Responders", responders)
+}
           })
 
 
 
 
           output$non_resp_viz <- shiny::renderUI({
-            data <- res_sim$res
-            cells <- unique(full$Cell_id)
-            responders <- unique(peaks$Cell_id)
+            if(dim(calipR::checkTable(paste(project$dir_path,project$db_file, sep ="/"), "'df_final'"))[1] == 0) {
+            }
+            else{
+
+            cells <- unique(result$full[["Cell_id"]])
+            responders <- unique(result$peaks[["Cell_id"]])
             non_responders <- cells %in% responders
             non_responders <- unlist(purrr::map2(cells, non_responders, function(x,y) if(y == FALSE){x}))
             shiny::selectInput(inputId = "non_resp_viz", "Non Responders", non_responders)
-
+}
           })
 
-        }
+
+
+
 
 
 
@@ -1248,12 +1418,20 @@ if(input$groups == TRUE){print( "it is true")}
 
         shiny::observeEvent(input$plot_button,{
 
-        output$plot_resp_viz <- renderPlot({
+          cnames <- colnames(result$full)
+          print(cnames)
+          back_estim_opt <- c("gam_fit", "background")
 
+          cnames_check <- back_estim_opt %in% cnames
+          print(cnames_check)
+          back_var <- back_estim_opt[[which(cnames_check == TRUE)]]
+
+        output$plot_resp_viz <- renderPlot({
 
           # Opérer un tri sur les cellules regarder comment j'ai fais pour responders
 
-          p <- cell_plot(full, peaks, var = "Mean_Grey", cell = input$resp_viz, line = "gam", show_peak = input$show_peaks_box)
+
+          p <- cell_plot(result$full, result$peaks, var = "Mean_Grey", cell = input$resp_viz, line = back_var, show_peak = input$show_peaks_box)
           p
 
 
@@ -1263,11 +1441,18 @@ if(input$groups == TRUE){print( "it is true")}
 
         shiny::observeEvent(input$plot_button_bis,{
 
+          cnames <- colnames(result$full)
+          print(cnames)
+          back_estim_opt <- c("gam_fit", "background")
+
+          cnames_check <- back_estim_opt %in% cnames
+          print(cnames_check)
+          back_var <- back_estim_opt[[which(cnames_check == TRUE)]]
 
 
           output$plot_resp_viz <- renderPlot({
 
-          p <- cell_plot(full, peaks, var = "Mean_Grey", cell = input$non_resp_viz, line = "gam", show_peak = input$show_peaks_box)
+          p <- cell_plot(result$full, result$peaks, var = "Mean_Grey", cell = input$non_resp_viz, line = back_var, show_peak = input$show_peaks_box)
           p
 
 
@@ -1278,22 +1463,25 @@ if(input$groups == TRUE){print( "it is true")}
         })
 
 
-          if(dim(calipR::checkTable("db_cq.sqlite", "'df_final'"))[1] == 0) {
-            print( "dim == 0")
-          }
-
-          else{
-            print("dim ok")
-          dt <- get_full_df("db_cq.sqlite", "df_final")
-          print(dt)
 
             output$clustering_var <- shiny::renderUI({
-            list_var <- names(dt)
+
+
+              if(dim(calipR::checkTable(paste(project$dir_path,project$db_file, sep ="/"), "'df_final'"))[1] == 0) {
+                print( "dim == 0")
+              }
+
+              else{
+
+            list_var <- names(result$full)
             #list_var <- names(res_full$res[[2]])
 
-            shiny::selectInput(inputId = "clustvar", "Variable used for clustering", list_var)})
+            shiny::selectInput(inputId = "clustvar", "Variable used for clustering", list_var)
 
-          }
+            }
+              })
+
+
 
 
         shiny::observeEvent(input$set_seed, {
@@ -1316,20 +1504,28 @@ if(input$groups == TRUE){print( "it is true")}
 
         shiny::observeEvent(input$clustplot_button, {
 
-        dt <- get_full_df("db_cq.sqlite", "df_final")
-        dt_peaks <- get_full_df("db_cq.sqlite", "peak_res")
+        responding_cells <- unique(result$peaks[["Cell_id"]])
 
-        responding_cells <- unique(dt_peaks$Cell_id)
+        print(responding_cells)
+        print("responding_cells")
 
+        print(result$full)
+        print("result$full")
 
-        dt <- data.table::setDT(dt)[Cell_id %in% responding_cells]
+        print(unique(result$full[["Cell_id"]]))
+        print(length(unique(result$full[["Cell_id"]])))
 
+        dt <- result$full[Cell_id %in% responding_cells]
+
+        print("yout")
         final <- prepareClustData(dt, input$clustvar, norm = input$normclust)
 
         print("final")
         print(final)
 
         print(input$nclust)
+
+        print(input$dist_type)
 
         if(input$set_seed){
 

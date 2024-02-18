@@ -11,7 +11,8 @@ clean_data(
   mean_width,
   CN_DPA_width,
   DPA_width,
-  mean_width_diff
+  mean_width_diff,
+  method = "DPA"
 )
 }
 \arguments{
@@ -21,4 +22,7 @@ clean_data(
 This function removes cells that are moving, dying, not responding or
 with mean fluorescence values that are deviating more than n sd from the
 population's sd
+}
+\examples{
+## the one that is working !!! (function clean data below is not)
 }

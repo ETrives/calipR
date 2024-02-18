@@ -11,25 +11,26 @@
 Analyze_Responses <- function(data, df_clean, compare_groups = FALSE, one_cell = FALSE, marker = FALSE, var_list = NULL, simulation = FALSE){
 
 
+  data <- setDT(data)
+  df_clean <- setDT(df_clean)
+
+
   data$spike_stimulus <- str_replace_all(data$spike_stimulus, "[123456789.]", "")
   df_clean$stimulus <- str_replace_all(df_clean$stimulus, "[123456789.]", "")
+
+  data$spike_stimulus
+
+
+  'isnotna' <- Negate('is.na')
+
+  df_clean <- df_clean[ isnotna(stimulus)]
+
+
+  data <- data[ isnotna(spike_stimulus)]
 
   ### Adding a variable "Response" for each stimulus in df_clean
 
   '%notin%' <- Negate('%in%')
-  mark_lev <- unique(df_clean$marker_positive)
-  df_clean$marker_positive <- factor(df_clean$marker_positive, levels = mark_lev, ordered = TRUE)
-
-  group_lev <- unique(df_clean$group)
-  df_clean$group  <- factor(df_clean$group, levels = group_lev, ordered = TRUE)
-
-
-  stim_lev <- unique(df_clean$stimulus)
-  df_clean$stimulus  <- factor(df_clean$stimulus, levels = stim_lev, ordered = TRUE)
-
-  cov_lev <- unique(df_clean$coverslip)
-  df_clean$coverslip  <- factor(df_clean$coverslip, levels = cov_lev, ordered = TRUE)
-
 
   if(simulation == TRUE){
     d <- unique(df_clean[,c("Cell_id", "stimulus")])
@@ -49,11 +50,20 @@ Analyze_Responses <- function(data, df_clean, compare_groups = FALSE, one_cell =
     }
     else{
 
-      d <- unique(df_clean[,c(c("Cell_id","stimulus"), var_list)])
+      print("df_clean")
+      print(df_clean)
+
+      d <- unique(df_clean[,c(c("Cell_id","stimulus"), ..var_list)])
 
     }
   }
 
+
+
+
+  d <- data.table::setDT(d)
+
+  data <- data.table::setDT(data)
 
     setkey(d, Cell_id, stimulus)
     setkey(data, Cell_id, spike_stimulus)
@@ -65,7 +75,7 @@ Analyze_Responses <- function(data, df_clean, compare_groups = FALSE, one_cell =
     d$Response <- FALSE
     d$Response[response_indices] <- TRUE
 
-print(d)
+
     stim_list <- unique(d$stimulus)
 
     n_cells_tot <- length(unique(d$Cell_id))
@@ -88,8 +98,14 @@ print(d)
 
     if(simulation == TRUE) {
       print("second part of simulation")
+      print("d")
+      print(d)
+
+
         data <- d[, .(Responders = sum(Response)), by = stimulus]
         data <- data[, c("Prop", "n_cells_tot") := list(Responders/ n_cells_tot, n_cells_tot)]
+
+        print("yeahouya")
     }
 
     else{
@@ -103,8 +119,13 @@ print(d)
 
       }
       else{
+        print("youp")
       d <- unique(d[,c(c("Cell_id", "Response"), ..var_list)])
+      print("yip")
+      print(d)
       data <- d[, .(Responders = sum(Response)), by = var_list]
+      print("yep")
+      print(data)
 
       }
 

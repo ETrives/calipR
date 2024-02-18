@@ -16,8 +16,9 @@
 #'
 #' @examples
 deconvolve <- function(norm_data, gam = 0.95, lambda = 1, constraint = T, estimate_calcium = T, var = "gam_detrended", ESP = 0.0001,
-                       threshold = 3, peak_frame = 3) {
+                       threshold = 3, delta_threshold = 0, peak_frame = 10) {
 
+  'isnotna' <- Negate('is.na')
   cells <- unique(norm_data$Cell_id)
   stim_list <- unique(norm_data$stimulus)
   norm_data <- norm_data[, Prev_stim := ifelse(stimulus != stim_list[1], stim_list[grep(stimulus[[1]], stim_list) -1], stim_list[1]), by = .(Cell_id, stimulus) ]
@@ -56,17 +57,31 @@ deconvolve <- function(norm_data, gam = 0.95, lambda = 1, constraint = T, estima
     dt <- dt[, duplicate := duplicated(blocs)][duplicate == FALSE]
     print(which(duplicated(dt$blocs) == TRUE))
 
-    View(peaks_data)
-    View(dt)
+
     peaks_data$Max_peak_frame <- dt$time_frame
     peaks_data$max_peak_smooth_z <- dt$smooth_z
+    peaks_data$max_peak_smooth_delta <- dt$delta_f_f
 
+    View(peaks_data)
+    View(dt)
   }
 
   # Remove NAs
-  peaks_data <- peaks_data[!is.na(max_peak_smooth_z) & max_peak_smooth_z >= threshold & delta_f_f > 0.2]
+  print("delta_thresh")
+  print(delta_threshold)
+  print("delta_thresh_type")
+  print(typeof(delta_threshold))
+
+  print("z_thresh")
+  print(threshold)
+  print("z_thresh_type")
+  print(typeof(threshold))
+
+  peaks_data <- peaks_data[isnotna(max_peak_smooth_z) & max_peak_smooth_z >= threshold & max_peak_smooth_delta >= delta_threshold]
 
 
+  print("peaks_final")
+  print(peaks_data)
 
 
   if(dim(peaks_data)[1] != 0) {

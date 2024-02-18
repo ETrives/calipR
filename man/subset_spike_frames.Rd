@@ -4,7 +4,7 @@
 \alias{subset_spike_frames}
 \title{subset_spike_frames}
 \usage{
-subset_spike_frames(dt1, dt2)
+subset_spike_frames(dt1, dt2, peak_frame = 10)
 }
 \arguments{
 \item{dt2}{}

@@ -9,7 +9,7 @@ cell_plot(
   peaks_data,
   cell,
   var,
-  line = c(FALSE, "poly", "gam"),
+  line = c(FALSE, "poly", "gam", "background"),
   show_peak = FALSE
 )
 }

@@ -146,3 +146,4 @@ z_score <- function(data, var = c("raw", "poly", "gam", "linear", "quantile", "b
 
   return(split(z_score, z_score$coverslip))
 }
+

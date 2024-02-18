@@ -149,7 +149,7 @@ cross_prop.venn <- function(data, stim_list){
 
 
 
-dual_prop <- function(data, stim_list){
+dual_prop_travaux <- function(data, stim_list){
 
   data$spike_stimulus <- str_replace_all(data$spike_stimulus, "[123456789.]", "")
 
@@ -171,7 +171,7 @@ dual_prop <- function(data, stim_list){
     #length(unique(data[data[[paste0("stim",x)]] == TRUE, ]$Cell_id)))
 
   # Créer le tableau de contingence avec les deux stimuli
-  d#f <- contingency(data)
+  #f <- contingency(data)
 
   t <- data.table(table(data$spike_stimulus, data$Cell_id))
 
