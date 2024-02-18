@@ -1,18 +1,21 @@
 Package: calipR
 Title: Calcium Imaging Analysis Pipeline in R 
-Version: 1.0.0-alpha
+Version: 1.0.0
 Authors@R: 
     person("Elliott", "Trives", , "triveselliott@hotmail.fr", role = c("aut", "cre"),
-           comment = c(ORCID = "https://orcid.org/0009-0009-2683-4859"))
-Description: What the package does (one paragraph).
+           comment = c(ORCID = "0009-0009-2683-4859"))
+Description: "calipR is a tool to analyze calcium imaging data. It takes csv files
+             containing raw fluorescence values for each cell (in column) and processes
+             this signal to clean, denoise, normalize, deconvolve and extract calcium
+             events. It then provides basic descriptive statistics comparing calcium events
+             in different experimental conditions. A Graphical User Interface is included
+             and allows to run the whole workflow together with visualization options
+             to ensure the quality of the analysis." 
 License: GPL (>= 3)
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.2.1
 Depends:
-  stringr,
-  plyr,
-  data.table
 Imports:
   purrr,
   dplyr,
@@ -40,6 +43,9 @@ Imports:
   matrixprofiler,
   rucrdtw,
   robustbase,
-  dtwclust
+  dtwclust,
+  stringr,
+  plyr,
+  data.table
 Remotes:
   jewellsean/FastLZeroSpikeInference
