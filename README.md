@@ -24,7 +24,9 @@ calipR is a free and open source software dedicated to calcium imaging data anal
 
 -   Basic Statistics
 
--   >in development - Clustering Analysis [(dtwclust package)](https://github.com/asardaes/dtwclust)
+-   
+
+    > in development - Clustering Analysis [(dtwclust package)](https://github.com/asardaes/dtwclust)
 
 ## Project Goals
 
@@ -67,3 +69,42 @@ library(devtools)
 #install calipR from github
 install_github("ETrives/calipR")
 ```
+
+if you want to install a specific version
+
+``` r
+# Install devtools if necessary
+if (!require("devtools")) install.packages("devtools")
+
+#load devtools
+library(devtools)
+
+#Install calipR version v1.0.0-alpha
+install_github("ETrives/calipR@v1.0.0-alpha")
+```
+
+### Troubleshooting Installation
+
+#### MacOS
+
+##### You lack a software to build packages with compiled code
+
+During calipR installation, a window should open and say you don't have this software and ask you if you want to install it. Say Yes ! it is necessary. After being installed, launch again calipR installation through devtools or r-universe.
+
+if the window doesn't show up or if you want to install it by your self, the software you need is Xcode Command Line Tools. To install it, open your command terminal, type the following and press enter :
+
+``` bash
+xcode-select --install
+```
+
+##### Installation successfull but GUI not working : X11 library is missing : install xquartz
+
+You may succeed the installation step but encounter this error when trying to use calipR's graphical user interface. On macOS you need to install xquartz from [here](https://www.xquartz.org/) after downloading and installing XQuartz, the application should work correctly.
+
+#### Windows
+
+##### You lack a software to build packages with compiled code
+
+if you use Rstudio, during calipR installation, a window will open and tell you don't have this software and ask you if you want to install it. Say Yes ! it is necessary. After being installed, launch again calipR installation through devtools or r-universe.
+
+if you don't use Rstudio or want to install it by your self, [RTools](https://cran.r-project.org/bin/windows/Rtools/) is the software you need if you work on a PC. Be careful, you need to install an RTools version which matches your R version. So if you have R 4.3, you should install RTools 4.3
