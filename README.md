@@ -157,4 +157,4 @@ In the Trackmate window
         - then type trackmate and select all the trackmate extensions you want
         - restart Fiji, open the trackmate plugin again. Now in the Detector options you will find the ones you selecter
         - this will however not be sufficient. For each extension, specific instructions are written on this tab, so you need to follow them
--   proceed with cell segmentation and where you are satisfied
+-   proceed with cell segmentation and export results
