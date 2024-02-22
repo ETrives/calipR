@@ -392,7 +392,6 @@ folder <- shiny::reactive({
     }
 
     if(input$trackbox == TRUE){
-      print(("TRUE"))
       df <- calipR::prepareData_track(folder(), stim_numb(), as.numeric(input$frame_rate),
                                 compare_groups = FALSE, marker_thresh = as.numeric(input$mark_thresh))
 
@@ -417,7 +416,6 @@ folder <- shiny::reactive({
 
    observeEvent(input$load_button, {
 
-    print("yooooooo")
 
     project$name <- input$proj_name_load
 
@@ -476,7 +474,6 @@ folder <- shiny::reactive({
   })
 
 
-  print("yaaa")
 
 
   new_DF <- shiny::reactiveValues(data = data.frame(x = seq(1,10), y = seq(1,10)))
@@ -484,16 +481,11 @@ folder <- shiny::reactive({
 
     new_DF$data <- df_full()
 
-    print("yuu")
-    print(new_DF$data)
-
     new_DF$data <- data.frame(x = data.table::setDT(df_full())[Cell_id == unique(df_full()$Cell_id)[[1]]]$time_frame,
                               y = data.table::setDT(df_full())[Cell_id == unique(df_full()$Cell_id)[[1]]]$Mean_Grey )
 
 
   })
-
-  print("yii")
 
   coordinates <- list()
 
@@ -523,7 +515,6 @@ folder <- shiny::reactive({
     end <-  as.integer(new_DF$data[['x']][length(new_DF$data[['x']])])
 
     pattern <- new_DF$data[['y']][start:end]
-    print(pattern)
     pattern_list[[as.character(counter$value)]] <- pattern
 
 
@@ -558,14 +549,12 @@ folder <- shiny::reactive({
 
   observeEvent(input$printList,{
     test <- reactiveValuesToList(pattern_list)
-    print(test)
   })
 
 
 
   output$myPlot <- plotly::renderPlotly({
-    print("new_DF")
-    print(new_DF$data)
+
     plotly::plot_ly(new_DF$data, x = ~x, y = ~y, type = "scatter", mode = input$displayType) %>%
       htmlwidgets::onRender(js, data = "clickposition")
   })
@@ -585,24 +574,12 @@ folder <- shiny::reactive({
 
 
   observeEvent(input$cell,{
-    print("yuu")
-    print(new_DF$data)
 
     new_DF$data <- data.frame(x = data.table::setDT(df_full())[Cell_id == unique(df_full()$Cell_id)[[input$cell]]]$time_frame,
                               y = data.table::setDT(df_full())[Cell_id == unique(df_full()$Cell_id)[[input$cell]]]$Mean_Grey )
 
 
      })
-
-
-  #observe({
-  #  plotly::plotlyProxyInvoke(myPlotProxy, "restyle", list(x = list(new_DF$data[['x']]), y = list(new_DF$data[['y']])))
-  #})
-
-  #output$click <- renderPrint({
-    #clickposition_history()
-  #  new_DF$data
-  #})
 
 
 ### End of the module to create the banks
@@ -630,11 +607,8 @@ folder <- shiny::reactive({
     shiny::observeEvent(input$cell_num, {
 
       'isnotdt' <- Negate('is.data.table')
-      print(length(db$load))
-      print(length(db$create))
 
       if(length(db$load) != 2) {
-        print("yoss")
 
       df <- db$load[Cell_id == unique(db$load[["Cell_id"]])[[input$cell_num]]]
 
@@ -650,7 +624,6 @@ folder <- shiny::reactive({
 
       if(length(db$create) != 2) {
 
-        print("yass")
         df <- db$create[Cell_id == unique(db$create[["Cell_id"]])[[input$cell_num]]]
 
         output$plot_cell <- shiny::renderPlot({
@@ -709,7 +682,6 @@ folder <- shiny::reactive({
 
    shiny::observeEvent(input$sim, {
 
-      print("Simulation started")
       df_sub <- calipR::get_sub_df(paste(project$dir_path, project$db_file,sep = "/"),
                                    "df_full", input$n_cells)
 
@@ -777,11 +749,9 @@ folder <- shiny::reactive({
       output$plot_cell_sim <- shiny::renderPlot({
 
       cnames <- colnames(data[[2]])
-      print(cnames)
       back_estim_opt <- c("gam_fit", "background")
 
       cnames_check <- back_estim_opt %in% cnames
-      print(cnames_check)
       back_var <- back_estim_opt[[which(cnames_check == TRUE)]]
 
 
@@ -798,11 +768,9 @@ folder <- shiny::reactive({
       data <- res_sim$res
 
       cnames <- colnames(data[[2]])
-      print(cnames)
       back_estim_opt <- c("gam_fit", "background")
 
       cnames_check <- back_estim_opt %in% cnames
-      print(cnames_check)
       back_var <- back_estim_opt[[which(cnames_check == TRUE)]]
 
 
@@ -869,10 +837,8 @@ folder <- shiny::reactive({
 
       shiny::observeEvent(input$sim_bis, {
 
-        print("second stim started")
         df <- res_sim$res[[2]]
 
-        print("df ok ")
         df_sub_bis <- df[df$Cell_id == input$cell_opt]
 
 
@@ -888,7 +854,6 @@ folder <- shiny::reactive({
           posBank <- list()
           negBank <- list()
         }
-        print("df_sub ok")
 
         res_sim$res_bis <- downstream_analysis(df_sub_bis, z_thresh = input$peak_thresh_bis,
                                                delta_thresh = input$peak_thresh_bis_delta, lambda = input$lambda_bis,
@@ -982,11 +947,8 @@ folder <- shiny::reactive({
       res <- shiny::observeEvent(input$ana_full_button, {
 
 
-        print("inside anafull")
         df_full <- calipR::get_full_df(paste(project$dir_path,project$db_file,sep="/"),
                                        "df_full")
-        print("df_full ok")
-        print("input$groups")
 
 
 
@@ -1003,7 +965,6 @@ folder <- shiny::reactive({
           negBank <- list()
         }
 
-        print(input$groups)
         res_full$res <- downstream_analysis(df_full, z_thresh = input$peak_thresh_full_z,
                                              delta_thresh = input$peak_thresh_full_delta, lambda = input$lambda_full, gam = input$gam_full,
                                              false_pos = input$false_pos_full, compare_groups = input$groups,
@@ -1014,30 +975,24 @@ folder <- shiny::reactive({
         # Extracting and saving the data table containing one row for each peak with the informations
         #about the peak
         res1 <- res_full$res[[1]]
-        print(res1)
-        print(str(res1))
 
         calipR::saveData(res1, paste(project$dir_path,project$db_file, sep ="/"), "peak_res")
 
         # Extracting and saving the full data table updated
         res2 <- res_full$res[[2]]
         res2 <- data.table::setDT(res2)[, peak_frames := NULL]
-        print(res2)
-        print(str(res2))
+
         calipR::saveData(res2, paste(project$dir_path,project$db_file, sep ="/"), "df_final")
 
 
         res3_1 <- data.table::setDT(res_full$res[[3]][[1]])
-        print(res3_1)
-        print(str(res3_1))
+
         calipR::saveData(res3_1, paste(project$dir_path,project$db_file, sep ="/"), "stats_desc_final")
 
 
 if(input$groups == TRUE){print( "it is true")}
         else{
-          print("it is not true")
-          print(res_full$res[[3]][[2]][[1]])
-          print(str(res_full$res[[3]][[2]][[1]]))
+
         res3_3_1 <- data.table::setDT(res_full$res[[3]][[2]][[1]])
         calipR::saveData(res3_3_1, paste(project$dir_path,project$db_file, sep ="/"), "overall_q")
 
@@ -1061,20 +1016,11 @@ if(input$groups == TRUE){print( "it is true")}
 
           path <- paste(project$dir_path,project$db_file, sep ="/")
 
-          print("path")
-          print(path)
-
           full <- calipR::get_full_df(path, "df_final")
           peaks <- calipR::get_full_df(path, "peak_res")
 
           result$full <- full
           result$peaks <- peaks
-
-          print("full")
-          print(full)
-
-          print("peaks")
-          print(peaks)
 
         }
 
@@ -1086,10 +1032,8 @@ if(input$groups == TRUE){print( "it is true")}
       }
 
       else{
-        print("yamako")
         res <- Analyze_Responses(result$peaks, full, var_list = input$grouping_var)
       }
-      print(res)
       res
 
 })
@@ -1127,9 +1071,6 @@ if(input$groups == TRUE){print( "it is true")}
 
       output$overall_q <- DT::renderDataTable({
 
-       # if(dim(calipR::checkTable("db_cq.sqlite", "'overall_q'"))[1] == 0) {}
-       # else{
-
         result$general_model <- res()[[2]][[1]]
 
         DT::datatable({result$general_model},
@@ -1146,14 +1087,12 @@ if(input$groups == TRUE){print( "it is true")}
                       class = "display"
 
         )
-        #}
+
       }
       )
 
       output$post_hoc_mcnemar <- DT::renderDataTable({
 
-#        if(dim(calipR::checkTable("db_cq.sqlite", "'pairwise'"))[1] == 0) {}
-        #else{
 
         result$pw_mcnemar <- res()[[2]][[2]]
 
@@ -1171,7 +1110,7 @@ if(input$groups == TRUE){print( "it is true")}
                       class = "display"
 
         )
-       # }
+
       })
 
 
@@ -1219,9 +1158,6 @@ if(input$groups == TRUE){print( "it is true")}
 
         }
 
-        print("input$stim_list_1")
-
-        print(input$stim_list_1)
         t <- dual_prop(g, input$stim_list_1, input$stim_list_2)
 }
       })
@@ -1260,17 +1196,6 @@ if(input$groups == TRUE){print( "it is true")}
 
         output$viz <- plotly::renderPlotly({
 
-          print(res()[[1]])
-          print(str(res()[[1]]))
-
-          print("result$resp_desc")
-          print(result$resp_desc)
-
-          print("result$resp_desc[[input$x]]")
-          print(result$resp_desc[[input$x_var]])
-          print("result$resp_desc[[input$y]]")
-          print(result$resp_desc[[input$y_var]])
-          #res <- calipR::get_full_df("db_cq.sqlite", "stats_desc_by_cov_group")
 
              plotly::plot_ly(
 
@@ -1344,11 +1269,9 @@ if(input$groups == TRUE){print( "it is true")}
         shiny::observeEvent(input$plot_button,{
 
           cnames <- colnames(result$full)
-          print(cnames)
           back_estim_opt <- c("gam_fit", "background")
 
           cnames_check <- back_estim_opt %in% cnames
-          print(cnames_check)
           back_var <- back_estim_opt[[which(cnames_check == TRUE)]]
 
         output$plot_resp_viz <- renderPlot({
@@ -1367,11 +1290,9 @@ if(input$groups == TRUE){print( "it is true")}
         shiny::observeEvent(input$plot_button_bis,{
 
           cnames <- colnames(result$full)
-          print(cnames)
           back_estim_opt <- c("gam_fit", "background")
 
           cnames_check <- back_estim_opt %in% cnames
-          print(cnames_check)
           back_var <- back_estim_opt[[which(cnames_check == TRUE)]]
 
 
@@ -1399,7 +1320,6 @@ if(input$groups == TRUE){print( "it is true")}
               else{
 
             list_var <- names(result$full)
-            #list_var <- names(res_full$res[[2]])
 
             shiny::selectInput(inputId = "clustvar", "Variable used for clustering", list_var)
 
@@ -1431,26 +1351,10 @@ if(input$groups == TRUE){print( "it is true")}
 
         responding_cells <- unique(result$peaks[["Cell_id"]])
 
-        print(responding_cells)
-        print("responding_cells")
-
-        print(result$full)
-        print("result$full")
-
-        print(unique(result$full[["Cell_id"]]))
-        print(length(unique(result$full[["Cell_id"]])))
-
         dt <- result$full[Cell_id %in% responding_cells]
 
-        print("yout")
         final <- prepareClustData(dt, input$clustvar, norm = input$normclust)
 
-        print("final")
-        print(final)
-
-        print(input$nclust)
-
-        print(input$dist_type)
 
         if(input$set_seed){
 
@@ -1468,12 +1372,6 @@ if(input$groups == TRUE){print( "it is true")}
 
         })
         })
-
-
-
-
-
-
 
 }
 shiny::shinyApp(ui, server)

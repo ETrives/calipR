@@ -136,3 +136,133 @@ clean_data <- function(data, moving_threshold, outlier_threshold ,mean_width,
   return(data)
 
 }
+
+
+
+#' DPA
+#'
+#'Implementation of the derivative passing accumulation method
+#'
+#' @param DPA_width
+#' @param data
+#'
+#' @return
+#' @export
+#'
+#' @examples
+DPA <- function(data, DPA_width){
+
+
+  pos <- data$smooth_Diff
+  pos[pos < 0] <- 0
+  neg <-  data$smooth_Diff
+  neg[neg > 0] <- 0
+
+  neg <- abs(neg)
+
+
+  pos_lag <- dplyr::lag(pos, n = DPA_width, default = 0)
+  neg_lead <- dplyr::lead(neg, n = DPA_width, default = 0)
+
+  res_DPA <- pos_lag + neg_lead
+  res_DPA <- res_DPA + dplyr::lag(res_DPA, n = 20, default = 0)
+
+  return(res_DPA)
+}
+
+
+#' CN_DPA
+#'
+#'Implementation of a constrained non negative variant of the derivative passing accumulation method.
+#'The persistence of the "potential signal" can be adapted by lagging the initial positive vector
+#'
+#' @param data
+#' @param CN_DPA_width
+#'
+#' @return
+#' @export
+#'
+#' @examples
+CN_DPA <- function(data, CN_DPA_width){
+
+  pos <- data$smooth_Diff
+  pos[pos < 0] <- 0
+
+  res_CN_DPA <- lapply(seq(5, CN_DPA_width, by = 10), function(x) dplyr::lag(pos, n = x, default = 0))
+
+  res <- rowSums(as.data.frame(res_CN_DPA))
+
+  return(as.numeric(res))
+}
+
+
+# Quick Quantile function coming from here : https://gist.github.com/sikli/f1775feb9736073cefee97ec81f6b193
+#' quantile_speed
+#'
+#' @param x
+#' @param probs
+#' @param na.rm
+#'
+#' @return
+#' @export
+#'
+#' @examples
+quantile_speed <- function(x, probs = c(0.1, 0.9), na.rm = F) {
+
+  if (na.rm) x <- x[!is.na(x)]
+
+  n <- length(x)
+  index <- 1 + (n - 1) * probs
+
+  lo    <- floor(index)
+  hi    <- ceiling(index)
+
+  x  <- sort(x, partial = unique(c(lo, hi)))
+  qs <- x[lo]
+
+  i     <- 1:length(probs)
+  h     <- index - lo
+  qs    <- (1 - h) * qs + h * x[hi]
+  qs
+
+}
+
+
+
+#' smoothing
+#'
+#' @param data
+#' @param band
+#' @param delta_f
+#' @param z_score
+#' @param raw
+#'
+#' @return
+#' @export
+#'
+#' @importFrom stats ksmooth
+#' @examples
+smoothing <- function(data, band = 4, delta_f = FALSE, z_score = FALSE, raw = FALSE){
+
+  if(raw == TRUE){
+    k <- ksmooth(data$time_frame, data$Mean_Grey, kernel = "normal", bandwidth= band)
+    data$Ksmooth_raw <- k$y
+
+  }
+
+  if(delta_f == TRUE){
+    k <- ksmooth(data$time_frame, data$delta_f_f, kernel = "normal", bandwidth= band)
+    data$Ksmooth_delta <- k$y
+
+  }
+
+  if(z_score == TRUE){
+    k <- ksmooth(data$time_frame, data$z_score, kernel = "normal", bandwidth= band)
+    data$Ksmooth_z <- k$y
+
+  }
+
+  return(data)
+}
+
+

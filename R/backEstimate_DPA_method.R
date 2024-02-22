@@ -1,3 +1,4 @@
+######## Background Estimation with the DPA method #########
 
 #' backEstimate
 #'
@@ -9,7 +10,7 @@
 #' @param data a data frame output from PrepareData function
 #' @param method One method among the 4 possible options : "linear", "polynomial", "gam", "quantile"
 #'
-#' @return a data table object with 5 new columns : a local mean, the first derivative, the DPA, 
+#' @return a data table object with 5 new columns : a local mean, the first derivative, the DPA,
 #' the mean grey values with peak values replaced and the fitted values with the chosen method (the background estimation)
 #' @export
 #'

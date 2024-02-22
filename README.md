@@ -24,7 +24,9 @@ calipR is a free and open source software dedicated to calcium imaging data anal
 
 -   Basic Statistics
 
--   > in development - Clustering Analysis [(dtwclust package)](https://github.com/asardaes/dtwclust)
+-   
+
+    > in development - Clustering Analysis [(dtwclust package)](https://github.com/asardaes/dtwclust)
 
 ## Project Goals
 
@@ -106,3 +108,41 @@ You may succeed the installation step but encounter this error when trying to us
 if you use Rstudio, during calipR installation, a window will open and tell you don't have this software and ask you if you want to install it. Say Yes ! it is necessary. After being installed, launch again calipR installation through devtools or r-universe.
 
 if you don't use Rstudio or want to install it by your self, [RTools](https://cran.r-project.org/bin/windows/Rtools/) is the software you need if you work on a PC. Be careful, you need to install an RTools version which matches your R version. So if you have R 4.3, you should install RTools 4.3
+
+### OS independent :
+
+If you encounter package dependency issues and you want to go for a radical option you can either :
+
+#### update your R packages
+
+``` r
+update.packages(ask = FALSE, checkBuilt = TRUE)
+```
+
+#### Delete R and the associated packages and download a fresh R [this might help](https://www.ozturkibrahim.com/how-to-uninstall-r-and-rstudio-with-all-packages-settings-and-everything-else-on-windows/)
+
+``` r
+# In your fresh R session install devtools
+install.packages("devtools")
+
+# Then install calipR from github
+install_github("ETrives/calipR")
+    
+# Or from r-universe
+install.packages('calipR', repos = c('https://etrives.r-universe.dev', 'https://cloud.r-project.org'))
+```
+
+## Data Analysis Tutorial
+
+### Preparing a correct Input for calipR
+
+calipR v1.0.0 starts the analysis workflow after the cell detection step. So you first need to do cell detection by yourself and end up with a csv file that can be of two different types :
+
+-   wide format : each column contains the fluorescence values for one cell across a given recording session. The corresponding data frame has the           dimensions : frame number\*cell number. This is the output you get if you follow the manual annotation tutorial in ImageJ here.
+-   long format : The different cells detected are in lines and identified by a column named TRACK_ID and the corresponding fluorescence values are in       another column named MEAN_INTENSITY_CH1. The data frame dimensions are thus (cell number*frame number)*2
+
+#### Manual Annotation Tutorial (very tedious)
+
+#### Trackmate Annotation Tutorial (automatic)
+
+If you don't have it, download Fiji [from here](https://fiji.sc/), it already contains the trackmate plugin.

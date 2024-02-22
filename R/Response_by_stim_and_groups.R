@@ -39,7 +39,6 @@ Response_by_stim_and_groups <- function(data, df_clean){
                      unique(df_clean[Cell_id == x,]$coverslip))))
 
   tab2 <- data.frame(table(data$Start_peak_stimulus, data$group, data$coverslip))
-  print(tab2)
   # ENsuite créer une colonne correspondant au nombre de cellules non répondeuses et la proportion de répondeuse
 
   group_list <- names(table(data$group))
@@ -54,10 +53,8 @@ Response_by_stim_and_groups <- function(data, df_clean){
   tab <- mutate(tab2, Not_Responding = unlist(map2(unlist(n_cells), tab2$Freq, function(x,y) x - y)),
                 Percent_Response = unlist(map2(tab2$Freq, unlist(n_cells), function(x,y) (x / y)*100)))
 
-  print(tab)
   tab_final <- rename(tab, "Stimulus" = Var1 ,"Group"= Var2, "Coverslip" = Var3, "Responding" = Freq )
 
-  print(tab_final)
   tab_list <- split(tab_final, tab_final$Coverslip)
   tab_list <- lapply(tab_list, function(x) x[1:length(stim_list),])
 

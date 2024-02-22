@@ -48,13 +48,13 @@ deconvolve <- function(norm_data, gam = 0.95, lambda = 1, constraint = T, estima
     # and only keep that line
     dt <- subset_spike_frames(norm_data,peaks_data, peak_frame)
 
-  
+
     dt <- dt[, Max_by_20 := max(smooth_z, na.rm = TRUE)[[1]], by = .(blocs)]
 
     dt <- dt[Max_by_20 ==  smooth_z]
 
     dt <- dt[, duplicate := duplicated(blocs)][duplicate == FALSE]
-  
+
 
     peaks_data$Max_peak_frame <- dt$time_frame
     peaks_data$max_peak_smooth_z <- dt$smooth_z
@@ -71,7 +71,6 @@ deconvolve <- function(norm_data, gam = 0.95, lambda = 1, constraint = T, estima
 
   if(dim(peaks_data)[1] != 0) {
 
-    print("DIM != de 0")
     peaks_data <- dplyr::rename(peaks_data,  "spike_stimulus" = "stimulus", "spike_frame" = "time_frame", "spike_stimulation" = "Stimulation",
                                 "spike_smooth_z" = "smooth_z", "spike_first_derivative" = "first_derivative", "spike_smooth_Diff" = "smooth_Diff" )
 
@@ -89,7 +88,7 @@ deconvolve <- function(norm_data, gam = 0.95, lambda = 1, constraint = T, estima
   peaks_data <- peaks_data[spike_smooth_Diff > 0 |lead_spike_smooth_Diff_3 > 0 |
                     lead_spike_smooth_Diff_2 > 0 |lead_spike_smooth_Diff_1 > 0 ]
 
- 
+
   peaks_data <- peaks_data[,diff := c(0,diff(spike_frame)), by = Cell_id]
 
 
@@ -125,7 +124,7 @@ deconvolve <- function(norm_data, gam = 0.95, lambda = 1, constraint = T, estima
 #'
 #' @return
 #' @export
-#' 
+#'
 #' @examples
 subset_spike_frames <- function(dt1,dt2, peak_frame = 10){
 
@@ -148,7 +147,7 @@ subset_spike_frames <- function(dt1,dt2, peak_frame = 10){
   # Add a grouping variable "blocs" to then compute the max on each of these parts
   res <- res[, blocs := rep(1:(length(res$Cell_id)/(peak_frame+1)), each = peak_frame+1)]
 
- 
+
 
   return(res)
 }

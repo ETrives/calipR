@@ -1,4 +1,89 @@
 
+#' norm_df
+#'
+#' A wrapper which executes z score noralization, deltaf/f normalization
+#' and computes a smoothed version of it
+#'
+#' @param data a data frame output from prepareData and back_estimate
+#' @param cov_split A list of data frame with each element being the data for one coverslip (one technical replicate)
+#' @param dim_list A list with each element being the dimension of a data frame in cov_split
+#'
+#' @return An updated data frame with four new columns : z_score (the values transformed in z_score)
+#' and the smoothed version of the z_score ; delta_f_f (the values normalized by delta f /f method)
+#' and its smoothed version
+#' @export
+#'
+#'
+#' @examples
+norm_df <- function(data, var = c("raw", "poly", "gam", "linear", "quantile","back"), width){
+
+
+  data$coverslip <- as.character(data$coverslip)
+
+  cov_split <- split(data, data$coverslip)
+  dim_list <- lapply(cov_split, function(x) dim(dplyr::filter(x, Cell_id == x$Cell_id[[1]]))[1])
+
+  data_z <- z_score(data, var = var, cov_split = cov_split, dim_list = dim_list)
+  print("z score computed")
+
+  data_d <- delta_f(data_z, var = var)
+  print("delta f / f computed")
+
+
+  #smoothing the z score and the delta f variables
+  smooth_df<- lapply(data_d, function(x) data.table::setDT(x)[, ':=' (smooth_z = gplots::wapply(time_frame,
+                                                                                                z_score, fun = mean, n = length(time_frame), width = width, method = "nobs", drop.na = FALSE)[[2]],
+                                                                      smooth_delta = gplots::wapply(time_frame,
+                                                                                                    delta_f_f, fun = mean, n = length(time_frame), width = width, method = "nobs", drop.na = FALSE)[[2]]),
+                                                              by = Cell_id])
+
+
+  smooth_df <- do.call(rbind, smooth_df)
+
+  return(smooth_df)
+}
+
+
+#' delta_f
+#'
+#' Normalizes the denoised fluorescence trace with the delta f/f method taking the predicted background as a local baseline
+#'
+#' @param data a dataframe output from back_estimate function
+#' @param var the variable which will be normalized (one of poly, gam, linear, quantile)
+#' @param cov_split a list of data table, each element being one coverslip (one technical replicate)
+#'
+#'
+#' @return the cov_split list within which, each datatable has a new column : the normalized fluorescence values
+#' @export
+#'
+#' @examples
+delta_f <- function(cov_split, var = c("poly", "gam", "linear", "quantile", "back")){
+
+  if(var == "poly"){
+    cov_split <- lapply(cov_split, function(x) x[, delta_f_f := poly_detrended / poly_fit, by = Cell_id])
+  }
+
+  if(var == "gam"){
+    cov_split <- lapply(cov_split, function(x) x[, delta_f_f := gam_detrended / gam_fit, by = Cell_id])
+  }
+
+  if(var == "linear"){
+    cov_split <- lapply(cov_split, function(x) x[, delta_f_f := linear_detrended / linear_fit, by = Cell_id])
+  }
+
+  if(var == "quantile"){
+    cov_split <- lapply(cov_split, function(x) x[, delta_f_f := quantile_detrended / local_quantile, by = Cell_id])
+  }
+
+  if(var == "back"){
+    cov_split <- lapply(cov_split, function(x) x[, delta_f_f := background_detrended / background, by = Cell_id])
+  }
+
+  return(cov_split)
+}
+
+
+
 #' z_score
 #'
 #' @param data The output of prepareData function or a data frame with similar elements
@@ -70,7 +155,6 @@ z_score <- function(data, var = c("raw", "poly", "gam", "linear", "quantile", "b
     mean_base_list <- split(mean, mean$Cell_id)
 
     # Creating a vector of mean baseline for each coverslip, that has the same number of lines as each coverslip
-    #mean_vec_list <- vector(mode = "list", length = length(mean_baseline$mean)*sum(unlist(dim_list)))
 
     dt <- dt[, mean_baseline := unlist(purrr::map2(mean_base_list, dim_list_final, function(x,y) rep(x$mean[[1]], times = y)))]
 
@@ -89,7 +173,6 @@ z_score <- function(data, var = c("raw", "poly", "gam", "linear", "quantile", "b
 
 
     # Creating a vector of mean baseline for each coverslip, that has the same number of lines as each coverslip
-    #mean_vec_list <- vector(mode = "list", length = length(mean_baseline$mean)*sum(unlist(dim_list)))
 
     dt <- dt[, mean_baseline := unlist(purrr::map2(mean_base_list, dim_list_final, function(x,y) rep(x$mean[[1]], times = y)))]
 
@@ -108,7 +191,6 @@ z_score <- function(data, var = c("raw", "poly", "gam", "linear", "quantile", "b
     mean_base_list <- split(mean, mean$Cell_id)
 
     # Creating a vector of mean baseline for each coverslip, that has the same number of lines as each coverslip
-    #mean_vec_list <- vector(mode = "list", length = length(mean_baseline$mean)*sum(unlist(dim_list)))
 
     dt <- dt[, mean_baseline := unlist(purrr::map2(mean_base_list, dim_list_final, function(x,y) rep(x$mean[[1]], times = y)))]
 
@@ -125,13 +207,11 @@ z_score <- function(data, var = c("raw", "poly", "gam", "linear", "quantile", "b
 
   if(var == "back"){
 
-    print("dt")
-    print(dt)
+
     mean <- dt[, .(mean = mean(background_detrended)), .(Cell_id, stimulus)][stimulus == "1.Baseline"]
     mean_base_list <- split(mean, mean$Cell_id)
 
     # Creating a vector of mean baseline for each coverslip, that has the same number of lines as each coverslip
-    #mean_vec_list <- vector(mode = "list", length = length(mean_baseline$mean)*sum(unlist(dim_list)))
 
     dt <- dt[, mean_baseline := unlist(purrr::map2(mean_base_list, dim_list_final, function(x,y) rep(x$mean[[1]], times = y)))]
 
@@ -146,4 +226,5 @@ z_score <- function(data, var = c("raw", "poly", "gam", "linear", "quantile", "b
 
   return(split(z_score, z_score$coverslip))
 }
+
 
