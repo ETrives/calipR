@@ -24,9 +24,7 @@ calipR is a free and open source software dedicated to calcium imaging data anal
 
 -   Basic Statistics
 
--   
-
-    > in development - Clustering Analysis [(dtwclust package)](https://github.com/asardaes/dtwclust)
+-   > in development - Clustering Analysis [(dtwclust package)](https://github.com/asardaes/dtwclust)
 
 ## Project Goals
 
@@ -146,3 +144,17 @@ calipR v1.0.0 starts the analysis workflow after the cell detection step. So you
 #### Trackmate Annotation Tutorial (automatic)
 
 If you don't have it, download Fiji [from here](https://fiji.sc/), it already contains the trackmate plugin.
+
+-   To open the trackmate plugin : Open Fiji > Plugins > Tracking > Trackmate
+-   A pop up will ask you to swap z by t, click yes and the trackmate window will open
+
+In the Trackmate window
+
+-   click next
+-   select the detector you want (algorithm used for cell segmentation)
+    - note that trackmate provides several options, included cellpose and stardist. However they are not directly installed.
+    - in the main Fiji window go to Help > update > Manage update sites 
+        - then type trackmate and select all the trackmate extensions you want
+        - restart Fiji, open the trackmate plugin again. Now in the Detector options you will find the ones you selecter
+        - this will however not be sufficient. For each extension, specific instructions are written on this tab, so you need to follow them
+-   proceed with cell segmentation and where you are satisfied
