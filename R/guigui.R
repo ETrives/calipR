@@ -842,7 +842,10 @@ folder <- shiny::reactive({
 
         df <- res_sim$res[[2]]
 
-        df_sub_bis <- df[df$Cell_id == input$cell_opt]
+        df_sub_bis <- get_cell(input$cell_opt, paste(project$dir_path,project$db_file,sep = "/"),
+                               "df_full")
+
+        #df[df$Cell_id == input$cell_opt]
 
 
         if(input$patMatch_opt_bis == TRUE){
