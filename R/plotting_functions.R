@@ -112,7 +112,7 @@ cell_plot <- function(full_data, peaks_data, cell, var, line = c(FALSE, "poly", 
 
   }
 
-  if(line == "gam") {
+  if(line == "gam_fit") {
 
     p <- p + ggplot2::geom_line( ggplot2::aes(y = gam_fit))
 
