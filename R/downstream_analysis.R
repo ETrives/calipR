@@ -113,7 +113,7 @@ downstream_analysis <- function(data, moving_thresh = 0.1, outlier_thresh = 2, m
 
     shiny::incProgress(1/5, detail = "Computing Statistics")
 
- 
+
     res <- Analyze_Responses(deconvolved[[1]], clean, compare_groups = compare_groups,
                              one_cell = one_cell, simulation = simulation)
 }
@@ -161,8 +161,9 @@ downstream_analysis <- function(data, moving_thresh = 0.1, outlier_thresh = 2, m
 
         norm <- norm_df(back, var = norm_var, width = norm_width)
 
-        deconvolved <- deconvolve(norm, lambda = lambda, gam = gam, constraint = constraint,
-                                  threshold = z_thresh, delta_threshold = delta_thresh,
+        deconvolved <- deconvolve(norm, lambda = lambda, gam = gam,
+                                  constraint = constraint,threshold = z_thresh,
+                                  delta_threshold = delta_thresh,
                                   var = deconvolve_var)
 
       }
@@ -174,10 +175,10 @@ downstream_analysis <- function(data, moving_thresh = 0.1, outlier_thresh = 2, m
       if(false_pos == TRUE){
         deconvolved <- keep_best_peaks(deconvolved)
 
-  
+
       }
 
- 
+
     }
     res <- "NO RES"
     norm <- data

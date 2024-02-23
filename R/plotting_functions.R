@@ -66,8 +66,9 @@ svg_responders <- function(full_data, peaks_data, var,
 cell_plot <- function(full_data, peaks_data, cell, var, line = c(FALSE, "poly", "gam_fit", "background"), show_peak = FALSE) {
 
   df <- full_data[full_data$Cell_id == cell,]
-  print(peaks_data)
   print("hey")
+
+  print(df)
 
   if(is.null(peaks_data) == FALSE) {
     print("aie")
