@@ -3,7 +3,7 @@
 #' Computes the dynamic time warping distance between all the rolling subsequences
 #' of a given length (or several given lengths) and all the patterns in two pattern
 #' banks: a positive bank and a negative bank (and returns the distance for the
-#' best match in each bank).So each index end up with two distance values for each 
+#' best match in each bank).So each index end up with two distance values for each
 #' specified length (window). The value couple (pos;neg)
 #' containing the value that is minimal, is kept. This value couple is then
 #' used to compute a ratio (pos/neg), used to infer if the index belongs to signal
@@ -22,7 +22,11 @@
 #' @export
 #'
 #' @examples
-patDetectR <- function(dt, window, step, posBank, negBank, new_len, Var, Norm = TRUE) {
+patDetectR <- function(dt, window, posBank, negBank, new_len, Var, Norm = TRUE) {
+
+
+  # Computing steps for rolling subsequencing:
+  step <- as.integer(sqrt(window))* 2
 
   # Subsequencing, Interpolation and Normalization
   data <- subinoR(dt, window, step, new_len, posBank, negBank, var = Var, norm = Norm)
@@ -255,7 +259,7 @@ subsequencR <- function(time_series, window, step, resizing){
   sub_dt <- data.table::data.table("orig_seq" = list(time_series),
                                    "sub_seq" = sub_seqs)[, id := seq(1,.N)]
 
- 
+
   # Vectorized implementation to subset subsequences
 
   sub_dt[, sub_seq_final := .(.(unlist(.(.(orig_seq)[1])[[1]])[sub_seq[[1]]])), by = id]

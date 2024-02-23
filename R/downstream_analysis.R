@@ -42,7 +42,7 @@ downstream_analysis <- function(data, moving_thresh = 0.1, outlier_thresh = 2, m
                                 deconvolve_var = "gam_detrended", borders_range = 50,
                                 time_thresh = 1, compare_groups = FALSE, false_pos = c(TRUE, FALSE), one_cell = FALSE, simulation = FALSE,
                                 pattern_matching = FALSE, posBank = list(),
-                                negBank = list(), windows = c(30,70,100), steps = c(5,10,50)) {
+                                negBank = list(), windows = c(30,70,100)) {
 
   lambda <- as.numeric(lambda)
 
@@ -61,7 +61,7 @@ downstream_analysis <- function(data, moving_thresh = 0.1, outlier_thresh = 2, m
   shiny::incProgress(1/5, detail = "Estimating Background")
 
 
-  back <- patDetectR(clean, windows, steps, new_len = 30, posBank,
+  back <- patDetectR(clean, windows, new_len = 30, posBank,
                                        negBank, Var = "Mean_Grey")
 
   back <- backEstimatR(clean, back)
@@ -134,7 +134,7 @@ downstream_analysis <- function(data, moving_thresh = 0.1, outlier_thresh = 2, m
         clean <- clean_data(data, moving_thresh, outlier_thresh, mean_width,
                             CN_DPA_width, DPA_width, mean_width_diff, method = "back")
 
-        back <- patDetectR(clean, windows, steps, new_len = 30, posBank,
+        back <- patDetectR(clean, windows, new_len = 30, posBank,
                            negBank, Var = "Mean_Grey")
 
         back <- backEstimatR(clean, back)
