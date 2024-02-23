@@ -297,6 +297,7 @@ ui <-
 
 server <- function(input, output, session){
 
+root_path <- paste0(getwd(),"/inst/projects")
 sqlitePath <- getwd()
 
 project <- reactiveValues(dir_path = "")
@@ -397,9 +398,10 @@ folder <- shiny::reactive({
 
     }
 
+
     project$name <- input$proj_name
 
-    project$dir_path <- paste(getwd(), project$name, sep = "/")
+    project$dir_path <- paste(root_path, project$name, sep = "/")
 
     project$db_file <- paste0(project$name, ".sqlite")
 
@@ -419,7 +421,7 @@ folder <- shiny::reactive({
 
     project$name <- input$proj_name_load
 
-    project$dir_path <- paste(getwd(), project$name, sep = "/")
+    project$dir_path <- paste(root_path, project$name, sep = "/")
 
     project$db_file <- paste0(project$name, ".sqlite")
 
@@ -467,7 +469,7 @@ folder <- shiny::reactive({
 
   df_full <- shiny::eventReactive(input$start_creation, {
 
-    db_path <- paste(paste(getwd(), db_name$name, sep = "/"),db_name$name, sep = "/")
+    db_path <- paste(paste(root_path, db_name$name, sep = "/"),db_name$name, sep = "/")
 
     df_full <- calipR::get_full_df(paste0(db_path, ".sqlite"), "df_full")
     df_full
