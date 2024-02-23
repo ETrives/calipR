@@ -123,18 +123,17 @@ get_sub_df <- function(db_name, tab_name, n_cells) {
 
   cell_id <- unique(RSQLite::dbGetQuery(con, paste("SELECT Cell_id FROM", tab_name, sep = " " )))
 
-  cell_id <- sample(cell_id$Cell_id, n_cells)
+  cells <- sample(cell_id$Cell_id, n_cells)
 
-  cells <- purrr::map2(cell_id, seq, function(x, y) paste(x[y]))
+  df <- RSQLite::dbGetQuery(
+             con, paste(paste("SELECT * FROM", tab_name,sep = " "), "WHERE Cell_id IN (",
+             paste(rep("?", length(cells)), collapse = ","), ")"),
+  	     params = as.list(cells))
 
-  sub_df <- purrr::map(cells, function(x) RSQLite::dbGetQuery(con, paste(paste("SELECT * FROM", tab_name, "WHERE Cell_id LIKE", sep = " "),
-                                                         paste("'%", x, "%'", sep = ""), sep = " ")))
   RSQLite::dbDisconnect(con)
-
-
-  df <- do.call(rbind, sub_df)
-
-  return(df)
+  
+return(df)
 
 }
+
 

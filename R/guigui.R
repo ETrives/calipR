@@ -551,6 +551,7 @@ folder <- shiny::reactive({
 
   observeEvent(input$printList,{
     test <- reactiveValuesToList(pattern_list)
+    print(test)
   })
 
 
@@ -873,16 +874,22 @@ folder <- shiny::reactive({
 
         data <- res_sim$res_bis
 
+        cnames <- colnames(data[[2]])
+        back_estim_opt <- c("gam_fit", "background")
+
+        cnames_check <- back_estim_opt %in% cnames
+        back_var <- back_estim_opt[[which(cnames_check == TRUE)]]
+
 
         output$plot_cell_sim_bis <- shiny::renderPlot({
 
           if(input$patMatch_opt_bis == TRUE){
-            p <- cell_plot(data[[2]], data[[1]], var = input$cell_plot_var, cell = input$cell_opt, line = "back", show_peak = input$show_peak_bis)
+            p <- cell_plot(data[[2]], data[[1]], var = input$cell_plot_var, cell = input$cell_opt, line = back_var, show_peak = input$show_peak_bis)
             p
           }
 
           if(input$patMatch_opt_bis == FALSE){
-            p <- cell_plot(data[[2]], data[[1]], var = input$cell_plot_var, cell = input$cell_opt, line = "gam", show_peak = input$show_peak_bis)
+            p <- cell_plot(data[[2]], data[[1]], var = input$cell_plot_var, cell = input$cell_opt, line = back_var, show_peak = input$show_peak_bis)
             p
           }
 
