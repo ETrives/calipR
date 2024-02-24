@@ -66,16 +66,11 @@ svg_responders <- function(full_data, peaks_data, var,
 cell_plot <- function(full_data, peaks_data, cell, var, line = c(FALSE, "poly", "gam_fit", "background"), show_peak = FALSE) {
 
   df <- full_data[full_data$Cell_id == cell,]
-  print("hey")
 
-  print(df)
 
   if(is.null(peaks_data) == FALSE) {
-    print("aie")
   if(is.null(dim(peaks_data)) == FALSE | dim(peaks_data)[[1]] != 0){
-    print("ouille")
   peak_info <- peaks_data[peaks_data$Cell_id == cell, ]
-  print(peak_info)
 
   }
 
@@ -86,16 +81,13 @@ cell_plot <- function(full_data, peaks_data, cell, var, line = c(FALSE, "poly", 
     peak_info <- NULL
 }
 
-  print( "hiou")
 
-  print(df$stimulus)
   p <- ggplot2::ggplot(df, ggplot2::aes(x = time_frame, y = !!rlang::sym(var)))+
     ggplot2::geom_line( ggplot2::aes( color =stimulus),size = 1)+
     #geom_point(data = peak,size = 2)+
     ggplot2::facet_wrap(~df$Cell_id) +
     ggplot2::theme_classic()
 
-  print("hia")
   q <- ggplot2::ggplot(df, ggplot2::aes(x = time_frame, y = smooth_z))+
     ggplot2::geom_line( ggplot2::aes( color =stimulus),size = 1)+
     #geom_point(data = peak,size = 2)+
@@ -131,15 +123,11 @@ cell_plot <- function(full_data, peaks_data, cell, var, line = c(FALSE, "poly", 
   if(dim(peak_info)[[1]] == 0){
 
     peak_info <- NULL
-    print("peak_info == NULL")
-    print(dim(peak_info)[[1]])
 
   }
   }
 
   if(show_peak == TRUE & is.null(peak_info) == FALSE){
-
-    print(sapply(seq_along(1:length(peak_info$spike_frame)), function(x) peak_info$spike_frame[[x]]))
 
       q <- q +
         #sapply(seq_along(1:length(peak_info$Start_peak_frame)), function(x) ggplot2::geom_vline(ggplot2::aes(xintercept = peak_info$Start_peak_frame[[x]]), size = 1, group = x, colour = colors[[x]]))+
@@ -147,12 +135,7 @@ cell_plot <- function(full_data, peaks_data, cell, var, line = c(FALSE, "poly", 
         #sapply(seq_along(1:length(peak_info$End_peak_frame)), function(x) ggplot2::geom_vline(ggplot2::aes(xintercept = peak_info$End_peak_frame[[x]]), size = 1, group = x, colour = colors[[x]]))+
         sapply(seq_along(1:length(peak_info$spike_frame)), function(x) ggplot2::geom_segment(ggplot2::aes(x = peak_info$spike_frame[[x]], y = min(df$smooth_z) - sd(df$smooth_z)/2, xend = peak_info$spike_frame[[x]], yend = min(df$smooth_z) - sd(df$smooth_z))))
 
-      print("ok")
 
-      print(sapply(seq_along(1:length(peak_info$spike_frame)), function(x) min(df[[var]]) - sd(df[[var]])/2))
-      print(sapply(seq_along(1:length(peak_info$spike_frame)), function(x) min(df[[var]]) - sd(df[[var]])))
-      print(sapply(seq_along(1:length(peak_info$spike_frame)), function(x) peak_info$spike_frame[[x]]))
-      print(df[[var]])
       p <- p +
         sapply(seq_along(1:length(peak_info$spike_frame)), function(x)
           ggplot2::geom_segment(ggplot2::aes(x = peak_info$spike_frame[[x]],
@@ -167,7 +150,6 @@ cell_plot <- function(full_data, peaks_data, cell, var, line = c(FALSE, "poly", 
       final <- gridExtra::grid.arrange(p,q, ncol = 2)
   }
 
-  print(peak_info)
   if(show_peak == TRUE & is.null(peak_info)){
 
 
@@ -252,9 +234,6 @@ simple_cell_plot <- function(data, triangle_data, cell, var, line = c(FALSE, "po
   if(trianglePlot == TRUE) {
 
   triangle_data <- triangle_data[triangle_data$Cell_id == cell,]
-  print(triangle_data)
-  #print(p)
-  print(unlist(triangle_data$trianglePoints[[1]][1]))
   p <- p + ggplot2::geom_point( ggplot2::aes(x = unlist(triangle_data$trianglePoints[[1]][1]), y = 0)) +
      geom_point(aes(x = unlist(triangle_data$trianglePoints[[1]][2]), y = 0)) +
     geom_point(aes(x = unlist(triangle_data$trianglePoints[[1]][3]), y = 0)) +

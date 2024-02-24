@@ -12,7 +12,9 @@ trackmateInput(
   coverslip_id,
   id,
   group,
-  duration_in_seconds
+  duration_in_seconds,
+  marker,
+  marker_thresh
 )
 }
 \arguments{

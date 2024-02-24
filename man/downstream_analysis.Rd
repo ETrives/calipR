@@ -30,8 +30,7 @@ downstream_analysis(
   pattern_matching = FALSE,
   posBank = list(),
   negBank = list(),
-  windows = c(30, 70, 100),
-  steps = c(5, 10, 50)
+  windows = c(30, 70, 100)
 )
 }
 \arguments{

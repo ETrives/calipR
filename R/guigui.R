@@ -49,6 +49,7 @@ ui <-
                                     "Create Your Banks", tabName = "bank"),
                                   shiny::conditionalPanel( 'input.sidebarid === "bank"',
                                                            shiny::textInput("db_name", label = NULL, placeholder = "Database name"),
+                                                           shiny::uiOutput("warning_db"),
                                                            shiny::textInput("bankName", "How do you want to call this bank ?"),
                                                            shiny::actionButton("start_creation", "Load Data", align = "center")),
 
@@ -107,7 +108,9 @@ ui <-
                             solidHeader = TRUE, status = "primary", collapsible = T,
 
         shiny::uiOutput("project_creation"),
-        shiny::uiOutput("project_loading")
+        shiny::uiOutput("project_loading"),
+        shiny::uiOutput("warning_load")
+
         ))),
 
 
@@ -120,7 +123,8 @@ ui <-
       shinydashboard::tabItem("bank",
             shiny::fluidRow(
             shinydashboard::box(title = "Select Patterns by clicking on the graph", width = 12, solidHeader = TRUE, status = "primary",
-        shiny::numericInput("cell",label = "cell_number", value = 1),
+        shiny::uiOutput('cell_selector'),
+        shiny::uiOutput('warning'),
         shiny::selectInput("displayType", "Type of data display", choices = list("points" = "markers", "line" = "line",
                                                                           "both" = "lines+markers"),selected = "points" ),
         plotly::plotlyOutput("myPlot")),
@@ -219,8 +223,7 @@ ui <-
 
       shiny::fluidRow(
         shinydashboard::box(title = "Description of Responses", width = 12, solidHeader = TRUE, status = "primary",
-            shinycssloaders::withSpinner(DT::dataTableOutput("resp_count"), type = 6),
-
+            shiny::uiOutput("spinner"),
             DT::dataTableOutput("resp_group_stim"),
             DT::dataTableOutput("peaks_by_class"),
             DT::dataTableOutput("overall_q"),
@@ -313,12 +316,9 @@ shiny::observeEvent(input$create, {
   list(
   shiny::textInput("proj_name", label = "Project Name" ),
 
-
-  shiny::selectInput("stim_num", label ="Stimuli number (/cell)", c("1" = "1", "2" = "2", "3" = "3",
-                                                                  "4" = "4", "5" = "5", "6"="6", "7"="7",
-                                                                  "8"="8", "9"="9","10"="10")),
   shiny::textInput("frame_rate", label = "Enter your frame rate (Hz)", placeholder = "e.g. 0.5" ),
   shiny::textInput("folder", label = NULL, placeholder = "Write folder's name (where all the files are)"),
+  shiny::uiOutput("folder_warning"),
   shiny::textInput("mark_thresh", label = "if you have a cellular marker, enter your threshold", placeholder = "e.g. 30"),
   shiny::checkboxInput("trackbox", label = "Check if you did ROI detection with Trackmate"),
 
@@ -359,45 +359,22 @@ shiny::observeEvent(input$load, {
 
 
 
-folder <- shiny::reactive({
+#folder <- shiny::reactive({
+#'%notin%' <- Negate('%in%')
+#  if(is.null(input$folder) | "meta.csv" %notin% list.files(input$folder)) {return(
+#    "Folder not correct. Check the provided path and/or the presence of meta.csv file"
+#  )}
 
-  if(is.null(input$folder)) {return()}
+ # else{
+ #   folder <- input$folder
+  #  folder
 
-  else{
-    folder <- input$folder
-    folder
+ # }
 
-  }
+#})
 
-})
-
-
-  stim_numb <- shiny::reactive({
-
-    if(is.null(input$stim_num)) {return()}
-
-    else{
-      stim_numb <- as.numeric(input$stim_num)
-      stim_numb
-
-    }
-
-  })
 
   observeEvent(input$creating, {
-
-    if(input$trackbox == FALSE){
-      df <- prepareData(folder(), stim_numb(), as.numeric(input$frame_rate),
-                        compare_groups = TRUE, marker_thresh = as.numeric(input$mark_thresh))
-
-    }
-
-    if(input$trackbox == TRUE){
-      df <- calipR::prepareData_track(folder(), stim_numb(), as.numeric(input$frame_rate),
-                                compare_groups = FALSE, marker_thresh = as.numeric(input$mark_thresh))
-
-    }
-
 
     project$name <- input$proj_name
 
@@ -405,7 +382,37 @@ folder <- shiny::reactive({
 
     project$db_file <- paste0(project$name, ".sqlite")
 
+    '%notin%' <- Negate('%in%')
+    if(is.null(input$folder)) {}
+
+    else if("meta.csv" %notin% list.files(input$folder)) {
+     output$folder_warning <- shiny::renderUI({"Folder not correct. Check the provided path and/or the presence of meta.csv file"
+    })
+    }
+
+    else{
+      output$folder_warning <- NULL
+      folder <- input$folder
+
+
+    if(length(list.files(project$dir_path)) == 0){
     dir.create(project$dir_path, showWarnings = TRUE, recursive = FALSE, mode = "0777")
+    }
+
+
+    if(input$trackbox == FALSE){
+
+      df <- prepareData(folder, as.numeric(input$frame_rate),
+                        compare_groups = TRUE, marker_thresh = as.numeric(input$mark_thresh))
+
+    }
+
+    if(input$trackbox == TRUE){
+      df <- prepareData_track(folder, as.numeric(input$frame_rate),
+                                compare_groups = FALSE, marker_thresh = as.numeric(input$mark_thresh))
+
+    }
+
 
     calipR::saveData(df, paste(project$dir_path, project$db_file, sep = "/"), "df_full")
 
@@ -414,7 +421,11 @@ folder <- shiny::reactive({
     output$df_created <- shiny::renderDataTable({df},
                                                options = list(scrollX = TRUE))
 
+    db$create <- data.table::setDT(calipR::get_full_df(paste(project$dir_path, project$db_file,sep = "/"), "df_full"))
+
+    }
     })
+
 
    observeEvent(input$load_button, {
 
@@ -425,17 +436,27 @@ folder <- shiny::reactive({
 
     project$db_file <- paste0(project$name, ".sqlite")
 
+    if(project$db_file %in% list.files(project$dir_path)){
+
+    output$warning_load <- NULL
+
     df <- calipR::loading100(paste(project$dir_path, project$db_file, sep = "/"), "df_full")
 
     output$df_loaded <- shiny::renderDataTable({df},
                                             options = list(scrollX = TRUE))
 
-  })
+    }
 
+     else{
+       output$warning_load <- shiny::renderUI({"This project doesn't exist"})
+     }
+  })
 
 
 ############### Module to create the banks ######################
 
+# Code to store user clicks to define the patterns adapted from here :
+# https://stackoverflow.com/questions/56193127/plotly-click-events-from-anywhere-on-the-plot/58766072#58766072
 
   js <- "
     function(el, x, inputName){
@@ -466,27 +487,55 @@ folder <- shiny::reactive({
   })
 
 
-
   df_full <- shiny::eventReactive(input$start_creation, {
+
+
+    if(paste0(db_name$name,".sqlite") %in% list.files(project$dir_path)){
+
+    output$warning_db <- NULL
 
     db_path <- paste(paste(root_path, db_name$name, sep = "/"),db_name$name, sep = "/")
 
     df_full <- calipR::get_full_df(paste0(db_path, ".sqlite"), "df_full")
-    df_full
+
+
+    output$cell_selector <- shiny::renderUI({shiny::numericInput("cell",
+                          label = "cell_number", value = 1, min = 1, max = length(df_full$Cell_id))
+
+    })
+
+  }
+
+    else{
+
+      output$warning_db <- shiny::renderUI({"This database doesn't exist"})
+    }
+
+      df_full
+
+
   })
 
 
 
 
   new_DF <- shiny::reactiveValues(data = data.frame(x = seq(1,10), y = seq(1,10)))
+
   shiny::observeEvent(input$start_creation, {
+
+    if(paste0(db_name$name,".sqlite") %in% list.files(project$dir_path)){
+
+      output$warning_db <- NULL
 
     new_DF$data <- df_full()
 
     new_DF$data <- data.frame(x = data.table::setDT(df_full())[Cell_id == unique(df_full()$Cell_id)[[1]]]$time_frame,
                               y = data.table::setDT(df_full())[Cell_id == unique(df_full()$Cell_id)[[1]]]$Mean_Grey )
 
-
+}
+    else{
+      output$warning_db <- shiny::renderUI({"This database doesn't exist"})
+    }
   })
 
   coordinates <- list()
@@ -578,9 +627,17 @@ folder <- shiny::reactive({
 
   observeEvent(input$cell,{
 
+    if(input$cell > length(unique(df_full()$Cell_id)) | input$cell == 0 | is.na(input$cell)){
+      output$warning <- shiny::renderUI({paste(paste("There are", length(unique(df_full()$Cell_id)),"cells.
+                                    Please enter a valid number"))
+      })
+    }
+    else{
+
+    output$warning <- NULL
     new_DF$data <- data.frame(x = data.table::setDT(df_full())[Cell_id == unique(df_full()$Cell_id)[[input$cell]]]$time_frame,
                               y = data.table::setDT(df_full())[Cell_id == unique(df_full()$Cell_id)[[input$cell]]]$Mean_Grey )
-
+}
 
      })
 
@@ -596,15 +653,22 @@ folder <- shiny::reactive({
 
    shiny::observeEvent(input$load_button, {
 
+     if(project$db_file %in% list.files(project$dir_path)){
+      output$warning_load <- NULL
      db$load <- data.table::setDT(calipR::get_full_df(paste(project$dir_path, project$db_file,sep = "/"), "df_full"))
+     }
 
+     else{
+      output$warning_load <- shiny::renderUI({"This database doesn't exist"})
+
+     }
   })
 
-  shiny::observeEvent(input$creating, {
+  #shiny::observeEvent(input$creating, {
 
-    db$create <- data.table::setDT(calipR::get_full_df(paste(project$dir_path, project$db_file,sep = "/"), "df_full"))
+  #  db$create <- data.table::setDT(calipR::get_full_df(paste(project$dir_path, project$db_file,sep = "/"), "df_full"))
 
-  })
+ # })
 
 
     shiny::observeEvent(input$cell_num, {
@@ -840,21 +904,19 @@ folder <- shiny::reactive({
 
       shiny::observeEvent(input$sim_bis, {
 
-        df <- res_sim$res[[2]]
-
         df_sub_bis <- get_cell(input$cell_opt, paste(project$dir_path,project$db_file,sep = "/"),
                                "df_full")
 
-        #df[df$Cell_id == input$cell_opt]
-
 
         if(input$patMatch_opt_bis == TRUE){
+
           posBank <- readRDS(paste(project$dir_path, input$posBank_bis, sep = "/"))
           negBank <- readRDS(paste(project$dir_path, input$negBank_bis, sep = "/"))
 
           posBank <- Filter(Negate(is.null), posBank)
           negBank <- Filter(Negate(is.null), negBank)
-        }
+
+          }
 
         else{
           posBank <- list()
@@ -869,8 +931,6 @@ folder <- shiny::reactive({
                                                windows = as.integer(input$windows_bis))
 
       })
-
-
 
 
       shiny::observeEvent(input$plot_simulation_bis, {
@@ -963,13 +1023,14 @@ folder <- shiny::reactive({
                                        "df_full")
 
 
-
         if(input$patMatch == TRUE){
           posBank <- readRDS(paste(project$dir_path, input$posBank_full, sep = "/"))
           negBank <- readRDS(paste(project$dir_path, input$negBank_full, sep = "/"))
 
           posBank <- Filter(Negate(is.null), posBank)
           negBank <- Filter(Negate(is.null), negBank)
+
+
         }
 
         else{
@@ -992,7 +1053,9 @@ folder <- shiny::reactive({
 
         # Extracting and saving the full data table updated
         res2 <- res_full$res[[2]]
+
         res2 <- data.table::setDT(res2)[, peak_frames := NULL]
+
 
         calipR::saveData(res2, paste(project$dir_path,project$db_file, sep ="/"), "df_final")
 
@@ -1011,6 +1074,7 @@ if(input$groups == TRUE){print( "it is true")}
         res3_3_2 <- data.table::setDT(res_full$res[[3]][[2]][[2]])
         calipR::saveData(res3_3_2, paste(project$dir_path,project$db_file, sep ="/"), "pairwise")
         }
+
 
       })
 
@@ -1048,10 +1112,16 @@ if(input$groups == TRUE){print( "it is true")}
       }
       res
 
+
+
 })
 
 
       observeEvent(input$update_button, {
+
+      output$spinner <- shiny::renderUI({shinycssloaders::withSpinner(DT::dataTableOutput("resp_count"),
+                                                                      type = 6)})
+
       output$resp_count <- DT::renderDataTable({
 
 
@@ -1326,7 +1396,7 @@ if(input$groups == TRUE){print( "it is true")}
 
 
               if(dim(calipR::checkTable(paste(project$dir_path,project$db_file, sep ="/"), "'df_final'"))[1] == 0) {
-                print( "dim == 0")
+
               }
 
               else{
