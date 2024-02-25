@@ -6,10 +6,9 @@
 #' molecular marker, group, coverslip).
 #'
 #'
-#' @param folder_name
-#' @param frame_rate
-#' @param duration_in_seconds
-#' @param compare_groups
+#' @param folder_name The relative path to the folder containing the fluorescence data and the meta.csv file
+#' @param frame_rate Your Acquisition rate in Hertz (eg. 0.25 if it is 0.25 Hz, 100 if it is 100 Hz)
+#' @param duration_in_seconds The time your stimulus takes to be in contact to your cells. Peaks found during this period will be attributed to the previous stimulus.
 #'
 #' @return
 #' @export
@@ -18,7 +17,7 @@
 
 #' @examples
 prepareData <- function(folder_name, frame_rate,  duration_in_seconds = 30,
-                        compare_groups = FALSE, marker_thresh) {
+                        marker_thresh) {
 
   # Get the file names and store the content in a list of df :
   myFiles <- list.files(folder_name, pattern = "\\.csv", recursive = T, full.names = T)
@@ -102,30 +101,14 @@ prepareData <- function(folder_name, frame_rate,  duration_in_seconds = 30,
   group_list <- lapply(myFiles, function(x) stringr::str_split(x, "/")[[1]][index_gr])
 
 
-  if(compare_groups == TRUE) {
-
-    for(i in 1:length(df_list)){
-
-      df_list[[i]] <- tidy_df(df_list[[i]],stimuli, each[[i]], pattern,
-                              duration_in_seconds, frame_rate, coverslip_id = coverslip_id[[i]], id = i,
-                              multiple = TRUE, compare_groups = TRUE, group_list[[i]], marker_list[[i]], marker_thresh)
-
-    }
-  }
-
-
-
-
-  if(compare_groups == FALSE) {
-
     for(i in 1:length(df_list)){
 
       df_list[[i]] <- tidy_df(df_list[[i]],stimuli, each[[i]], pattern, duration_in_seconds,
-                      frame_rate, coverslip_id = i, id = i, multiple = TRUE, compare_groups = FALSE,
+                      frame_rate, coverslip_id = coverslip_id[[i]], id = i, multiple = TRUE,
                       group_list[[i]], marker_list[[i]], marker_thresh)
 
     }
-  }
+
 
   df <- do.call(rbind, df_list)
 
@@ -154,11 +137,11 @@ prepareData <- function(folder_name, frame_rate,  duration_in_seconds = 30,
 #' @examples
 
 tidy_df <- function(data, stimuli, each, pattern, duration_in_seconds,
-                    frame_rate, coverslip_id, id, multiple = FALSE, compare_groups = FALSE, groups, marker, marker_thresh) {
+                    frame_rate, coverslip_id, id, multiple = FALSE, groups, marker, marker_thresh) {
 
   df_stim <- stim_var(data, stimuli, each, frame_rate, coverslip_id)
   df_final <- cell_sort(df_stim, pattern, duration_in_seconds, frame_rate, id = id,
-                        multiple = multiple, compare_groups, groups, marker, marker_thresh)
+                        multiple = multiple, groups, marker, marker_thresh)
 
 
   return(df_final)
@@ -247,7 +230,7 @@ stim_var <- function(data, stimuli, each, frame_rate, coverslip_id){
 
 #' @examples
 cell_sort <- function(df,pat,  duration_in_seconds, frame_rate, id,
-                      multiple = TRUE, compare_groups = TRUE, groups, marker, marker_thresh){
+                      multiple = TRUE, groups, marker, marker_thresh){
 
 
   stimuli_full <- df$stimulus
@@ -290,9 +273,8 @@ cell_sort <- function(df,pat,  duration_in_seconds, frame_rate, id,
   data_fus$coverslip <- coverslip_final
 
 
-  if(compare_groups == TRUE){
-    data_fus$group <- rep(groups, dim(data_fus)[1])
-  }
+  data_fus$group <- rep(groups, dim(data_fus)[1])
+
 
   data_fus$Cell_id <- rep(unlist(createId(data_fus, id)), each = dim[1])
 
@@ -331,7 +313,7 @@ cell_sort <- function(df,pat,  duration_in_seconds, frame_rate, id,
 #'
 #' @examples
 prepareData_track <- function(folder_name, frame_rate,  duration_in_seconds = 30,
-                              compare_groups = FALSE, marker_thresh = 0) {
+                               marker_thresh = 0) {
 
 
   # Get the file names and store the content in a list of df :
@@ -408,8 +390,6 @@ prepareData_track <- function(folder_name, frame_rate,  duration_in_seconds = 30
   each <- meta_df$timing
   each <- split(each, ceiling(seq_along(each)/length(stimuli)))
 
-  if(compare_groups == FALSE) {
-
     for(i in 1:length(df_list)){
 
       df_list[[i]] <- trackmateInput(df_list[[i]],stimuli, each[[i]],
@@ -417,7 +397,7 @@ prepareData_track <- function(folder_name, frame_rate,  duration_in_seconds = 30
                                      duration_in_seconds, marker_list[[i]], marker_thresh)
 
     }
-  }
+
 
 
   df <- do.call(rbind, df_list)
@@ -515,7 +495,7 @@ trackmateInput <- function(file, stimuli, each, frame_rate, coverslip_id, id,
 
   # Adding a variable tracking the frame with each stimulus being the zero reference :
 
-  data <- data[, Time_frame_stim := seq(c(1:length(stimulus)))]
+  data <- data[, Time_frame_stim := seq(c(1:.N)), by = stimulus]
   data <- data[, Stimulation := Time_frame_stim <= duration]
   data <- data[, group := rep(group,each = .N)]
 

@@ -24,7 +24,9 @@ calipR is a free and open source software dedicated to calcium imaging data anal
 
 -   Basic Statistics
 
--   > in development - Clustering Analysis [(dtwclust package)](https://github.com/asardaes/dtwclust)
+-   
+
+    > in development - Clustering Analysis [(dtwclust package)](https://github.com/asardaes/dtwclust)
 
 ## Project Goals
 
@@ -130,31 +132,51 @@ install_github("ETrives/calipR")
 install.packages('calipR', repos = c('https://etrives.r-universe.dev', 'https://cloud.r-project.org'))
 ```
 
-## Data Analysis Tutorial
+# Research using calipR
 
-### Preparing a correct Input for calipR
+-   Meunier, M. A., Porte, C., Vacher, H., Trives, E., Nakahara, T. S., Trouillet, A. C., ... & Keller, M. (2024). Hair from Sexually Active Bucks Strongly Activates Olfactory Sensory Inputs But Fails to Trigger Early First Ovulation in Prepubescent Does. Physiology & Behavior, 275, 114451. <https://doi.org/10.1016/j.physbeh.2023.114451>
+
+-   Poissenot, K., Trouillet, A. C., Trives, E., Moussu, C., Chesneau, D., Meunier, M., ... & Keller, M. (2023). Sexual discrimination and attraction through scents in the water vole, Arvicola terrestris. Journal of Comparative Physiology A, 1-11. <https://doi.org/10.1007/s00359-023-01671-5>
+
+-   Nakahara, T.S., Goterris-Cerisuelo, R., Trives, E., Fuentes-Ballesteros, J.F., Sanchez-Catalan, F. M. G., Chamero, P. (2023). Sensory detection of volatile pup derived molecules by the mouse vomeronasal organ. In Chemical Senses (Vol48). GREAT CLARENDON ST, OXFORD OX2 6DP, ENGLAND: OXFORD UNIV PRESS. Abstract id (p.48): [bjad041.119](https://watermark.silverchair.com/bjad041.pdf?token=AQECAHi208BE49Ooan9kkhW_Ercy7Dm3ZL_9Cf3qfKAc485ysgAAA4YwggOCBgkqhkiG9w0BBwagggNzMIIDbwIBADCCA2gGCSqGSIb3DQEHATAeBglghkgBZQMEAS4wEQQMG2bebSMUCzGkq-ZSAgEQgIIDOdZINz5QJ9vhcpwSPterfzSo7H_6KRfft6Ek5SM-tVlTCVgFEia4xtNwKqqb6Ktyn2hy5gLergpz212_N4vkdcrjpobgQhWvp_yRP5yDAft0AwkQhpfaYVEg_fw329SsrYM1Fey-PB0KPk1hlfNdaB9K7rixQJbFfG41iBn8vVdsuUy5zH9POXbVVCx8EUyFS9Y-lNnJ1Wo6FY9N6qfzhx-atDXRManSokRIieOkZ2LlVC1-4jVqDdOA8Fw24jkB7QVSU7jhesnt3Z7Js_19AjSBvK8OP7P75Z3LuPTl678SWddwyDtS3go2hls3hMRjlKBAXgsso-ctVe6QLVPIeiV--N9id8OKHug-KkvA3vQvDqvBxyDshKfLbXr216MegAaNEtnCB8s_dlf_6fn3G-cwfjKbGT7Zu4BVlORZrdu0HxjQoVSu1aHDKQWpQsAmGyk45S6ZXNjRf3WQVah5chHFNnvx7s9OLwJ7NyePNGCxHhB4CZmEgU3sh5uZopyDzwf6HSWo_ac4U3JMjwml4tsu3ET-_yG1lb6uBaPRJ15eZ2Cr4rs2HhTPtt1UnkZgJ6WXvCOb0MuJZ4k42Kl4UyF7hgh2JdHPsWNRv53sL19KtpqNtxWs94sk2POfBne_uTQ7uQ9wGAhZveOahw-PLPSGSvFsIgvWPh-LcLg3Ile-jbF4jARk6WjgwrbSjbCjJfJ8uYtJuSQjS8jUcgIkEtX8X353aCTYSzixOYv96Jg4TQSNS6mvSL0K9sYi4nvfPz_GchIGVCS7JcsGrGaAOz0noyoFziCcFosKt3MzdCUPLtZQbW00o_SuTBbuAzwHkcbRtuHobPfMZGYaykQ1aIChH6DmVSjNJq0RQsesUc7hITJEfuUDfLbdOcd0iZrkSkCREOXOe9ZS5PSs332g2lQOcAMPtcOv5zCYUGQMZzItCLEUsSz5GxcZ6KbwdU7yYMnIwKQYCNNAP_AqO3e2lv3vxy0S7oWvF7TDSdqO91ItVH6N02D-hmPaipoaXG16qXv7G3tjOntDn4CPTj0JZL-sK60aaB2tFJ9tXPLKAf9COrBIPylmaxYbIlg5oQDSWjlIUCtM3KNlHA)
+
+# Preparing a correct Input for calipR
+
+#### Fluorescence Data
 
 calipR v1.0.0 starts the analysis workflow after the cell detection step. So you first need to do cell detection by yourself and end up with a csv file that can be of two different types :
 
--   wide format : each column contains the fluorescence values for one cell across a given recording session. The corresponding data frame has the           dimensions : frame number\*cell number. This is the output you get if you follow the manual annotation tutorial in ImageJ here.
--   long format : The different cells detected are in lines and identified by a column named TRACK_ID and the corresponding fluorescence values are in       another column named MEAN_INTENSITY_CH1. The data frame dimensions are thus (cell number*frame number)*2
+-   wide format : each column contains the fluorescence values for one cell across a given recording session. The corresponding data frame has the dimensions : frame number\*cell number. This is the output you get if you follow the manual annotation tutorial in ImageJ here.
+-   long format : The different cells detected are in lines and identified by a column named TRACK_ID and the corresponding fluorescence values are in another column named MEAN_INTENSITY_CH1. The data frame dimensions are thus (cell number*frame number)*2
 
-#### Manual Annotation Tutorial (very tedious)
+#### meta.csv
 
-#### Trackmate Annotation Tutorial (automatic)
+You need to create a .csv file containing the meta data in two columns, with dimensions (coverslip_number \* stimulus_number)\*2 :
 
-If you don't have it, download Fiji [from here](https://fiji.sc/), it already contains the trackmate plugin.
+-   stimuli : containing the names of the stimuli your cells were exposed to (e.g. the cells are exposed to vehicle (baseline), glutamate, gaba and kcl. You have 4 stimuli (including baseline) so make sure you have four lines with corresponding names)
+-   timing : containing the time (in minutes) at which you started the exposition to the corresponding stimulus (eg. 0, 3, 6, 9 for baseline, glutamate, gaba and kcl means that at 3 minutes post recording glutamate was infused, at 6 minutes = gaba etc.)
 
--   To open the trackmate plugin : Open Fiji > Plugins > Tracking > Trackmate
--   A pop up will ask you to swap z by t, click yes and the trackmate window will open
+The meta data for all animals/groups/coverslips should be placed in one single meta.csv file. calipR takes each fluorescence data file in order. Each new coverslip meta data should be placed in line, below the previous one (eg. if 2 coverslips and 4 stimuli/coverslip, then your file has 8 lines and 2 columns)
 
-In the Trackmate window
+#### marker.csv (optional)
 
--   click next
--   select the detector you want (algorithm used for cell segmentation)
-    - note that trackmate provides several options, included cellpose and stardist. However they are not directly installed.
-    - in the main Fiji window go to Help > update > Manage update sites 
-        - then type trackmate and select all the trackmate extensions you want
-        - restart Fiji, open the trackmate plugin again. Now in the Detector options you will find the ones you selecter
-        - this will however not be sufficient. For each extension, specific instructions are written on this tab, so you need to follow them
--   proceed with cell segmentation and export results
+This file is optional. It is a .csv file with dimensions 1\*cell number. Each column contains one fluorescence value corresponding to the fluorescent reporter or IHC staining, on the same field of the corresponding recording. This data is used to attribute a molecular identity to recorded cells. You can enter your threshold value in the GUI when loading the data into calipR.
+
+#### Folder Organization
+
+``` bash
+
+├───Folder_Name               # Type the Path to this main folder to load data
+│   ├───Group1
+│   │   └───Individual1
+│   │       └───1.csv         # Fluorescence data -- coverslip 1 Animal 1
+│   │       └───2.csv         # Fluorescence data -- coverslip 2 Animal 1
+│   │       └───marker1.csv
+│   │       └───marker2.csv
+│   │   └───Individual2
+│   │       └───1.csv
+│   │       └───2.csv
+│   │       └───marker1.csv
+│   │       └───marker2.csv
+│   └───meta.csv              # Meta data file with stimulus and timing informations
+```

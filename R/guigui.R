@@ -403,13 +403,13 @@ shiny::observeEvent(input$load, {
     if(input$trackbox == FALSE){
 
       df <- prepareData(folder, as.numeric(input$frame_rate),
-                        compare_groups = TRUE, marker_thresh = as.numeric(input$mark_thresh))
+                      marker_thresh = as.numeric(input$mark_thresh))
 
     }
 
     if(input$trackbox == TRUE){
       df <- prepareData_track(folder, as.numeric(input$frame_rate),
-                                compare_groups = FALSE, marker_thresh = as.numeric(input$mark_thresh))
+                              marker_thresh = as.numeric(input$mark_thresh))
 
     }
 
