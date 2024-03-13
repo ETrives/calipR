@@ -14,11 +14,11 @@ calipR is a free and open source software dedicated to calcium imaging data anal
 
 -   Interactive parameters optimization module
 
--   Background estimation and signal denoising
+-   Improved Background estimation and signal denoising
 
     -   Implementation of the Derivative Passing Accumulation method [(Liu & Lin, 2019)](https://doi.org/10.1186/s12859-019-3188-4)
 
-    -   pattern matching based new algorithm
+    -   Development of a supervised machine learning classifier
 
 -   Normalization
 
@@ -27,6 +27,9 @@ calipR is a free and open source software dedicated to calcium imaging data anal
 -   Basic Statistics
 
 -   > in development Clustering Analysis [(dtwclust package)](https://github.com/asardaes/dtwclust)
+
+-   > in development Peaks metrics analysis (area, kinetics, duration...)
+
 
 ## Project Goals
 
@@ -52,6 +55,8 @@ calipR is a free and open source software dedicated to calcium imaging data anal
 
 To install the Graphical User Interface (GUI) based version for windows, you only need to download and execute the last version of the calipR.exe file available in the [release section](https://github.com/ETrives/calipR/releases). Once installed, just run the program and start your data analysis!
 
+Note that if you want to interact with the package by coding, there is an embedded R version in the installation folder with all necessary packages + calipR.
+
 
 ## Option 2 : Docker image downloading (recommended for macOS and linux)
 
@@ -71,7 +76,7 @@ calipR needs to take inputs from and write outputs into your local machine. In t
 docker run --rm -it -p 3838:3838 -v c:/replace/by/absolute/path/to/folder/containing/data/:/inst -t calipr_base:v1.0.0-alpha
 ```
 
-This will open an R session in your command terminal. You then need to load calipR :
+This will open an R session in your command terminal. You then need to load the calipR package:
 ``` r
 library(calipR)
 ```
@@ -81,7 +86,7 @@ To use the graphical user interface type :
 shiny::runApp(guigui(), host = '0.0.0.0', port = 3838)
 ```
 
-To access the interface, open your prefered internet browser and go to :
+To access the interface, go to :
 [http://localhost:3838/](http://localhost:3838/)
 
 
