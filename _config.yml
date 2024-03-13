@@ -1,6 +1,8 @@
-title: myproject
+title: calipR
+description: A Calcium Imaging Data Analaysis Pipeline in R
 #baseurl: "/myproject"
 url: ""
 markdown: kramdown
 theme: jekyll-theme-cayman
 exclude: [vendor]
+
