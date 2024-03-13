@@ -8,7 +8,7 @@ relative_links:
   collections: true
 include:
   - CONTRIBUTING.md
-  - README.html
+  - README.md
   - Demo.gif
   - LICENSE.md
   - COPYING.md
