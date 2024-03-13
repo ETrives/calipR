@@ -1,5 +1,6 @@
 title: calipR
 description: A Calcium Imaging Data Analaysis Pipeline in R
+show_downloads: true
 #baseurl: "/myproject"
 url: ""
 markdown: kramdown
