@@ -36,7 +36,7 @@ calipR is a free and open source software dedicated to calcium imaging data anal
 
 -   providing R users/developers a **foundation** that can be further **adapted to their specific needs**, taking advantage of R richness in terms of statistical packages and community.
 
-![Demo](https://github.com/ETrives/calipR/blob/master/Demo_calipR.GIF)
+![Demo](https://github.com/ETrives/calipR/blob/master/Demo_calipR.gif)
 
 ## Important Notes
 
