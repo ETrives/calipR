@@ -284,8 +284,3 @@ Mode <- function(x) {
 }
 
 
-mergePeaks <- function(peaks_data){
-
-  peaks_data[, peaks_borders := ifelse(length(unique(.SD$peaks_borders)) >= 2, , by = Cell_id]
-
-}
