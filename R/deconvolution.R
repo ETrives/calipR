@@ -51,7 +51,19 @@ deconvolve <- function(norm_data, gam = 0.95, lambda = 1, constraint = T, estima
 
     dt <- dt[, Max_by_20 := max(smooth_z, na.rm = TRUE)[[1]], by = .(blocs)]
 
+    #Derivative and smooth_z criteria:
+    dt <- dt[, peak_start_new := .SD[smooth_z > 0 & smooth_Diff > 0,][1,]$time_frame, by = .(blocs)]
+
+    # valley in the 10 first frames :
+    #dt <- dt[, peak_start_new := .SD[ smooth_z == min(.SD[c(1:10),]$smooth_z,na.rm = TRUE)]$time_frame[[1]], by = .(blocs)]
+
+
+    #dt <- dt[, peak_start_new := ifelse(is.na(peak_start_new), min()), by = .(blocs)]
+
     dt <- dt[Max_by_20 ==  smooth_z]
+
+    print("dt peak start")
+    print(dt)
 
     dt <- dt[, duplicate := duplicated(blocs)][duplicate == FALSE]
 
@@ -59,7 +71,38 @@ deconvolve <- function(norm_data, gam = 0.95, lambda = 1, constraint = T, estima
     peaks_data$Max_peak_frame <- dt$time_frame
     peaks_data$max_peak_smooth_z <- dt$smooth_z
     peaks_data$max_peak_smooth_delta <- dt$delta_f_f
+    peaks_data$peak_start <- dt$peak_start_new
 
+
+    # now same but to find peak end :
+
+    dt <- subset_spike_frames(norm_data,peaks_data, peak_frame = 100)
+    print("dt_end")
+    print(dt)
+
+    dt[, Max_by_20 := max(smooth_z, na.rm = TRUE)[[1]], by = .(blocs)]
+
+    # Chercher le pic après le maximum
+    #dt <- dt[, peak_end := .SD[smooth_z <= 0 & time_frame > .SD[smooth_z == Max_by_20]$time_frame][1,]$time_frame,  by = .(blocs)]
+
+    # Critère de dérivée négative à la place :
+
+    dt[, smooth_Diff := ifelse(is.na(smooth_Diff), first_derivative,smooth_Diff), by = .(blocs)]
+
+    dt <- dt[, peak_end := .SD[smooth_z <= 0 & smooth_Diff <= 0,][1,]$time_frame,  by = .(blocs)]
+
+
+
+
+    dt <- dt[, peak_end := ifelse(is.na(peak_end),
+                            .SD[time_frame > .SD[smooth_z == Max_by_20]$time_frame][smooth_z == min(smooth_z, na.rm = TRUE)]$time_frame, peak_end),  by = .(blocs)]
+
+    dt <- dt[, duplicate := duplicated(blocs)][duplicate == FALSE]
+
+    print("dt peak end")
+    print(dt)
+
+    peaks_data$peak_end <- dt$peak_end
 
   }
 
@@ -72,11 +115,14 @@ deconvolve <- function(norm_data, gam = 0.95, lambda = 1, constraint = T, estima
   if(dim(peaks_data)[1] != 0) {
 
     peaks_data <- dplyr::rename(peaks_data,  "spike_stimulus" = "stimulus", "spike_frame" = "time_frame", "spike_stimulation" = "Stimulation",
-                                "spike_smooth_z" = "smooth_z", "spike_first_derivative" = "first_derivative", "spike_smooth_Diff" = "smooth_Diff" )
+                                "spike_smooth_z" = "smooth_z", "spike_first_derivative" = "first_derivative", "spike_smooth_Diff" = "smooth_Diff")
 
 
     peaks_data <- unique(peaks_data[,c("Cell_id", "spike_frame", "spike_stimulus",
-                                       "spike_smooth_z", "Mean_Grey", get("var"), "Max_peak_frame", "max_peak_smooth_z", "spike_smooth_Diff", "lag_stim", "Time_frame_stim", "Prev_stim" )])
+                                       "spike_smooth_z", "Mean_Grey", get("var"),
+                                       "Max_peak_frame", "max_peak_smooth_z",
+                                       "spike_smooth_Diff", "lag_stim",
+                                       "Time_frame_stim", "Prev_stim", "peak_end","peak_start" )])
 
 
 
@@ -105,6 +151,57 @@ deconvolve <- function(norm_data, gam = 0.95, lambda = 1, constraint = T, estima
 
 
   peaks <- TRUE
+
+
+  # Identifying overlapping peaks to merge them :
+  peaks_data[, peaks_start := ifelse(is.na(peak_start), min(spike_frame,na.rm = TRUE)[[1]],peak_start), by =.(Cell_id, labels)]
+  peaks_data[, peaks_end_new := Mode(peak_end)[[1]], by =.(Cell_id, labels)]
+
+  sub_peaks_data <- unique(peaks_data[, c("Cell_id","labels","peaks_start","peaks_end_new")])
+
+  sub_peaks_data[, lead_peaks_start := dplyr::lead(peaks_start, default = 0), by = Cell_id]
+
+  sub_peaks_data[, peaks_diff := .SD$lead_peaks_start - .SD$peaks_end_new, by = Cell_id]
+
+  sub_peaks_data[, merge_peaks := ifelse(.SD$lead_peaks_start != 0 & peaks_diff <= 0, TRUE,FALSE), by = Cell_id]
+
+  sub_peaks_data[, lead_peaks_end := dplyr::lead(peaks_end_new, default = 0), by = Cell_id]
+
+  sub_peaks_data[, peak_end_final := ifelse(merge_peaks == TRUE, lead_peaks_end, peaks_end_new), by = .(Cell_id,labels)]
+
+  #sub_peaks_data <- sub_peaks_data[merge_peaks == TRUE]
+
+  print("sub_peaks_data")
+  View(sub_peaks_data)
+
+  #rep_len <- peaks_data[Cell_id %in% unique(sub_peaks_data$Cell_id), .N, by = Cell_id]
+
+  setkey(sub_peaks_data, Cell_id, labels,peaks_start)
+  setkey(peaks_data, Cell_id, labels,peaks_start)
+
+  print("peaks_data")
+  View(peaks_data)
+
+  peaks_data_bis <- peaks_data[sub_peaks_data]
+
+  print("peaks_data")
+  View(peaks_data_bis)
+
+  peaks_data[Cell_id %in% unique(peaks_data_bis$Cell_id)]$peaks_end_new <- peaks_data_bis$peak_end_final
+
+
+
+  peaks_data <- peaks_data[peaks_start < peaks_end_new]
+
+ # peaks_data[, peaks_borders := .(.(.(min(spike_frame,na.rm = TRUE)[[1]],Mode(peak_end)[[1]]))), by =.(Cell_id, labels)]
+
+ # peaks_data[,peaks_start := ifelse(length(unique(peaks_end_new)) == 1 ]
+
+  peaks_data[,peaks_start := min(.SD$peaks_start, na.rm = TRUE) , by = .(Cell_id,peaks_end_new)]
+  peaks_data[,peaks_end_new := max(.SD$peaks_end_new, na.rm = TRUE) , by = .(Cell_id,peaks_start)]
+
+  print("peaks_data_after")
+  View(peaks_data)
   }
 
 
@@ -134,13 +231,13 @@ subset_spike_frames <- function(dt1,dt2, peak_frame = 10){
 
   match_indices <- dt1[dt2, which = TRUE]
 
-  # create a border 20 lines later (for each spike)
+  # create a border n lines later (for each spike)
   end <- match_indices + peak_frame
 
   dt1 <- dt1[, id := seq(1,length(dt1$Cell_id))]
 
 
-  # Extract the line + the 20 following each spike
+  # Extract the line + the n lines following each spike
   res <- dt1[.(id = unlist(Map(':', match_indices, end))), on = .(id)]
 
 
@@ -178,5 +275,17 @@ add_peak_info <- function(x, gam, lambda,constraint, estimate_calcium, var = var
            list(peak_data$estimated_calcium, list(peak_data$spikes))]
 
   return(x)
+
+}
+
+Mode <- function(x) {
+  ux <- unique(x)
+  ux[which.max(tabulate(match(x, ux)))]
+}
+
+
+mergePeaks <- function(peaks_data){
+
+  peaks_data[, peaks_borders := ifelse(length(unique(.SD$peaks_borders)) >= 2, , by = Cell_id]
 
 }
