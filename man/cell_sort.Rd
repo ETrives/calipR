@@ -11,7 +11,6 @@ cell_sort(
   frame_rate,
   id,
   multiple = TRUE,
-  compare_groups = TRUE,
   groups,
   marker,
   marker_thresh

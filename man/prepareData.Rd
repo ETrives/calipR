@@ -4,16 +4,14 @@
 \alias{prepareData}
 \title{prepareData}
 \usage{
-prepareData(
-  folder_name,
-  frame_rate,
-  duration_in_seconds = 30,
-  compare_groups = FALSE,
-  marker_thresh
-)
+prepareData(folder_name, frame_rate, duration_in_seconds = 30, marker_thresh)
 }
 \arguments{
-\item{compare_groups}{}
+\item{folder_name}{The relative path to the folder containing the fluorescence data and the meta.csv file}
+
+\item{frame_rate}{Your Acquisition rate in Hertz (eg. 0.25 if it is 0.25 Hz, 100 if it is 100 Hz)}
+
+\item{duration_in_seconds}{The time your stimulus takes to be in contact to your cells. Peaks found during this period will be attributed to the previous stimulus.}
 }
 \description{
 This function is a wrapper which reads the raw fluorescence csv files (wide format),
