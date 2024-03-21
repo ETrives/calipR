@@ -4,10 +4,10 @@
 \alias{add_peak_info}
 \title{add_peak_info}
 \usage{
-add_peak_info(x, gam, lambda, constraint, estimate_calcium, var = var, ESP)
+add_peak_info(x, gam, lambda, var = var)
 }
 \arguments{
-\item{ESP}{}
+\item{var}{}
 }
 \description{
 add_peak_info

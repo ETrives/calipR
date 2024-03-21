@@ -14,7 +14,6 @@ tidy_df(
   coverslip_id,
   id,
   multiple = FALSE,
-  compare_groups = FALSE,
   groups,
   marker,
   marker_thresh

@@ -75,8 +75,12 @@ downstream_analysis <- function(data, moving_thresh = 0.1, outlier_thresh = 2, m
   shiny::incProgress(1/5, detail = "Performing Deconvolution")
 
   deconvolved <- deconvolve(norm, lambda = lambda, gam = gam, constraint = constraint,
-                            threshold = z_thresh, delta_threshold = delta_thresh, var = "background_detrended")
+                             var = "background_detrended")
 
+
+  deconvolved <- peakExtractR(deconvolved[[1]], deconvolved[[2]],
+                              threshold = z_thresh, delta_threshold = delta_thresh,
+                              var = "background_detrended")
 
   }
 
@@ -96,7 +100,12 @@ downstream_analysis <- function(data, moving_thresh = 0.1, outlier_thresh = 2, m
   shiny::incProgress(1/5, detail = "Performing Deconvolution")
 
   deconvolved <- deconvolve(norm, lambda = lambda, gam = gam, constraint = constraint,
-                            threshold = z_thresh, delta_threshold = delta_thresh, var = deconvolve_var)
+                            var = deconvolve_var)
+
+  deconvolved <- peakExtractR(deconvolved[[1]], deconvolved[[2]],
+                              threshold = z_thresh, delta_threshold = delta_thresh,
+                              var = deconvolve_var)
+
   }
 
 
@@ -142,9 +151,13 @@ downstream_analysis <- function(data, moving_thresh = 0.1, outlier_thresh = 2, m
         norm <- norm_df(back, var = "back", width = norm_width)
 
         deconvolved <- deconvolve(norm, lambda = lambda,gam = gam,
-                                  constraint = constraint,threshold = z_thresh,
-                                  delta_threshold = delta_thresh,
+                                  constraint = constraint,
                                   var = "background_detrended")
+
+        deconvolved <- peakExtractR(deconvolved[[1]], deconvolved[[2]],
+                                    threshold = z_thresh,
+                                    delta_threshold = delta_thresh,)
+
 
 
       }
@@ -162,9 +175,14 @@ downstream_analysis <- function(data, moving_thresh = 0.1, outlier_thresh = 2, m
         norm <- norm_df(back, var = norm_var, width = norm_width)
 
         deconvolved <- deconvolve(norm, lambda = lambda, gam = gam,
-                                  constraint = constraint,threshold = z_thresh,
-                                  delta_threshold = delta_thresh,
+                                  constraint = constraint,
                                   var = deconvolve_var)
+
+        deconvolved <- peakExtractR(deconvolved[[1]], deconvolved[[2]],
+                                    var = deconvolve_var,
+                                    threshold = z_thresh,
+                                    delta_threshold = delta_thresh)
+
 
       }
 
