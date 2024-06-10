@@ -40,23 +40,17 @@ peakExtractR <- function(peaks_data, norm_data, peak_frame = 10, threshold = 3,
 
   #Derivative and smooth_z criteria:
   dt[, peak_start_new := .SD[smooth_z > 0 & smooth_Diff > 0,][1,]$time_frame, by = .(blocs)]
-
-
   dt <- dt[Max_by_20 ==  smooth_z]
-
-  dt[, duplicate := duplicated(blocs)][duplicate == FALSE]
-
+  dt <- dt[, duplicate := duplicated(blocs)][duplicate == FALSE]
 
   peaks_data$Max_peak_frame <- dt$time_frame
   peaks_data$max_peak_smooth_z <- dt$smooth_z
   peaks_data$max_peak_smooth_delta <- dt$delta_f_f
   peaks_data$peak_start <- dt$peak_start_new
 
-
   # now same but to find peak end :
 
   dt <- subset_spike_frames(norm_data,peaks_data, peak_frame = 100)
-
   dt[, Max_by_20 := max(smooth_z, na.rm = TRUE)[[1]], by = .(blocs)]
 
   # Chercher le pic après le maximum
@@ -68,7 +62,13 @@ peakExtractR <- function(peaks_data, norm_data, peak_frame = 10, threshold = 3,
   dt[, peak_end := ifelse(is.na(peak_end),
                                 .SD[time_frame > .SD[smooth_z == Max_by_20]$time_frame][smooth_z == min(smooth_z, na.rm = TRUE)]$time_frame, peak_end),  by = .(blocs)]
 
-  dt[, duplicate := duplicated(blocs)][duplicate == FALSE]
+  dt <- dt[, duplicate := duplicated(blocs)][duplicate == FALSE]
+
+  print("peaks_data")
+  print(peaks_data)
+
+  print("dt")
+  print(dt)
 
   peaks_data$peak_end <- dt$peak_end
 
