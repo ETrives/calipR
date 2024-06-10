@@ -300,7 +300,7 @@ ui <-
 
 server <- function(input, output, session){
 
-root_path <- paste0(getwd(),"/inst/projects")
+root_path <- paste0(getwd(),"/projects")
 sqlitePath <- getwd()
 
 project <- reactiveValues(dir_path = "")
