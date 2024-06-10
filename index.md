@@ -223,3 +223,12 @@ This file is optional. It is a .csv file with dimensions 1\*cell number. Each co
 │   │       └───marker2.csv
 │   └───meta.csv              # Meta data file with stimulus and timing informations
 ```
+
+#### Folder localisation
+
+You first need to find the path where calipR was installed. The previously described folder containing your data should be placed in the installation folder of calipR as follows: calipR/shiny/data/your_folder.
+
+#### Starting your Analysis
+
+CalipR allows to manage several projects. When starting a new analysis project, you need to tick "create project", give it a unique name, provide the path to the data (data/your_folder_name) and the acquisition rate. If you formated your data as in the "long format" above description, you should tick "ROI detection with trackmate" otherwise leave empty. By clicking "load and tidy data", a new folder is created with your project name in calipR/shiny/projects. Inside each project folder, the loaded data is stored as an SQLite database. In your future sessions, you can directly start with "load existing project" by ticking this option and providing an existing project name. All the results of your analysis will be stored as a tab in the SQLite file and the banks you will create will be stored in the project folder as RDS files. So once a result has been generated or a bank has been created (and saved!), you can safely close the App, everything is in this folder and will be reloaded when loading an existing project.
+
