@@ -116,6 +116,14 @@ add_peak_info <- function(x, gam, lambda, var = var){
 
 }
 
+#' mode
+#'
+#' @param x
+#'
+#' @return
+#' @export
+#'
+#' @examples
 Mode <- function(x) {
   ux <- unique(x)
   ux[which.max(tabulate(match(x, ux)))]

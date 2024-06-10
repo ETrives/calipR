@@ -300,7 +300,7 @@ ui <-
 
 server <- function(input, output, session){
 
-root_path <- paste0(getwd(),"/inst/projects")
+root_path <- paste0(getwd(),"/projects")
 sqlitePath <- getwd()
 
 project <- reactiveValues(dir_path = "")
@@ -434,6 +434,7 @@ shiny::observeEvent(input$load, {
 
     project$dir_path <- paste(root_path, project$name, sep = "/")
 
+    print(project$dir_path)
     project$db_file <- paste0(project$name, ".sqlite")
 
     if(project$db_file %in% list.files(project$dir_path)){
