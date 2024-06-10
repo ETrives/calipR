@@ -64,11 +64,6 @@ peakExtractR <- function(peaks_data, norm_data, peak_frame = 10, threshold = 3,
 
   dt <- dt[, duplicate := duplicated(blocs)][duplicate == FALSE]
 
-  print("peaks_data")
-  print(peaks_data)
-
-  print("dt")
-  print(dt)
 
   peaks_data$peak_end <- dt$peak_end
 

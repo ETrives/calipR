@@ -835,14 +835,16 @@ shiny::observeEvent(input$load, {
 
       data <- res_sim$res
 
-      cnames <- colnames(data[[2]])
-      back_estim_opt <- c("gam_fit", "background")
 
-      cnames_check <- back_estim_opt %in% cnames
-      back_var <- back_estim_opt[[which(cnames_check == TRUE)]]
 
 
       output$plot_cell_sim <- shiny::renderPlot({
+
+        cnames <- colnames(data[[2]])
+        back_estim_opt <- c("gam_fit", "background")
+
+        cnames_check <- back_estim_opt %in% cnames
+        back_var <- back_estim_opt[[which(cnames_check == TRUE)]]
 
         if(input$patMatch_opt == TRUE){
           p <- cell_plot(data[[2]], data[[1]], var = input$cell_plot_var,
@@ -852,7 +854,7 @@ shiny::observeEvent(input$load, {
         }
 
         if(input$patMatch_opt == FALSE){
-          p <- cell_plot(data[[2]], data[[1]], var = input$cell_plot_var, cell = input$non_responders, line = "gam", show_peak = input$show_peak)
+          p <- cell_plot(data[[2]], data[[1]], var = input$cell_plot_var, cell = input$non_responders, line = back_var, show_peak = input$show_peak)
           p
         }
 
@@ -938,14 +940,16 @@ shiny::observeEvent(input$load, {
 
         data <- res_sim$res_bis
 
-        cnames <- colnames(data[[2]])
-        back_estim_opt <- c("gam_fit", "background")
-
-        cnames_check <- back_estim_opt %in% cnames
-        back_var <- back_estim_opt[[which(cnames_check == TRUE)]]
 
 
         output$plot_cell_sim_bis <- shiny::renderPlot({
+
+          cnames <- colnames(data[[2]])
+          back_estim_opt <- c("gam_fit", "background")
+
+          cnames_check <- back_estim_opt %in% cnames
+          back_var <- back_estim_opt[[which(cnames_check == TRUE)]]
+
 
           if(input$patMatch_opt_bis == TRUE){
             p <- cell_plot(data[[2]], data[[1]], var = input$cell_plot_var, cell = input$cell_opt, line = back_var, show_peak = input$show_peak_bis)
@@ -1351,13 +1355,15 @@ if(input$groups == TRUE){print( "it is true")}
 
         shiny::observeEvent(input$plot_button,{
 
+
+
+        output$plot_resp_viz <- renderPlot({
+
           cnames <- colnames(result$full)
           back_estim_opt <- c("gam_fit", "background")
 
           cnames_check <- back_estim_opt %in% cnames
           back_var <- back_estim_opt[[which(cnames_check == TRUE)]]
-
-        output$plot_resp_viz <- renderPlot({
 
           # Opérer un tri sur les cellules regarder comment j'ai fais pour responders
 
@@ -1372,14 +1378,15 @@ if(input$groups == TRUE){print( "it is true")}
 
         shiny::observeEvent(input$plot_button_bis,{
 
-          cnames <- colnames(result$full)
-          back_estim_opt <- c("gam_fit", "background")
-
-          cnames_check <- back_estim_opt %in% cnames
-          back_var <- back_estim_opt[[which(cnames_check == TRUE)]]
 
 
           output$plot_resp_viz <- renderPlot({
+
+            cnames <- colnames(result$full)
+            back_estim_opt <- c("gam_fit", "background")
+
+            cnames_check <- back_estim_opt %in% cnames
+            back_var <- back_estim_opt[[which(cnames_check == TRUE)]]
 
           p <- cell_plot(result$full, result$peaks, var = "Mean_Grey", cell = input$non_resp_viz, line = back_var, show_peak = input$show_peaks_box)
           p
