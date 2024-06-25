@@ -378,6 +378,7 @@ shiny::observeEvent(input$load, {
 
     project$name <- input$proj_name
 
+
     project$dir_path <- paste(root_path, project$name, sep = "/")
 
     project$db_file <- paste0(project$name, ".sqlite")
