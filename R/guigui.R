@@ -338,7 +338,12 @@ shiny::observeEvent(input$create, {
 
 shiny::observeEvent(input$load, {
 
-  if(input$load == TRUE){
+  if(input$load == FALSE){
+
+    output$project_loading <- NULL
+  }
+
+
 
     output$project_loading <- shiny::renderUI({
 
@@ -348,13 +353,6 @@ shiny::observeEvent(input$load, {
       shiny::actionButton("load_button", "Load Project", align = "center"))
 
     })
-  }
-
-  else{
-
-    output$project_loading <- NULL
-  }
-
   })
 
 
