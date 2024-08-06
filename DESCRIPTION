@@ -46,6 +46,7 @@ Imports:
   matrixprofiler,
   rucrdtw,
   robustbase,
-  dtwclust
+  dtwclust,
+  matrixStats,
 Remotes:
   jewellsean/FastLZeroSpikeInference
