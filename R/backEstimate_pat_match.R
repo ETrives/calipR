@@ -24,6 +24,9 @@
 #' @examples
 patDetectR <- function(dt, window, posBank, negBank, new_len, Var, Norm = TRUE) {
 
+  # Extending the trace so that patterns in its end can be fully screened with large
+  # windows :
+  dt <- dt[, rbind(.SD,.SD[rep(.N, max(window)),]), by = Cell_id]
 
   # Computing steps for rolling subsequencing:
   step <- as.integer(sqrt(window))* 2
@@ -69,6 +72,7 @@ patDetectR <- function(dt, window, posBank, negBank, new_len, Var, Norm = TRUE) 
 #'
 #' @examples
 subinoR <- function(dt, window, step, new_len, posBank, negBank, norm = TRUE, var = "Mean_Grey"){
+
 
   # Subsequence segmentation for each chosen window, for each cell in the dt :
 
@@ -208,9 +212,9 @@ matFillR_bis_bis <- function(dt){
 
   }
 
-  pos_val <- robustbase::colMedians(mat_pos, na.rm = TRUE)
-  neg_val <- robustbase::colMedians(mat_neg, na.rm = TRUE)
 
+  pos_val <- matrixStats::colMins(mat_pos, na.rm = TRUE)
+  neg_val <- matrixStats::colMins(mat_neg, na.rm = TRUE)
 
   dt_pos <- data.table::as.data.table(pos_val)[, c("neg_val", "idx") := list( neg_val, seq(1,.N))]
 
@@ -395,3 +399,4 @@ backEstimatR <- function(dt, patdet_out) {
 
   return(final_dt)
 }
+

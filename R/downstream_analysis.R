@@ -57,7 +57,7 @@ downstream_analysis <- function(data, moving_thresh = 0.1, outlier_thresh = 2, m
   shiny::incProgress(1/5, detail = "Estimating Background")
 
 
-  back <- patDetectR(clean, windows, new_len = 30, posBank,
+  back <- patDetectR(clean, windows, new_len = max(windows), posBank,
                                        negBank, Var = "Mean_Grey")
 
   back <- backEstimatR(clean, back)
@@ -137,7 +137,7 @@ downstream_analysis <- function(data, moving_thresh = 0.1, outlier_thresh = 2, m
         clean <- clean_data(data, moving_thresh, outlier_thresh, mean_width,
                             CN_DPA_width, DPA_width, mean_width_diff, method = "back")
 
-        back <- patDetectR(clean, windows, new_len = 30, posBank,
+        back <- patDetectR(clean, windows, new_len = max(windows), posBank,
                            negBank, Var = "Mean_Grey")
 
         back <- backEstimatR(clean, back)
