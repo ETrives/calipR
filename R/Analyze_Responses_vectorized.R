@@ -20,8 +20,8 @@ Analyze_Responses <- function(data, df_clean, compare_groups = FALSE, one_cell =
   df_clean <- setDT(df_clean)
 
 
-  data$spike_stimulus <- str_replace_all(data$spike_stimulus, "[123456789.]", "")
-  df_clean$stimulus <- str_replace_all(df_clean$stimulus, "[123456789.]", "")
+  #data$spike_stimulus <- str_replace_all(data$spike_stimulus, "[123456789.]", "")
+  #df_clean$stimulus <- str_replace_all(df_clean$stimulus, "[123456789.]", "")
 
   data$spike_stimulus
 
