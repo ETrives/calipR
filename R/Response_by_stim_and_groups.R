@@ -10,8 +10,8 @@
 #' @examples
 Response_by_stim_and_groups <- function(data, df_clean){
 
-  data$Start_peak_stimulus <- str_replace_all(data$Start_peak_stimulus, "[12345.]", "")
-  df_clean$stimulus <- str_replace_all(df_clean$stimulus, "[12345.]", "")
+  #data$Start_peak_stimulus <- str_replace_all(data$Start_peak_stimulus, "[12345.]", "")
+  #df_clean$stimulus <- str_replace_all(df_clean$stimulus, "[12345.]", "")
 
 
   # choper les cellules qui ont plsieurs pics par stimulus :

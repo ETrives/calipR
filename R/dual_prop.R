@@ -10,25 +10,21 @@
 #' @examples
 dual_prop <- function(data, stim1, stim2){
 
-  data$spike_stimulus <- str_replace_all(data$spike_stimulus, "[123456789.]", "")
+  #data$spike_stimulus <- str_replace_all(data$spike_stimulus, "[123456789.]", "")
 
-  stim1 <- str_replace_all(stim1, "[123456789.]", "")
-  stim2 <- str_replace_all(stim2, "[123456789.]", "")
+  #stim1 <- str_replace_all(stim1, "[123456789.]", "")
+  #stim2 <- str_replace_all(stim2, "[123456789.]", "")
 
 
   data <- data.table::setDT(data)
   data <- data[, Stim1 := spike_stimulus == stim1]
   data <- data[, Stim2 := spike_stimulus == stim2]
 
-  print(head(data))
 
   n_cells_stim1 <- length(unique(data[data$Stim1 == TRUE, ]$Cell_id))
   n_cells_stim2 <- length(unique(data[data$Stim2 == TRUE, ]$Cell_id))
 
-  print(n_cells_stim1)
-  print(n_cells_stim2)
 
-  # Enlever les numéros devant les stimuli :
 
   # stocker les noms des stimuli :
 
@@ -134,8 +130,8 @@ compare_dual_prop <- function(res1, stim_pos, res2, stim_pos2) {
 #' @examples
 cross_prop.venn <- function(data, stim_list){
 
-  data$spike_stimulus <- str_replace_all(data$spike_stimulus, "[123456789.]", "")
-  stim_list <- str_replace_all(stim_list, "[123456789.]", "")
+  #data$spike_stimulus <- str_replace_all(data$spike_stimulus, "[123456789.]", "")
+  #stim_list <- str_replace_all(stim_list, "[123456789.]", "")
 
   t <- data.table(table(data$spike_stimulus, data$Cell_id))
 
