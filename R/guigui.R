@@ -972,18 +972,7 @@ shiny::observeEvent(input$load, {
 
 
           output$window_field_full <- shiny::renderUI({
-            shiny::selectInput(inputId = "windows_full", "Windows", list("5" = 5,"10" = 10, "15" = 15,
-                                                                         "20" = 20, "25"=25,
-                                                                         "30"=30,"35"=35,
-                                                                         "40"=40,"45"=45,
-                                                                         "50"=50,"55"=55,
-                                                                         "60"=60,"65"=65,
-                                                                         "70"=70,"75"=75,
-                                                                         "80"=80,"85"=85,
-                                                                         "90"=90,"95"=35,
-                                                                         "100"=100,"105"=105,
-                                                                         "110"=110,"115"=115,
-                                                                         "120"=120,"125"=125),multiple=TRUE      )})
+            shiny::selectInput(inputId = "windows_full", "Windows", seq(5,1000,by=5),multiple=TRUE      )})
 
 
         }
