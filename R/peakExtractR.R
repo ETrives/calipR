@@ -24,6 +24,7 @@
 peakExtractR <- function(peaks_data, norm_data, peak_frame = 10, threshold = 3,
                          delta_threshold = 0, var = "background_detrended"){
 
+  print("yaaa")
   'isnotna' <- Negate('is.na')
   stim_list <- unique(norm_data$stimulus)
 
@@ -57,10 +58,13 @@ peakExtractR <- function(peaks_data, norm_data, peak_frame = 10, threshold = 3,
   # Critère de dérivée négative à la place :
 
   dt[, smooth_Diff := ifelse(is.na(smooth_Diff), first_derivative,smooth_Diff), by = .(blocs)]
-  dt[, peak_end := .SD[smooth_z <= 0 & smooth_Diff <= 0,][1,]$time_frame,  by = .(blocs)]
+
+  #dt[, ifelse(.SD$Cell_id == "A1agm" & blocs == 4226,print(.SD),.SD),  by = .(blocs)]
+
+  dt[, peak_end := .SD[smooth_z <= 0 & smooth_Diff <= 0,][1,]$time_frame,  by = .(Cell_id,blocs)]
 
   dt[, peak_end := ifelse(is.na(peak_end),
-                                .SD[time_frame > .SD[smooth_z == Max_by_20]$time_frame][smooth_z == min(smooth_z, na.rm = TRUE)]$time_frame, peak_end),  by = .(blocs)]
+                                .SD[time_frame > .SD[smooth_z == Max_by_20]$time_frame][smooth_z == min(smooth_z, na.rm = TRUE)]$time_frame, peak_end),  by = .(Cell_id,blocs)]
 
   dt <- dt[, duplicate := duplicated(blocs)][duplicate == FALSE]
 
@@ -71,8 +75,13 @@ peakExtractR <- function(peaks_data, norm_data, peak_frame = 10, threshold = 3,
 
 # Remove NAs
 
+  print("threshold")
+  print(threshold)
+  print("peaks_data")
+  print(peaks_data)
 peaks_data <- peaks_data[isnotna(max_peak_smooth_z) & max_peak_smooth_z >= threshold & max_peak_smooth_delta >= delta_threshold]
 
+print("yoooo222")
 
 
 if(dim(peaks_data)[1] != 0) {
@@ -112,7 +121,7 @@ if(dim(peaks_data)[1] != 0) {
 
   peaks <- TRUE
 
-
+  peaks_data_i <- peaks_data
   # Identifying overlapping peaks to merge them :
   peaks_data[, peaks_start := ifelse(is.na(peak_start), min(spike_frame,na.rm = TRUE)[[1]],peak_start), by =.(Cell_id, labels)]
   peaks_data[, peaks_end_new := Mode(peak_end)[[1]], by =.(Cell_id, labels)]
@@ -137,10 +146,11 @@ if(dim(peaks_data)[1] != 0) {
   peaks_data_bis <- peaks_data[sub_peaks_data]
   peaks_data <- peaks_data[, .SD[peaks_start == min(peaks_start, na.rm =TRUE)], by = .(Cell_id,labels)]
 
-
   peaks_data[Cell_id %in% unique(peaks_data_bis$Cell_id)]$peaks_end_new <- peaks_data_bis$peak_end_final
 
+
   peaks_data <- peaks_data[peaks_start < peaks_end_new]
+
 
   peaks_data[,peaks_start := min(.SD$peaks_start, na.rm = TRUE) , by = .(Cell_id,peaks_end_new)]
   peaks_data[,peaks_end_new := max(.SD$peaks_end_new, na.rm = TRUE) , by = .(Cell_id,peaks_start)]

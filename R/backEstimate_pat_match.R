@@ -89,6 +89,7 @@ subinoR <- function(dt, window, step, new_len, posBank, negBank, norm = TRUE, va
 
   # Intrerpolation to standardize requests and banks lengths:
 
+  print(new_len)
   interp_patBank2 <- data.table::as.data.table(interpolR(posBank, new_len))
 
   interp_anomBank <- data.table::as.data.table(interpolR(negBank, new_len))
@@ -161,7 +162,6 @@ mdRatio <- function(pos, neg){
 #'
 #' @examples
 distcomputR <- function(patMat, subseqMat, step, window){
-
 
   pos_dist_list <- lapply(subseqMat, function(x) x[,  lapply(.SD, function(y)
     rucrdtw::ucrdtw_mv(patMat, y, dtwwindow =0.05)$distance), by = Cell_id,
@@ -292,7 +292,6 @@ interpolR <- function(list, len, type = c("one","multiple")){
 
   dt <- data.table::data.table(list)[, id := seq(1,.N)]
 
-
   dt[,  final := .(.(approx(seq(1,length(unlist(.(.(list)[1])[[1]]))),
                             unlist(.(.(list)[1])[[1]]), method = "linear", ties = mean,
                             n = len)$y)), by = id]
@@ -323,9 +322,8 @@ interpolR <- function(list, len, type = c("one","multiple")){
 #' @examples
 backEstimatR <- function(dt, patdet_out) {
 
-
   patdet_out[, smooth_min_ratio := gplots::wapply(seq(1,.N), ratio,fun = min,
-                                                  n = .N,  width = 20, method = "nobs")[[2]], by = Cell_id]
+                                                 n = .N,  width = 20, method = "nobs")[[2]], by = Cell_id]
 
 
   patdet_out[, time_frame := seq(1,.N), by = Cell_id]
@@ -337,6 +335,7 @@ backEstimatR <- function(dt, patdet_out) {
 
   full_dt[, signal := ifelse(smooth_min_ratio > 0.95 & smooth_Diff < 2*median(smooth_Diff),
                              'Noise', ifelse(smooth_min_ratio < 0.95 & local_mean > median(local_mean),  'Signal', NA)), by = Cell_id]
+
 
   full_dt[, rolling_min_new := gplots::wapply(time_frame, Mean_Grey,fun = function(x) quantile(x, probs = 0.2, names = FALSE),
                                               n = length(time_frame),  width = 30, method = "nobs")[[2]], by = Cell_id]

@@ -12,9 +12,9 @@
 #' @export
 #'
 #' @examples
-saveData <- function(data, db_name, tab_name ) {
+saveData <- function(data, db_name, tab_name,over = TRUE,append = FALSE ) {
   con <- RSQLite::dbConnect(RSQLite::SQLite(), db_name)
-  RSQLite::dbWriteTable(con, tab_name, data, overwrite = TRUE)
+  RSQLite::dbWriteTable(con, tab_name, data, overwrite = over, append = append)
   RSQLite::dbDisconnect(con)
 }
 
@@ -131,7 +131,7 @@ get_sub_df <- function(db_name, tab_name, n_cells) {
   	     params = as.list(cells))
 
   RSQLite::dbDisconnect(con)
-  
+
 return(df)
 
 }
