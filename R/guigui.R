@@ -679,7 +679,7 @@ shiny::observeEvent(input$load, {
   # Code to store user clicks to define the patterns adapted from here :
   # https://stackoverflow.com/questions/56193127/plotly-click-events-from-anywhere-on-the-plot/58766072#58766072
 
-  js <- "
+  js_bis <- "
     function(el, x, inputName){
       var id = el.getAttribute('id');
       var gd = document.getElementById(id);
@@ -708,19 +708,19 @@ shiny::observeEvent(input$load, {
   })
 
 
-  df_full <- shiny::eventReactive(input$start_creation_bis, {
+  df_full_bis <- shiny::eventReactive(input$start_creation_bis, {
 
 
     if(paste0(db_name_bis$name,".sqlite") %in% list.files(project$dir_path)){
 
       output$warning_db_bis <- NULL
 
-      db_path <- paste(paste(root_path, db_name_bis$name, sep = "/"),db_name_bis$name, sep = "/")
+      db_path_bis <- paste(paste(root_path, db_name_bis$name, sep = "/"),db_name_bis$name, sep = "/")
 
-      df_full <- calipR::get_full_df(paste0(db_path, ".sqlite"), "df_full")
+      df_full_bis <- calipR::get_full_df(paste0(db_path_bis, ".sqlite"), "df_full")
 
       output$cell_selector_bis <- shiny::renderUI({shiny::numericInput("cell_bis",
-                                                                   label = "cell_number", value = 1, min = 1, max = length(df_full$Cell_id))
+                                                                   label = "cell_number", value = 1, min = 1, max = length(df_full_bis$Cell_id))
 
 
       })
@@ -732,7 +732,7 @@ shiny::observeEvent(input$load, {
       output$warning_db_bis <- shiny::renderUI({"This database doesn't exist"})
     }
 
-    df_full
+    df_full_bis
 
 
   })
@@ -740,7 +740,7 @@ shiny::observeEvent(input$load, {
 
 
 
-  new_DF <- shiny::reactiveValues(data = data.frame(x = seq(1,10), y = seq(1,10)))
+  new_DF_bis <- shiny::reactiveValues(data = data.frame(x = seq(1,10), y = seq(1,10)))
 
   shiny::observeEvent(input$start_creation_bis, {
 
@@ -748,10 +748,10 @@ shiny::observeEvent(input$load, {
 
       output$warning_db_bis <- NULL
 
-      new_DF$data <- df_full()
+      new_DF_bis$data <- df_full_bis()
 
-      new_DF$data <- data.frame(x = data.table::setDT(df_full())[Cell_id == unique(df_full()$Cell_id)[[1]]]$time_frame,
-                                y = data.table::setDT(df_full())[Cell_id == unique(df_full()$Cell_id)[[1]]]$Mean_Grey )
+      new_DF_bis$data <- data.frame(x = data.table::setDT(df_full_bis())[Cell_id == unique(df_full_bis()$Cell_id)[[1]]]$time_frame,
+                                y = data.table::setDT(df_full_bis())[Cell_id == unique(df_full_bis()$Cell_id)[[1]]]$Mean_Grey )
 
     }
     else{
@@ -762,27 +762,27 @@ shiny::observeEvent(input$load, {
   coordinates <- list()
 
   observeEvent(input$clickposition_bis, {
-    new_DF$data <- rbind(new_DF$data, input$clickposition_bis)
+    new_DF_bis$data <- rbind(new_DF_bis$data, input$clickposition_bis)
 
-    plotly::plotlyProxyInvoke(myPlotProxy, "restyle", list(x = list(new_DF$data[['x']]), y = list(new_DF$data[['y']])))
+    plotly::plotlyProxyInvoke(myPlotProxy_bis, "restyle", list(x = list(new_DF_bis$data[['x']]), y = list(new_DF_bis$data[['y']])))
 
   })
 
   pattern_list <- reactiveValues('1' =  c(1,1,1))
 
 
-  pattern_viewer <- reactiveValues('1' = c(0,0,0))
+  pattern_viewer_bis <- reactiveValues('1' = c(0,0,0))
 
   observeEvent(input$viewPattern_bis, {
-    start <- as.integer(new_DF$data[['x']][length(new_DF$data[['x']]) -1])
-    end <-  as.integer(new_DF$data[['x']][length(new_DF$data[['x']])])
+    start <- as.integer(new_DF_bis$data[['x']][length(new_DF_bis$data[['x']]) -1])
+    end <-  as.integer(new_DF_bis$data[['x']][length(new_DF_bis$data[['x']])])
 
-    pattern <- new_DF$data[['y']][start:end]
-    whole_trace <- new_DF$data[['y']]
+    pattern <- new_DF_bis$data[['y']][start:end]
+    whole_trace <- new_DF_bis$data[['y']]
 
-    whole_trace[c(1:start,end:length(new_DF$data[['x']]))] <- min(pattern, na.rm = TRUE)
+    whole_trace[c(1:start,end:length(new_DF_bis$data[['x']]))] <- min(pattern, na.rm = TRUE)
 
-    pattern_viewer[['1']] <- whole_trace
+    pattern_viewer_bis[['1']] <- whole_trace
 
   })
 
@@ -792,17 +792,17 @@ shiny::observeEvent(input$load, {
 
     db_path <- paste(paste(root_path, db_name_bis$name, sep = "/"),db_name_bis$name, sep = "/")
 
-    start <- as.integer(new_DF$data[['x']][length(new_DF$data[['x']]) -1])
-    end <-  as.integer(new_DF$data[['x']][length(new_DF$data[['x']])])
+    start <- as.integer(new_DF_bis$data[['x']][length(new_DF_bis$data[['x']]) -1])
+    end <-  as.integer(new_DF_bis$data[['x']][length(new_DF_bis$data[['x']])])
 
-    pattern <- new_DF$data[['y']][start:end]
-    whole_trace <- new_DF$data[['y']]
+    pattern <- new_DF_bis$data[['y']][start:end]
+    whole_trace <- new_DF_bis$data[['y']]
 
-    whole_trace[c(1:start,end:length(new_DF$data[['x']]))] <- min(pattern, na.rm = TRUE)
+    whole_trace[c(1:start,end:length(new_DF_bis$data[['x']]))] <- min(pattern, na.rm = TRUE)
 
     pattern_viewer[['1']] <- whole_trace
 
-    d <- setDT(df_full())[Cell_id == unique(df_full()$Cell_id)[[input$cell_bis]]]
+    d <- setDT(df_full_bis())[Cell_id == unique(df_full_bis()$Cell_id)[[input$cell_bis]]]
 
     d[, Annotation := ifelse(time_frame %between% c(start,end),1,0)]
 
@@ -811,8 +811,8 @@ shiny::observeEvent(input$load, {
              append = TRUE)
 
 
-    annotated_data <- calipR::get_full_df(paste0(db_path, ".sqlite"), input$annotation_project)
-    View(annotated_data)
+    #annotated_data <- calipR::get_full_df(paste0(db_path, ".sqlite"), input$annotation_project)
+    #View(annotated_data)
 
 
     })
@@ -822,36 +822,36 @@ shiny::observeEvent(input$load, {
 
   output$myPlot_bis <- plotly::renderPlotly({
 
-    plotly::plot_ly(new_DF$data, x = ~x, y = ~y, type = "scatter", mode = input$displayType_bis) %>%
-      htmlwidgets::onRender(js, data = "clickposition_bis")
+    plotly::plot_ly(new_DF_bis$data, x = ~x, y = ~y, type = "scatter", mode = input$displayType_bis) %>%
+      htmlwidgets::onRender(js_bis, data = "clickposition_bis")
   })
 
   output$pattern_bis <- plotly::renderPlotly({
-    end <-  as.integer(new_DF$data[['x']][length(new_DF$data[['x']])])
-    pattern_len <- length(pattern_viewer[['1']])
+    end <-  as.integer(new_DF_bis$data[['x']][length(new_DF_bis$data[['x']])])
+    pattern_len <- length(pattern_viewer_bis[['1']])
     to_add <- end - pattern_len
-    fluo <- pattern_viewer[['1']]
+    fluo <- pattern_viewer_bis[['1']]
     time <- seq(1,length(fluo))
     df <- as.data.frame(y = fluo, x = time)
     plotly::plot_ly(df, x = ~time, y = ~fluo, type = "scatter", mode = "line")
   })
 
 
-  myPlotProxy <- plotly::plotlyProxy("myPlot", session)
+  myPlotProxy_bis <- plotly::plotlyProxy("myPlot_bis", session)
 
 
   observeEvent(input$cell_bis,{
 
-    if(input$cell_bis > length(unique(df_full()$Cell_id)) | input$cell_bis == 0 | is.na(input$cell_bis)){
-      output$warning_bis <- shiny::renderUI({paste(paste("There are", length(unique(df_full()$Cell_id)),"cells.
+    if(input$cell_bis > length(unique(df_full_bis()$Cell_id)) | input$cell_bis == 0 | is.na(input$cell_bis)){
+      output$warning_bis <- shiny::renderUI({paste(paste("There are", length(unique(df_full_bis()$Cell_id)),"cells.
                                     Please enter a valid number"))
       })
     }
     else{
 
       output$warning_bis <- NULL
-      new_DF$data <- data.frame(x = data.table::setDT(df_full())[Cell_id == unique(df_full()$Cell_id)[[input$cell_bis]]]$time_frame,
-                                y = data.table::setDT(df_full())[Cell_id == unique(df_full()$Cell_id)[[input$cell_bis]]]$Mean_Grey )
+      new_DF_bis$data <- data.frame(x = data.table::setDT(df_full_bis())[Cell_id == unique(df_full_bis()$Cell_id)[[input$cell_bis]]]$time_frame,
+                                y = data.table::setDT(df_full_bis())[Cell_id == unique(df_full_bis()$Cell_id)[[input$cell_bis]]]$Mean_Grey )
     }
 
   })
