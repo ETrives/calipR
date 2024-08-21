@@ -133,13 +133,14 @@ cell_plot <- function(full_data, peaks_data, cell, var, line = c(FALSE, "poly", 
         #sapply(seq_along(1:length(peak_info$Start_peak_frame)), function(x) ggplot2::geom_vline(ggplot2::aes(xintercept = peak_info$Start_peak_frame[[x]]), size = 1, group = x, colour = colors[[x]]))+
 
         #sapply(seq_along(1:length(peak_info$End_peak_frame)), function(x) ggplot2::geom_vline(ggplot2::aes(xintercept = peak_info$End_peak_frame[[x]]), size = 1, group = x, colour = colors[[x]]))+
-        sapply(seq_along(1:length(peak_info$spike_frame)), function(x) ggplot2::geom_segment(ggplot2::aes(x = peak_info$spike_frame[[x]], y = min(df$smooth_z) - sd(df$smooth_z)/2, xend = peak_info$spike_frame[[x]], yend = min(df$smooth_z) - sd(df$smooth_z))))
+        #sapply(seq_along(1:length(peak_info$spike_frame)), function(x) ggplot2::geom_segment(ggplot2::aes(x = peak_info$spike_frame[[x]], y = min(df$smooth_z) - sd(df$smooth_z)/2, xend = peak_info$spike_frame[[x]], yend = min(df$smooth_z) - sd(df$smooth_z))))
+      sapply(seq_along(1:length(peak_info$time_frame)), function(x) ggplot2::geom_segment(ggplot2::aes(x = peak_info$time_frame[[x]], y = min(df$smooth_z) - sd(df$smooth_z)/2, xend = peak_info$time_frame[[x]], yend = min(df$smooth_z) - sd(df$smooth_z))))
 
 
       p <- p +
-        sapply(seq_along(1:length(peak_info$spike_frame)), function(x)
-          ggplot2::geom_segment(ggplot2::aes(x = peak_info$spike_frame[[x]],
-          y = min(df[[var]]) - sd(df[[var]])/2, xend = peak_info$spike_frame[[x]],
+        sapply(seq_along(1:length(peak_info$time_frame)), function(x)
+          ggplot2::geom_segment(ggplot2::aes(x = peak_info$time_frame[[x]],
+          y = min(df[[var]]) - sd(df[[var]])/2, xend = peak_info$time_frame[[x]],
           yend = min(df[[var]]) - sd(df[[var]]))))
 
         #sapply(seq_along(1:length(peak_info$spike_frame)), function(x)

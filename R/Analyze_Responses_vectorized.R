@@ -19,19 +19,11 @@ Analyze_Responses <- function(data, df_clean, compare_groups = FALSE, one_cell =
   data <- setDT(data)
   df_clean <- setDT(df_clean)
 
-
-  #data$spike_stimulus <- str_replace_all(data$spike_stimulus, "[123456789.]", "")
-  #df_clean$stimulus <- str_replace_all(df_clean$stimulus, "[123456789.]", "")
-
-  data$spike_stimulus
-
-
   'isnotna' <- Negate('is.na')
 
   df_clean <- df_clean[ isnotna(stimulus)]
 
-
-  data <- data[ isnotna(spike_stimulus)]
+  data <- data[ isnotna(stimulus)]
 
   ### Adding a variable "Response" for each stimulus in df_clean
 
@@ -69,7 +61,8 @@ Analyze_Responses <- function(data, df_clean, compare_groups = FALSE, one_cell =
   data <- data.table::setDT(data)
 
     setkey(d, Cell_id, stimulus)
-    setkey(data, Cell_id, spike_stimulus)
+    #setkey(data, Cell_id, spike_stimulus)
+    setkey(data, Cell_id, stimulus)
 
     response_indices <- unique(d[data, which = TRUE])
 
@@ -313,6 +306,7 @@ Analyze_Responses <- function(data, df_clean, compare_groups = FALSE, one_cell =
 #' @examples
 Compare_props <- function(data){
 
+  data_bis <- data
   res_tot <- rstatix::cochran_qtest(data, Response~stimulus|Cell_id)
   res_post_hoc <- rstatix::pairwise_mcnemar_test(data, Response~stimulus|Cell_id)
 
@@ -340,7 +334,9 @@ base_resp.rm <- function(borders, full){
   cell_split <- split(borders, borders$Cell_id)
 
 
-  base.rm <- lapply(cell_split, function(x) if ("1.Baseline" %notin% x$spike_stimulus) {x})
+  #base.rm <- lapply(cell_split, function(x) if ("1.Baseline" %notin% x$spike_stimulus) {x})
+
+  base.rm <- lapply(cell_split, function(x) if ("1.Baseline" %notin% x$stimulus) {x})
 
   base_resp <- names(base.rm[lengths(base.rm) == 0])
 

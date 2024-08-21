@@ -41,7 +41,6 @@ clean_data <- function(data, moving_threshold, outlier_threshold ,mean_width,
   # Removing cells that moved too much (fluorescence down to zero)
 
   zero_sum <- data[, .(zero_sum = sum((get("Mean_Grey") == 0))), by = Cell_id ]
-
   zero_ratio <- zero_sum$zero_sum / frame_sum$frame_sum
 
 
@@ -56,24 +55,25 @@ clean_data <- function(data, moving_threshold, outlier_threshold ,mean_width,
 
   data <- data[, local_mean := data[, .(local_mean = local_mean_fct(get("time_frame"), get("Mean_Grey"), get("time_frame"))), by = Cell_id]$local_mean]
 
-  data <- data[, Mean_Grey := data[, .(Mean_Grey = replace(get("Mean_Grey"), get("time_frame") == 1
-                                                             & get("Mean_Grey") == 0, get("local_mean")[1])), by = Cell_id]$Mean_Grey]
+  #data <- data[, Mean_Grey := data[, .(Mean_Grey = replace(get("Mean_Grey"), get("time_frame") == 1
+                                             #                & get("Mean_Grey") == 0, get("local_mean")[1])), by = Cell_id]$Mean_Grey]
 
 
-  # Computing first derivative
-
-  first_d_fct <- function(x,y) doremi::calculate.gold(time = x, signal = y,
-                                                      embedding = 2, n = 1)$dsignal[,2]
-
-  data <- data[, first_derivative := data[, .(first_derivative = first_d_fct(get("time_seconds"), get("local_mean"))), by = Cell_id]$first_derivative]
 
 
-  local_mean_diff_fct <- function(x,y,z) gplots::wapply(x, y, fun = mean, n=length(z), width = mean_width_diff, method = "nobs", drop.na = FALSE)[[2]]
 
-  data <- data[, smooth_Diff := data[, .(smooth_Diff = local_mean_diff_fct(get("time_frame"), get("first_derivative"), get("time_frame"))), by = Cell_id]$smooth_Diff]
+    first_d_fct <- function(x,y) doremi::calculate.gold(time = x, signal = y,
+                                                        embedding = 2, n = 1)$dsignal[,2]
+
+    data <- data[, first_derivative := data[, .(first_derivative = first_d_fct(get("time_seconds"), get("local_mean"))), by = Cell_id]$first_derivative]
 
 
-  if(method == "DPA") {
+    local_mean_diff_fct <- function(x,y,z) gplots::wapply(x, y, fun = mean, n=length(z), width = mean_width_diff, method = "nobs", drop.na = FALSE)[[2]]
+
+    data <- data[, smooth_Diff := data[, .(smooth_Diff = local_mean_diff_fct(get("time_frame"), get("first_derivative"), get("time_frame"))), by = Cell_id]$smooth_Diff]
+
+    if(method == "DPA") {
+
   cell_split <- split(data, data$Cell_id)
   cell_split <- lapply(cell_split, function(x) data.table::setDT(x)[, c("DPA", "CN_DPA") := list(DPA(x, DPA_width),  CN_DPA(x, CN_DPA_width))])
 
@@ -95,6 +95,7 @@ clean_data <- function(data, moving_threshold, outlier_threshold ,mean_width,
                                                                                    Mean_Grey < (mean(Mean_Grey) - 1.5*stats::sd(Mean_Grey)),
                                                                                  NaN)])
 
+  cell_split <- lapply(cell_split, function(x) x[, signal := ifelse(is.na(Mean_Grey_wo_peaks), 1, NA)])
 
   cell_split <- lapply(cell_split, function(x) x[, Mean_Grey_wo_peaks := replace(Mean_Grey_wo_peaks, time_frame == max(time_frame) & is.na(Mean_Grey_wo_peaks), local_mean[ max(time_frame)])])
   cell_split <- lapply(cell_split, function(x) x[, Mean_Grey_wo_peaks := replace(Mean_Grey_wo_peaks, time_frame == 1 & is.na(Mean_Grey_wo_peaks), local_mean[1])])
