@@ -33,10 +33,10 @@
 #'
 #' @examples
 downstream_analysis <- function(data, moving_thresh = 0.1, outlier_thresh = 2, mean_width = 20, DPA_width = 10, CN_DPA_width = 20,
-                                mean_width_diff = 10, method = "gam", norm_var = "gam",
-                                norm_width = 10, lambda = 100,
+                                mean_width_diff = 10, method = "back", norm_var = "back", reference = c("baseline","estimate"),
+                                norm_width = 5, lambda = 100,
                                 gam = 0.97, z_thresh = 3, delta_thresh = 0,
-                                deconvolve_var = "gam_detrended", compare_groups = FALSE, false_pos = c(TRUE, FALSE), one_cell = FALSE, simulation = FALSE,
+                                deconvolve_var = "background_detrended", compare_groups = FALSE, false_pos = c(TRUE, FALSE), one_cell = FALSE, simulation = FALSE,
                                 pattern_matching = FALSE, posBank = list(),
                                 negBank = list(), windows = c(30,70,100)) {
 
@@ -44,8 +44,12 @@ downstream_analysis <- function(data, moving_thresh = 0.1, outlier_thresh = 2, m
 
   gam <- as.numeric(gam)
 
-
-
+if(method == "back"){
+  peak_frame <- round(mean(unlist(lapply(posBank, length)), na.rm=TRUE))
+}
+  else{
+    peak_frame <- 40
+  }
 
   if(one_cell == FALSE){
   shiny::withProgress(message = "Analyzing Full Dataset", value = 0, detail = "Cleaning Data", {
@@ -57,8 +61,7 @@ downstream_analysis <- function(data, moving_thresh = 0.1, outlier_thresh = 2, m
   shiny::incProgress(1/5, detail = "Estimating Background")
 
 
-  back <- patDetectR(clean, windows, new_len = max(windows), posBank,
-                                       negBank, Var = "Mean_Grey")
+  back <- patDetectR(clean, posBank, negBank, Var = "Mean_Grey")
 
   back <- backEstimatR(clean, back)
 
@@ -66,16 +69,19 @@ downstream_analysis <- function(data, moving_thresh = 0.1, outlier_thresh = 2, m
 
   shiny::incProgress(1/5, detail = "Normalizing Data")
 
-  norm <- norm_df(back, var = "back", width = norm_width)
+  norm <- norm_df(back, var = "back", width = norm_width, reference = reference)
 
   shiny::incProgress(1/5, detail = "Performing Deconvolution")
 
   deconvolved <- deconvolve(norm, lambda = lambda, gam = gam, var = "background_detrended")
 
 
-  deconvolved <- peakExtractR(deconvolved[[1]], deconvolved[[2]],
-                              threshold = z_thresh, delta_threshold = delta_thresh,
-                              var = "background_detrended")
+  #deconvolved <- peakExtractR(deconvolved[[1]], deconvolved[[2]],
+     #                         threshold = z_thresh, delta_threshold = delta_thresh,
+     #                         var = "background_detrended")
+  deconvolved <- peakExtraction(deconvolved, thresh = z_thresh, var = deconvolve_var,
+                                peak_frame = peak_frame)
+
 
   }
 
@@ -86,33 +92,27 @@ downstream_analysis <- function(data, moving_thresh = 0.1, outlier_thresh = 2, m
 
   shiny::incProgress(1/5, detail = "Estimating Background")
 
-  back <- calipR::backEstimate(clean, method = method)
+  back <- backEstimate(clean, method = method)
 
   shiny::incProgress(1/5, detail = "Normalizing Data")
 
-  norm <- calipR::norm_df(back, var = norm_var, width = norm_width)
+  norm <- norm_df(back, var = norm_var, width = norm_width, reference = reference)
 
   shiny::incProgress(1/5, detail = "Performing Deconvolution")
 
   deconvolved <- deconvolve(norm, lambda = lambda, gam = gam, var = deconvolve_var)
 
-  deconvolved <- peakExtractR(deconvolved[[1]], deconvolved[[2]],
-                              threshold = z_thresh, delta_threshold = delta_thresh,
-                              var = deconvolve_var)
+  #deconvolved <- peakExtractR(deconvolved[[1]], deconvolved[[2]],
+    #                          threshold = z_thresh, delta_threshold = delta_thresh,
+    #                          var = deconvolve_var)
+
+  deconvolved <- peakExtraction(deconvolved, thresh = z_thresh, var = deconvolve_var,
+                                peak_frame = peak_frame)
 
   }
-
-
 
 
   if(length(deconvolved[[1]]$Cell_id) != 0){
-
-  if(false_pos == TRUE){
-  shiny::incProgress(1/5, detail = "Removing Estimated False Positives")
-
-  deconvolved <- keep_best_peaks(deconvolved)
-
-  }
 
     shiny::incProgress(1/5, detail = "Computing Statistics")
 
@@ -137,20 +137,18 @@ downstream_analysis <- function(data, moving_thresh = 0.1, outlier_thresh = 2, m
         clean <- clean_data(data, moving_thresh, outlier_thresh, mean_width,
                             CN_DPA_width, DPA_width, mean_width_diff, method = "back")
 
-        back <- patDetectR(clean, windows, new_len = max(windows), posBank,
+        back <- patDetectR(clean, posBank,
                            negBank, Var = "Mean_Grey")
 
         back <- backEstimatR(clean, back)
 
-        norm <- norm_df(back, var = "back", width = norm_width)
+        norm <- norm_df(back, var = "back", width = norm_width, reference = reference)
 
         deconvolved <- deconvolve(norm, lambda = lambda,gam = gam,
                                   var = "background_detrended")
 
-        deconvolved <- peakExtractR(deconvolved[[1]], deconvolved[[2]],
-                                    threshold = z_thresh,
-                                    delta_threshold = delta_thresh,)
-
+        deconvolved <- peakExtraction(deconvolved, thresh = z_thresh, var = deconvolve_var,
+                                      peak_frame = peak_frame)
 
 
       }
@@ -165,15 +163,18 @@ downstream_analysis <- function(data, moving_thresh = 0.1, outlier_thresh = 2, m
 
         back <- backEstimate(clean, method = method)
 
-        norm <- norm_df(back, var = norm_var, width = norm_width)
+        norm <- norm_df(back, var = norm_var, width = norm_width, reference = reference)
 
         deconvolved <- deconvolve(norm, lambda = lambda, gam = gam,
                                   var = deconvolve_var)
 
-        deconvolved <- peakExtractR(deconvolved[[1]], deconvolved[[2]],
-                                    var = deconvolve_var,
-                                    threshold = z_thresh,
-                                    delta_threshold = delta_thresh)
+        #deconvolved <- peakExtractR(deconvolved[[1]], deconvolved[[2]],
+                                   # var = deconvolve_var,
+                                   # threshold = z_thresh,
+                                   # delta_threshold = delta_thresh)
+
+        deconvolved <- peakExtraction(deconvolved, thresh = z_thresh, var = deconvolve_var,
+                                      peak_frame = peak_frame)
 
 
       }
@@ -181,12 +182,6 @@ downstream_analysis <- function(data, moving_thresh = 0.1, outlier_thresh = 2, m
 
 
     if(length(deconvolved[[1]]$Cell_id) != 0){
-
-      if(false_pos == TRUE){
-        deconvolved <- keep_best_peaks(deconvolved)
-
-
-      }
 
 
     }

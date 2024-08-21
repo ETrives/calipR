@@ -15,7 +15,8 @@
 #'
 #'
 #' @examples
-norm_df <- function(data, var = c("raw", "poly", "gam", "linear", "quantile","back"), width){
+norm_df <- function(data, var = c("raw", "poly", "gam", "linear", "quantile","back"),
+                    width, reference = c("baseline","estimate")){
 
 
   data$coverslip <- as.character(data$coverslip)
@@ -23,7 +24,8 @@ norm_df <- function(data, var = c("raw", "poly", "gam", "linear", "quantile","ba
   cov_split <- split(data, data$coverslip)
   dim_list <- lapply(cov_split, function(x) dim(dplyr::filter(x, Cell_id == x$Cell_id[[1]]))[1])
 
-  data_z <- z_score(data, var = var, cov_split = cov_split, dim_list = dim_list)
+  data_z <- z_score(data, var = var, cov_split = cov_split, dim_list = dim_list,
+                    reference = reference)
   print("z score computed")
 
   data_d <- delta_f(data_z, var = var)
@@ -100,7 +102,8 @@ delta_f <- function(cov_split, var = c("poly", "gam", "linear", "quantile", "bac
 #'
 #'
 #' @examples
-z_score <- function(data, var = c("raw", "poly", "gam", "linear", "quantile", "back"), cov_split, dim_list ) {
+z_score <- function(data, var = c("raw", "poly", "gam", "linear", "quantile", "back"),
+                    cov_split, dim_list, reference = c("baseline","estimate") ) {
 
   print("computing_z_score")
 
@@ -204,25 +207,35 @@ z_score <- function(data, var = c("raw", "poly", "gam", "linear", "quantile", "b
   }
 
 
+  if(var == "back" & reference == "estimate"){
 
-  if(var == "back"){
+    dt[, mean_baseline := mean(.SD[is.na(signal) & stimulus == "1.Baseline"]$background_detrended,na.rm = TRUE), .(Cell_id)]
+    dt[, mean_baseline := mean(mean_baseline,na.rm = TRUE), .(Cell_id)]
 
+    dt[, sd_baseline := sd(.SD[is.na(signal) & stimulus == "1.Baseline"]$background_detrended,na.rm = TRUE), .(Cell_id)]
+    dt[, sd_baseline := mean(sd_baseline,na.rm = TRUE), .(Cell_id)]
 
-    mean <- dt[, .(mean = mean(background_detrended)), .(Cell_id, stimulus)][stimulus == "1.Baseline"]
-    mean_base_list <- split(mean, mean$Cell_id)
+    z_score <- dt[, z_score := (background_detrended - mean_baseline) / sd_baseline, by = Cell_id]
+
+  }
+
+  if(var == "back" & reference == "baseline"){
+
+    #mean <- dt[is.na(signal), .(mean = mean(background_detrended)), .(Cell_id)]
+    # mean_base_list <- split(mean, mean$Cell_id)
+
+    dt[, mean_baseline := mean(.SD[stimulus == "1.Baseline"]$background_detrended,na.rm = TRUE), .(Cell_id)]
+    dt[, mean_baseline := mean(mean_baseline,na.rm = TRUE), .(Cell_id)]
+
+    dt[, sd_baseline := sd(.SD[stimulus == "1.Baseline"]$background_detrended,na.rm = TRUE), .(Cell_id)]
+    dt[, sd_baseline := mean(sd_baseline,na.rm = TRUE), .(Cell_id)]
 
     # Creating a vector of mean baseline for each coverslip, that has the same number of lines as each coverslip
 
-    dt <- dt[, mean_baseline := unlist(purrr::map2(mean_base_list, dim_list_final, function(x,y) rep(x$mean[[1]], times = y)))]
-
-    sd <- dt[, .(sd = stats::sd(background_detrended)), .(Cell_id, stimulus)][stimulus == "1.Baseline"]
-    sd_base_list <- split(sd, sd$Cell_id)
-
-    dt <- dt[, sd_baseline := unlist(purrr::map2(sd_base_list, dim_list_final, function(x,y) rep(x$sd[[1]], times = y)))]
-
-    z_score <- dt[, z_score := (background_detrended - mean_baseline) / sd_baseline, by = list(Cell_id, stimulus)]
+    z_score <- dt[, z_score := (background_detrended - mean_baseline) / sd_baseline, by = Cell_id]
 
   }
+
 
   return(split(z_score, z_score$coverslip))
 }

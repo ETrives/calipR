@@ -22,7 +22,23 @@
 #' @export
 #'
 #' @examples
-patDetectR <- function(dt, window, posBank, negBank, new_len, Var, Norm = TRUE) {
+patDetectR <- function(dt, posBank, negBank, Var, Norm = TRUE) {
+
+
+  max_window <- max(unlist(lapply(posBank, length)), na.rm = TRUE)
+  min_window <- min(unlist(lapply(posBank, length)), na.rm = TRUE)
+
+  max_window_neg <- max(unlist(lapply(negBank, length)), na.rm = TRUE)
+  min_window_neg <- min(unlist(lapply(negBank, length)), na.rm = TRUE)
+
+  min_w <- min(min_window,min_window_neg, na.rm=TRUE)
+  max_w <- max(max_window,max_window_neg, na.rm=TRUE)
+  med_w <- round(median(min_w,max_w))
+
+  window <- c(min_w, med_w, max_w)
+
+  new_len <- max_w
+
 
   # Extending the trace so that patterns in its end can be fully screened with large
   # windows :
@@ -89,9 +105,7 @@ subinoR <- function(dt, window, step, new_len, posBank, negBank, norm = TRUE, va
 
   # Intrerpolation to standardize requests and banks lengths:
 
-  print(new_len)
   interp_patBank2 <- data.table::as.data.table(interpolR(posBank, new_len))
-
   interp_anomBank <- data.table::as.data.table(interpolR(negBank, new_len))
 
   interp_subseq_vec_list <- lapply(subseq_list, function(x)
@@ -346,6 +360,7 @@ backEstimatR <- function(dt, patdet_out) {
   # If all values have been removed : fix the first and last values
 
   full_dt[, mean_grey_wo_peaks_new_new := ifelse(time_frame %in% c(1,.N), rolling_min_new, mean_grey_wo_peaks_new_new), by = Cell_id]
+  #full_dt[, mean_grey_wo_peaks_new_new := ifelse(time_frame %in% c(1,.N), Mean_Grey, mean_grey_wo_peaks_new_new), by = Cell_id]
 
 
   # Linear interpolation between removed values
@@ -387,6 +402,8 @@ backEstimatR <- function(dt, patdet_out) {
   # Last rolling median to estimate the background
   full_dt[, background := gplots::wapply(time_frame, mean_grey_wo_peaks_new_new,fun = median,
                                          n = length(time_frame),  width = 30, method = "nobs")[[2]], by = Cell_id]
+
+  full_dt[, background := ifelse(time_frame %in% c(seq(1,10),.N), Mean_Grey, background)]
 
   full_dt[, background_detrended := Mean_Grey - background, by = .(Cell_id, coverslip)]
 

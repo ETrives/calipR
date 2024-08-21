@@ -35,15 +35,25 @@ deconvolve <- function(norm_data, gam = 0.95, lambda = 1, var = "gam_detrended",
 
   norm_data <- norm_data[, Prev_stim := stim_list[Prev_stim]]
 
+  # compute the first derivative on the detrended and normalized trace
+
+  first_d_fct <- function(x,y) doremi::calculate.gold(time = x, signal = y,
+                                                      embedding = 2, n = 1)$dsignal[,2]
+
+  local_mean_diff_fct <- function(x,y,z) gplots::wapply(x, y, fun = mean, n=length(z), width = 10, method = "nobs", drop.na = FALSE)[[2]]
+
+  norm_data[, first_derivative_detrended := norm_data[, .(first_derivative = first_d_fct(get("time_seconds"), get("z_score"))), by = Cell_id]$first_derivative]
+  norm_data[, smooth_Diff_detrended := norm_data[, .(smooth_Diff = local_mean_diff_fct(get("time_frame"), get("first_derivative_detrended"), get("time_frame"))), by = Cell_id]$smooth_Diff]
+
   cell_split <- split(norm_data, norm_data$Cell_id)
 
-  cell_split <- lapply(cell_split, function(x) x[, lag_stim := dplyr::lead(stimulus, 5, default = NA)])
+  #cell_split <- lapply(cell_split, function(x) x[, lag_stim := dplyr::lead(stimulus, 5, default = NA)])
 
   cell_split <- lapply(cell_split, function(x) add_peak_info(x, gam = gam, lambda = lambda, var))
 
   peaks_data <- lapply(cell_split, function(x) if(length(x$peak_frames)[[1]] != 0) {x[x$time_frame %in% x$peak_frames[[1]]]} )
 
-  cell_split <- lapply(cell_split, function(x) x[, stimulus := lag_stim])
+  #cell_split <- lapply(cell_split, function(x) x[, stimulus := lag_stim])
 
   data <- do.call(rbind, cell_split)
   peaks_data <- do.call(rbind, peaks_data)
@@ -79,11 +89,8 @@ subset_spike_frames <- function(dt1,dt2, peak_frame = 10){
   # Extract the line + the n lines following each spike
   res <- dt1[.(id = unlist(Map(':', match_indices, end))), on = .(id)]
 
-
   # Add a grouping variable "blocs" to then compute the max on each of these parts
   res <- res[, blocs := rep(1:(length(res$Cell_id)/(peak_frame+1)), each = peak_frame+1)]
-
-
 
   return(res)
 }

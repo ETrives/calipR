@@ -6,7 +6,7 @@
 #' molecular marker, group, coverslip).
 #'
 #'
-#' @param folder_name The relative path to the folder containing the fluorescence data and the meta.csv file
+#' @param folder_name Path to the folder containing the fluorescence data and the meta.csv file
 #' @param frame_rate Your Acquisition rate in Hertz (eg. 0.25 if it is 0.25 Hz, 100 if it is 100 Hz)
 #' @param duration_in_seconds The time your stimulus takes to be in contact to your cells. Peaks found during this period will be attributed to the previous stimulus.
 #'
@@ -16,7 +16,7 @@
 
 
 #' @examples
-prepareData <- function(folder_name, frame_rate,  duration_in_seconds = 30,
+prepareData <- function(folder_name, frame_rate, duration_in_seconds = 30,
                         marker_thresh) {
 
   # Get the file names and store the content in a list of df :
@@ -38,7 +38,6 @@ prepareData <- function(folder_name, frame_rate,  duration_in_seconds = 30,
   df_list <- lapply(myFiles, function(x) data.table::fread(x, skip = 1, header = FALSE))
   df_list <- lapply(df_list, function(x) x[,2:length(x)])
   df_list <- lapply(df_list, function(x) data.table::setnames(x, paste0(rep("Mean", length(x)), seq(1: length(x)))))
-
 
   # Checking if marker files have been added
 
@@ -104,7 +103,7 @@ prepareData <- function(folder_name, frame_rate,  duration_in_seconds = 30,
     for(i in 1:length(df_list)){
 
       df_list[[i]] <- tidy_df(df_list[[i]],stimuli, each[[i]], pattern, duration_in_seconds,
-                      frame_rate, coverslip_id = coverslip_id[[i]], id = i, multiple = TRUE,
+                              frame_rate, coverslip_id = coverslip_id[[i]], id = i, multiple = TRUE,
                       group_list[[i]], marker_list[[i]], marker_thresh)
 
     }
@@ -171,10 +170,8 @@ tidy_df <- function(data, stimuli, each, pattern, duration_in_seconds,
 
 stim_var <- function(data, stimuli, each, frame_rate, coverslip_id){
 
-
   frame_list <- list()
   time <- purrr::map(each, function(x) as.numeric(x))
-
 
   # Converting minutes to frames
   frame_list <- lapply(time, min_to_f, frame_rate)
@@ -188,6 +185,7 @@ stim_var <- function(data, stimuli, each, frame_rate, coverslip_id){
     x <- i - count
     count <- count + x
     rep_each <- append(rep_each, x)
+    print(rep_each)
   }
 
   rep_each <- rep_each[-1]
@@ -312,7 +310,7 @@ cell_sort <- function(df,pat,  duration_in_seconds, frame_rate, id,
 #' @export
 #'
 #' @examples
-prepareData_track <- function(folder_name, frame_rate,  duration_in_seconds = 30,
+prepareData_track <- function(folder_name, frame_rate, target_rate = 0, duration_in_seconds = 30,
                                marker_thresh = 0) {
 
 
@@ -393,7 +391,7 @@ prepareData_track <- function(folder_name, frame_rate,  duration_in_seconds = 30
     for(i in 1:length(df_list)){
 
       df_list[[i]] <- trackmateInput(df_list[[i]],stimuli, each[[i]],
-                                     frame_rate, coverslip_id = coverslip_id[[i]], id = i, group_list[[i]],
+                                     target_rate, coverslip_id = coverslip_id[[i]], id = i, group_list[[i]],
                                      duration_in_seconds, marker_list[[i]], marker_thresh)
 
     }
@@ -422,12 +420,13 @@ prepareData_track <- function(folder_name, frame_rate,  duration_in_seconds = 30
 #' @export
 #'
 #' @examples
-trackmateInput <- function(file, stimuli, each, frame_rate, coverslip_id, id,
+trackmateInput <- function(file, stimuli, each, target_rate, coverslip_id, id,
                            group, duration_in_seconds,marker, marker_thresh){
 
   track <- file[-c(1,2,3),]
   track_final <- data.table::setDT(track)[, .(Cell_id =TRACK_ID, Mean_Grey = as.numeric(MEAN_INTENSITY_CH1),
-                                              coverslip = coverslip_id)]
+                                              coverslip = coverslip_id,
+                                              time_frame = POSITION_T)]
 
   Ids <- unlist(createId(track_final, coverslip_id))
 
@@ -440,14 +439,11 @@ trackmateInput <- function(file, stimuli, each, frame_rate, coverslip_id, id,
 
   dim <- max(unlist(lapply(cell_split, function(x) length(x$Cell_id))))
 
-  cell_split <- lapply(cell_split, function(x) if(length(x$Cell_id) == dim){x})
+  cell_split <- lapply(cell_split, function(x) if(length(x$Cell_id) >= dim/2){x})
 
   data <- do.call(rbind, cell_split)
 
   n_cells <- length(unique(data$Cell_id))
-
-  data$time_frame <- as.numeric(rep(seq(from = 1, to = dim),times = n_cells))
-
 
   # matching stimuli :
 
@@ -455,7 +451,7 @@ trackmateInput <- function(file, stimuli, each, frame_rate, coverslip_id, id,
   time <- lapply(each, function(x) as.numeric(x))
 
   # Converting minutes to frames
-  frame_list <- lapply(time, min_to_f, frame_rate)
+  frame_list <- lapply(time, min_to_f, target_rate)
 
 
   frame_list <- append(frame_list, dim)
@@ -635,5 +631,34 @@ min_to_f <- function(x, frame_rate){
 
   }
   return(as.integer(y_final*frame_rate))
+}
+
+
+#' downsampleCaData
+#'
+#' @param data data table output from prepareData function
+#' @param original_freq Frequency of the data argument (in Hz)
+#' @param target_freq Desired Frequency after downsampling (in Hz)
+#'
+#' @return a data table downsampled at the desired frequency
+#' @export
+#'
+#' @examples
+downsampleCaData  <- function(data, original_freq,  target_freq ){
+
+  if(target_freq != 0) {
+  dt <- copy(setDT(data))
+  factor <- round(original_freq/target_freq)
+  dt <- dt[time_frame %% factor == 0 | time_frame == 1]
+  dt[, time_frame := seq(1,.N), by = Cell_id]
+  dt[, Time_frame_stim := seq(1,.N), by = .(Cell_id,stimulus)]
+
+  }
+
+  if(target_freq == original_freq | target_freq == 0){
+  dt <- data
+  }
+
+  return(dt)
 }
 
