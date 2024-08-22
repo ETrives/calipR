@@ -8,7 +8,8 @@ z_score(
   data,
   var = c("raw", "poly", "gam", "linear", "quantile", "back"),
   cov_split,
-  dim_list
+  dim_list,
+  reference = c("baseline", "estimate")
 )
 }
 \arguments{

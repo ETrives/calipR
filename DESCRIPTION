@@ -5,10 +5,11 @@ Authors@R:
     person("Elliott", "Trives", , "triveselliott@hotmail.fr", role = c("aut", "cre"),
            comment = c(ORCID = "0009-0009-2683-4859"))
 Description: calipR is a tool to analyze calcium imaging data. It takes csv files
-             containing raw fluorescence values for each cell (in column) and processes
+             containing raw fluorescence values for each cell and processes
              this signal to clean, denoise, normalize, deconvolve and extract calcium
              events. It then provides basic descriptive statistics comparing calcium events
-             in different experimental conditions. A Graphical User Interface is included
+             in different experimental conditions. Some clustering options are available
+             by interfacing with the dtwclust package.A Graphical User Interface is included
              and allows to run the whole workflow together with visualization options
              to ensure the quality of the analysis. 
 License: GPL (>= 3)
@@ -18,7 +19,9 @@ RoxygenNote: 7.2.1
 Depends:
   stringr,
   plyr,
-  data.table
+  data.table,
+  shiny,
+  shinyFiles
 Imports:
   purrr,
   dplyr,
@@ -39,6 +42,7 @@ Imports:
   DBI,
   shinydashboard,
   shiny,
+  shinyFiles,
   DT,
   shinycssloaders,
   plotly,

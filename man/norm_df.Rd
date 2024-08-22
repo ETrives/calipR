@@ -7,7 +7,8 @@
 norm_df(
   data,
   var = c("raw", "poly", "gam", "linear", "quantile", "back"),
-  width
+  width,
+  reference = c("baseline", "estimate")
 )
 }
 \arguments{

@@ -7,6 +7,7 @@
 prepareData_track(
   folder_name,
   frame_rate,
+  target_rate = 0,
   duration_in_seconds = 30,
   marker_thresh = 0
 )
