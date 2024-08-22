@@ -52,5 +52,6 @@ Imports:
   robustbase,
   dtwclust,
   matrixStats,
+  dplR,
 Remotes:
   jewellsean/FastLZeroSpikeInference
