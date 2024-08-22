@@ -8,7 +8,7 @@ trackmateInput(
   file,
   stimuli,
   each,
-  frame_rate,
+  target_rate,
   coverslip_id,
   id,
   group,

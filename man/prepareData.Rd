@@ -7,7 +7,7 @@
 prepareData(folder_name, frame_rate, duration_in_seconds = 30, marker_thresh)
 }
 \arguments{
-\item{folder_name}{The relative path to the folder containing the fluorescence data and the meta.csv file}
+\item{folder_name}{Path to the folder containing the fluorescence data and the meta.csv file}
 
 \item{frame_rate}{Your Acquisition rate in Hertz (eg. 0.25 if it is 0.25 Hz, 100 if it is 100 Hz)}
 

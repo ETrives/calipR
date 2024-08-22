@@ -4,7 +4,7 @@
 \alias{saveData}
 \title{saveData}
 \usage{
-saveData(data, db_name, tab_name)
+saveData(data, db_name, tab_name, over = TRUE, append = FALSE)
 }
 \arguments{
 \item{tab_name}{}
