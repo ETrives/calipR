@@ -385,6 +385,8 @@ shiny::observeEvent(input$create, {
   list(
   shiny::textInput("proj_name", label = "Project Name" ),
   shiny::textInput("frame_rate", label = "Enter your frame rate (Hz)", placeholder = "e.g. 0.5" ),
+  shiny::selectInput("unit", label = "Select the unit of the times indicated in meta",
+                     choices = list("minutes" = "minutes", "seconds" = "seconds") ),
   shiny::verbatimTextOutput("value"),
   shinyDirButton('folder', 'Select a folder', 'Please select a folder', FALSE),
   shiny::uiOutput("folder_warning"),
@@ -471,13 +473,13 @@ observe({
     if(input$trackbox == FALSE){
 
       df <- prepareData(folder, as.numeric(input$frame_rate),as.numeric(input$target_rate),
-                      marker_thresh = as.numeric(input$mark_thresh))
+                      marker_thresh = as.numeric(input$mark_thresh), unit = input$unit)
 
     }
 
     if(input$trackbox == TRUE){
       df <- prepareData_track(folder, as.numeric(input$frame_rate), as.numeric(input$target_rate),
-                              marker_thresh = as.numeric(input$mark_thresh))
+                              marker_thresh = as.numeric(input$mark_thresh),unit = input$unit)
 
     }
 

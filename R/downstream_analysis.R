@@ -45,7 +45,12 @@ downstream_analysis <- function(data, moving_thresh = 0.1, outlier_thresh = 2, m
   gam <- as.numeric(gam)
 
 if(method == "back"){
-  peak_frame <- round(mean(unlist(lapply(posBank, length)), na.rm=TRUE))
+  max_peak_bank <- lapply(posBank, function(x) max(x,na.rm=TRUE))
+  print(max_peak_bank)
+  idx_max <- lapply(seq(1,length(posBank)), function(x) which(posBank[[x]] == max_peak_bank[[x]]))
+
+  peak_frame <- round(mean(unlist(idx_max), na.rm=TRUE))
+
 }
   else{
     peak_frame <- 40

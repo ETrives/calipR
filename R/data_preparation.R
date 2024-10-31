@@ -17,7 +17,7 @@
 
 #' @examples
 prepareData <- function(folder_name, frame_rate, duration_in_seconds = 30,
-                        marker_thresh) {
+                        marker_thresh, unit) {
 
   # Get the file names and store the content in a list of df :
   myFiles <- list.files(folder_name, pattern = "\\.csv", recursive = T, full.names = T)
@@ -104,7 +104,7 @@ prepareData <- function(folder_name, frame_rate, duration_in_seconds = 30,
 
       df_list[[i]] <- tidy_df(df_list[[i]],stimuli, each[[i]], pattern, duration_in_seconds,
                               frame_rate, coverslip_id = coverslip_id[[i]], id = i, multiple = TRUE,
-                      group_list[[i]], marker_list[[i]], marker_thresh)
+                      group_list[[i]], marker_list[[i]], marker_thresh, unit)
 
     }
 
@@ -136,9 +136,10 @@ prepareData <- function(folder_name, frame_rate, duration_in_seconds = 30,
 #' @examples
 
 tidy_df <- function(data, stimuli, each, pattern, duration_in_seconds,
-                    frame_rate, coverslip_id, id, multiple = FALSE, groups, marker, marker_thresh) {
+                    frame_rate, coverslip_id, id, multiple = FALSE, groups,
+                    marker, marker_thresh, unit) {
 
-  df_stim <- stim_var(data, stimuli, each, frame_rate, coverslip_id)
+  df_stim <- stim_var(data, stimuli, each, frame_rate, coverslip_id, unit)
   df_final <- cell_sort(df_stim, pattern, duration_in_seconds, frame_rate, id = id,
                         multiple = multiple, groups, marker, marker_thresh)
 
@@ -168,13 +169,13 @@ tidy_df <- function(data, stimuli, each, pattern, duration_in_seconds,
 #' @examples
 
 
-stim_var <- function(data, stimuli, each, frame_rate, coverslip_id){
+stim_var <- function(data, stimuli, each, frame_rate, coverslip_id, unit){
 
   frame_list <- list()
   time <- purrr::map(each, function(x) as.numeric(x))
 
   # Converting minutes to frames
-  frame_list <- lapply(time, min_to_f, frame_rate)
+  frame_list <- lapply(time, function(x) time_to_f(x,frame_rate, unit = unit))
 
   frame_list <- append(frame_list, dim(data)[1])
 
@@ -451,7 +452,7 @@ trackmateInput <- function(file, stimuli, each, target_rate, coverslip_id, id,
   time <- lapply(each, function(x) as.numeric(x))
 
   # Converting minutes to frames
-  frame_list <- lapply(time, min_to_f, target_rate)
+  frame_list <- lapply(time, function(x) time_to_f(x,target_rate, unit = unit))
 
 
   frame_list <- append(frame_list, dim)
@@ -608,31 +609,42 @@ createId <- function(df, coverslip_id){
 }
 
 
-#' Converts time in minutes in frames
+
+#' time_to_f
+#'
+#' Converts time in minutes or seconds in frame
 #'
 #' @param x
 #' @param frame_rate
+#' @param unit
 #'
 #' @return
 #' @export
 #'
 #' @examples
-min_to_f <- function(x, frame_rate){
+time_to_f <- function(x, frame_rate, unit = c("seconds", "minutes")){
 
-  if(is.integer(x) == FALSE) {
-    y <- as.integer(x)
-    y_min <- y*60
-
-    y_final <- y_min + ((x %% 1) * 100)
+  if(unit == "seconds"){
+    y_final <- as.integer(x*frame_rate)
   }
 
-  else{
-    y_final <- x*60
+  if(unit == "minutes") {
+
+    if(is.integer(x) == FALSE) {
+      y <- as.integer(x)
+      y_min <- y*60
+
+      y_final <- (y_min + ((x %% 1) * 100)) * frame_rate
+    }
+
+    else{
+      y_final <- (x*60) * frame_rate
+    }
 
   }
-  return(as.integer(y_final*frame_rate))
+
+  return(y_final)
 }
-
 
 #' downsampleCaData
 #'

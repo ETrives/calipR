@@ -22,8 +22,11 @@
 #' @export
 #'
 #' @examples
-patDetectR <- function(dt, posBank, negBank, Var, Norm = TRUE) {
+patDetectR <- function(dt, posBank, negBank, Var, Norm = TRUE, windows = NULL) {
 
+if(is.null(windows)){
+  posBank<-posBank[!sapply(posBank,is.null)]
+  negBank<-negBank[!sapply(negBank,is.null)]
 
   max_window <- max(unlist(lapply(posBank, length)), na.rm = TRUE)
   min_window <- min(unlist(lapply(posBank, length)), na.rm = TRUE)
@@ -38,7 +41,12 @@ patDetectR <- function(dt, posBank, negBank, Var, Norm = TRUE) {
   window <- c(min_w, med_w, max_w)
 
   new_len <- max_w
+}
 
+  else{
+    window <- windows
+    new_len <- 30
+  }
 
   # Extending the trace so that patterns in its end can be fully screened with large
   # windows :

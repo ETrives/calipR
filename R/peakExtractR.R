@@ -37,14 +37,17 @@ peakExtractR <- function(peaks_data, norm_data, peak_frame = 10, threshold = 3,
   # Using an even peak_frame value is important
   peak_frame <- 2 * round(peak_frame/2)
 
+
+
   dt <- subset_spike_frames(norm_data,peaks_data, peak_frame = peak_frame/2)
 
 
   dt[, Max_by_20 := max(smooth_z, na.rm = TRUE)[[1]], by = .(blocs)]
 
-  #Derivative criteria:
+  #Derivative criteria in calipR v1.0.1:
   dt[, peak_start_new := .SD[smooth_Diff_detrended > 0][1,]$time_frame, by = .(blocs)]
   dt[, peak_start_new := .SD[1,]$time_frame, by = .(blocs)]
+
 
   dt <- dt[Max_by_20 ==  smooth_z]
   dt <- dt[, duplicate := duplicated(blocs)][duplicate == FALSE]
@@ -57,13 +60,16 @@ peakExtractR <- function(peaks_data, norm_data, peak_frame = 10, threshold = 3,
 
   # now same but to find peak end :
 
-  dt <- subset_spike_frames(norm_data,peaks_data, peak_frame = peak_frame)
+  dt <- subset_spike_frames(norm_data,peaks_data, peak_frame = 5*peak_frame)
 
   dt[, Max_by_20 := max(smooth_z, na.rm = TRUE)[[1]], by = .(blocs)]
 
+  #dt[, smooth_Diff := ifelse(is.na(smooth_Diff), first_derivative,smooth_Diff), by = .(blocs)]
   dt[, smooth_Diff := ifelse(is.na(smooth_Diff_detrended), first_derivative_detrended,smooth_Diff_detrended), by = .(blocs)]
 
+  #dt[, peak_end := .SD[smooth_z <= 0 & smooth_Diff <= 0,][1,]$time_frame,  by = .(Cell_id,blocs)]
   dt[, peak_end := .SD[smooth_z <= 0 & smooth_Diff_detrended <= 0,][1,]$time_frame,  by = .(Cell_id,blocs)]
+  #dt[, peak_end := .SD[smooth_z <= 0,][1,]$time_frame,  by = .(Cell_id,blocs)]
 
   dt[, peak_end := ifelse(is.na(peak_end),
                                 .SD[time_frame > .SD[smooth_z == Max_by_20]$time_frame][smooth_z == min(smooth_z, na.rm = TRUE)]$time_frame, peak_end),  by = .(Cell_id,blocs)]
@@ -86,7 +92,7 @@ if(dim(peaks_data)[1] != 0) {
 
 
   peaks_data <- unique(peaks_data[,c("Cell_id", "spike_frame", "spike_stimulus",
-                                     "spike_smooth_z", "Mean_Grey", get("var"),
+                                     "spike_smooth_z", "Mean_Grey",
                                      "Max_peak_frame", "max_peak_smooth_z",
                                      "spike_smooth_Diff",
                                      "Time_frame_stim", "Prev_stim", "peak_end","peak_start" )])
@@ -135,6 +141,7 @@ if(dim(peaks_data)[1] != 0) {
 
   sub_peaks_data[, peak_end_final := ifelse(merge_peaks == TRUE, lead_peaks_end, peaks_end_new), by = .(Cell_id,labels)]
 
+
   setkey(sub_peaks_data, Cell_id, labels,peaks_start)
   setkey(peaks_data, Cell_id, labels,peaks_start)
 
@@ -171,6 +178,7 @@ peakExtraction <- function(peak_extracted_data, thresh = 3, var, peak_frame) {
   peak_extracted_data <- peakExtractR(peak_extracted_data[[1]], peak_extracted_data[[2]],
                                       threshold = thresh, var = var, peak_frame = peak_frame)
 
+  if(length(peak_extracted_data[[1]]$Cell_id >= 1)){
   peak_extracted_data[[1]][, peaks_start_bis := peaks_start]
   peak_extracted_data[[1]][, peaks_end_new_bis := peaks_end_new]
   peak_extracted_data[[1]] <- peak_extracted_data[[1]][, .SD[1,], by = .(Cell_id,peaks_start_bis,peaks_end_new_bis)]
@@ -181,10 +189,14 @@ peakExtraction <- function(peak_extracted_data, thresh = 3, var, peak_frame) {
   res[, peak_max := max(Mean_Grey, na.rm=TRUE)[[1]], by =.(peak_id)]
   res[, peak_max_frame := .SD[Mean_Grey == peak_max]$time_frame[[1]], by =.(peak_id)]
   res <- res[peak_start < peak_end]
-  res[, auc := flux::auc(time_frame, get(var)), by = peak_id]
+  res[, auc := flux::auc(time_frame, smooth_z), by = peak_id]
   res <- res[, .SD[1,], by = .(Cell_id,peak_id)]
   peak_extracted_data[[1]] <- res
+  }
 
+  else{
+
+  }
   return(peak_extracted_data)
 
 }
