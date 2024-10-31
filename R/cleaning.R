@@ -161,9 +161,10 @@ DPA <- function(data, DPA_width){
 
   neg <- abs(neg)
 
-
   pos_lag <- dplyr::lag(pos, n = DPA_width, default = 0)
+
   neg_lead <- dplyr::lead(neg, n = DPA_width, default = 0)
+
 
   res_DPA <- pos_lag + neg_lead
   res_DPA <- res_DPA + dplyr::lag(res_DPA, n = 20, default = 0)

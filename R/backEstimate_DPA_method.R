@@ -38,3 +38,4 @@ backEstimate <- function(data, smooth = 50, method = c("smooth","gam")){
 
   return(data)
 }
+

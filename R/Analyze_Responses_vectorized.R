@@ -13,11 +13,20 @@
 #' @export
 #'
 #' @examples
-Analyze_Responses <- function(data, df_clean, compare_groups = FALSE, one_cell = FALSE, marker = FALSE, var_list = NULL, simulation = FALSE){
+Analyze_Responses <- function(data, df_clean, compare_groups = FALSE,
+                              one_cell = FALSE, marker = FALSE, var_list = NULL,
+                              simulation = FALSE, by = NULL, var = NULL, stims,
+                              alt = alt){
 
 
   data <- setDT(data)
   df_clean <- setDT(df_clean)
+
+  print("data")
+  print(data)
+
+  print("df_clean")
+  print(df_clean)
 
   'isnotna' <- Negate('is.na')
 
@@ -72,7 +81,7 @@ Analyze_Responses <- function(data, df_clean, compare_groups = FALSE, one_cell =
 
     stim_list <- unique(d$stimulus)
 
-    n_cells_tot <- length(unique(d$Cell_id))
+    n_cells_tot <- d[, .(.SD[stimulus == stim_list[[1]],.N]), by = var]$V1
 
     if("coverslip" %in% var_list){
       n_cells_cov <- d[, .(n_cells = length(unique(Cell_id))), by = coverslip]
@@ -92,7 +101,7 @@ Analyze_Responses <- function(data, df_clean, compare_groups = FALSE, one_cell =
     if(simulation == TRUE) {
 
         data <- d[, .(Responders = sum(Response)), by = stimulus]
-        data <- data[, c("Prop", "n_cells_tot") := list(Responders/ n_cells_tot, n_cells_tot)]
+        data <- data[, c("Prop", "n_cells_tot") := list(Responders/ sum(n_cells_tot), sum(n_cells_tot))]
 
     }
 
@@ -101,20 +110,25 @@ Analyze_Responses <- function(data, df_clean, compare_groups = FALSE, one_cell =
       if(is.null(var_list)){
         d <- unique(d[,c("Cell_id", "Response", "stimulus")])
 
-        data <- d[, .(Responders = sum(Response)), by = stimulus]
+        data <- d[, .(Responders = sum(Response),
+                      n_cells = .N), by = stimulus]
 
 
       }
       else{
       d <- unique(d[,c(c("Cell_id", "Response"), ..var_list)])
 
-      data <- d[, .(Responders = sum(Response)), by = var_list]
+      data <- d[, .(Responders = sum(Response),
+                    n_cells = .N), by = var_list]
 
       }
 
 
     if("coverslip" %notin% var_list & "group" %notin% var_list & "marker_positive" %notin% var_list ){
-      data <- data[, c("Prop", "n_cells_tot") := list(Responders/ n_cells_tot, n_cells_tot)]
+      print("yoush")
+      print(data)
+      data <- data[, c("Prop", "n_cells_tot") := list(Responders/ n_cells, n_cells)]
+      print("yash")
     }
 
     if("coverslip" %notin% var_list & "stimulus" %notin% var_list & "group" %in% var_list & "marker_positive" %notin% var_list){
@@ -128,7 +142,7 @@ Analyze_Responses <- function(data, df_clean, compare_groups = FALSE, one_cell =
 
 
     if("coverslip" %notin% var_list & "stimulus" %notin% var_list & "group" %notin% var_list & "marker_positive" %in% var_list){
-      n_cells_tot <- rep(n_cells_tot, each = length(marker_list))
+      n_cells_tot <- rep(sum(n_cells_tot), each = length(marker_list))
       data <- data[, c("n_cells_tot", "Prop_tot", "n_cells_marker", "Prop_marker_resp", "Prop_marker")
                    := list(n_cells_tot, Responders/ n_cells_tot, n_cells_cond$n_cells,
                            Responders/ n_cells_cond$n_cells, n_cells_cond$n_cells/n_cells_tot )]
@@ -136,7 +150,7 @@ Analyze_Responses <- function(data, df_clean, compare_groups = FALSE, one_cell =
 
 
     if("coverslip" %notin% var_list & "group" %notin% var_list & "stimulus" %in% var_list & "marker_positive" %in% var_list){
-      n_cells_tot <- rep(n_cells_tot, each = length(marker_list)*length(stim_list))
+      n_cells_tot <- rep(sum(n_cells_tot), each = length(marker_list)*length(stim_list))
       data <- data[, c("n_cells_tot", "Prop_tot", "n_cells_marker", "Prop_marker_resp", "Prop_marker")
                    := list(n_cells_tot, Responders/ n_cells_tot, n_cells_cond$n_cells,
                            Responders/ n_cells_cond$n_cells, n_cells_cond$n_cells/n_cells_tot )]
@@ -165,7 +179,7 @@ Analyze_Responses <- function(data, df_clean, compare_groups = FALSE, one_cell =
 
 
       group_list <- unique(d$group)
-      n_cells_tot <- rep(n_cells_tot, each = length(marker_list)*length(group_list))
+      n_cells_tot <- rep(sum(n_cells_tot), each = length(marker_list)*length(group_list))
       n_cells_grp <- rep(n_cells_grp$n_cells, times = length(marker_list))
       data <- data[, c("n_cells_grp", "Prop_tot", "n_cells_marker", "Prop_marker_resp", "Prop_marker")
                    := list(n_cells_grp, Responders/ n_cells_grp, n_cells_cond$n_cells,
@@ -275,7 +289,7 @@ Analyze_Responses <- function(data, df_clean, compare_groups = FALSE, one_cell =
 }
 
     if(one_cell == FALSE & compare_groups == FALSE) {
-      res <- Compare_props(d)
+      res <- Compare_props(d, by = by, var = var, stims,alt=alt)
     }
 
 
@@ -304,15 +318,82 @@ Analyze_Responses <- function(data, df_clean, compare_groups = FALSE, one_cell =
 #' @export
 #'
 #' @examples
-Compare_props <- function(data){
+Compare_props <- function(data, by = NULL, var = NULL, stim_list,alt=alt){
 
+  if(is.null(by)){
   data_bis <- data
   res_tot <- rstatix::cochran_qtest(data, Response~stimulus|Cell_id)
   res_post_hoc <- rstatix::pairwise_mcnemar_test(data, Response~stimulus|Cell_id)
+  }
+
+  else{
+
+    print(stim_list)
+  data <- data[get(by) %in% stim_list]
+
+  print(data)
+  lev <- unique(data[[eval(by)]])
+  it <- seq(1,length(lev))
+
+  res_tot <- list()
+
+  for(i in it){
+
+    dt <- data[get(by) == lev[i]]
+    cont <- table(dt$Response, dt[[eval(var)]])
+
+    print(length(cont))
+    print(cont)
+    if(length(cont) > 4){
+      cont <- t(cont)
+      res_tot[[i]] <- prop.test(cont)
+
+    }
+
+    if(length(cont) == 4){
+
+      res_tot[[i]] <- fisher.test(cont, alternative = alt)
+
+    }
+
+
+
+
+    res_post_hoc <- NULL
+  }
+
+  }
 
   return(list(res_tot, res_post_hoc))
 }
 
+lm_tidy <- function(df, x, y) {
+  # take the arguments as code pieces instead to evaluate them:
+  .x <- as.name(x)
+  .y <- as.name(y)
+  .df <- substitute(df)
+  # take the code piece `y ~ x` and substitute using list lookup table
+  .fm <- substitute(y ~ x, list(y=.y, x=.x))
+
+  print(.fm)
+  # take the code `lm(fm, data=df)` and substitute with the code pieceses defined by the lookup table
+  # by replacing them by the code pieces stored in `.fm` and `.df`
+  # and finally: evaluate the substituted code in the parent environment (the environment where the function was called!)
+  eval.parent(substitute(rstatix::cochran_qtest(formula = fm, data=df), list(fm=.fm, df=.df)))
+}
+
+formulate <- function(x, y, z) {
+  .x <- as.name(x)
+  .y <- as.name(y)
+  .z <- as.name(z)
+
+  .fm <- substitute(y ~ x | z, list(y=.y, x=.x, z=.z))
+
+  return(.fm)
+  #eval.parent(substitute(rstatix::cochran_qtest(formula = fm, data=df), list(fm=.fm, df=.df)))
+
+  #eval.parent(substitute(lm(fm, data=df), list(fm=.fm, df=.df)))
+}
 
 
 #' base_resp.rm
