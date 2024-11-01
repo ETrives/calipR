@@ -84,7 +84,6 @@ ui <-
                                                            shiny::uiOutput('warning_bank_pos_full'),
                                                            shiny::uiOutput('negBank_field_full'),
                                                            shiny::uiOutput('warning_bank_neg_full'),
-                                                           shiny::checkboxInput("groups", label = "Compare groups"),
                                                            shiny::actionButton("ana_full_button", "Launch Full Analysis", align = "center")),
                                   shinydashboard::menuItem(
                                     "Visualize Results", tabName = "viz_res")
@@ -423,6 +422,7 @@ shiny::observeEvent(input$load, {
 
       list(
       shiny::textInput("proj_name_load", label = "Project Name" ),
+      shiny::textInput("frame_rate_load", label = "Enter your frame rate (Hz)", placeholder = "e.g. 0.5" ),
       shiny::actionButton("load_button", "Load Project", align = "center"))
 
     })
@@ -1085,7 +1085,7 @@ observe({
 
 
 if(sum(launch_pos,launch_neg) == 2){
-      res_sim$res <- downstream_analysis(df_sub, z_thresh = input$peak_thresh, reference = input$norm_method,
+      res_sim$res <- downstream_analysis(df_sub,rate =as.numeric(input$frame_rate_load),  z_thresh = input$peak_thresh, reference = input$norm_method,
                                          delta_thresh = input$peak_thresh_delta, lambda = input$lambda, gam = input$gam,
                                          simulation = TRUE, pattern_matching = input$patMatch_opt,
                                          posBank = posBank, negBank = negBank,
@@ -1271,7 +1271,7 @@ if(sum(launch_pos,launch_neg) == 2){
 
   if(sum(c(launch_pos,launch_neg)) == 2){
 
-        res_sim$res_bis <- downstream_analysis(df_sub_bis, z_thresh = input$peak_thresh_bis,reference = input$norm_method_bis,
+        res_sim$res_bis <- downstream_analysis(df_sub_bis, rate = as.numeric(input$frame_rate_load), z_thresh = input$peak_thresh_bis,reference = input$norm_method_bis,
                                                delta_thresh = input$peak_thresh_bis_delta, lambda = input$lambda_bis,
                                                gam = input$gam_bis,simulation = TRUE, one_cell = TRUE,
                                                pattern_matching = input$patMatch_opt_bis,
@@ -1314,14 +1314,6 @@ if(sum(launch_pos,launch_neg) == 2){
 
       ### Analyze the full dataset
       res_full <- shiny::reactiveValues(res = NULL)
-
-
-      # This block makes the check box "compare groups" reactive
-      shiny::observe({
-
-        group_value <- input$groups
-        shiny::updateCheckboxInput(shiny::getDefaultReactiveDomain(), "groups", value = group_value)
-      })
 
 
       ### This block codes alows to launch the analysis when the button analyze dataset is clicked on. It runs the whole analysis, on the whole dataset
@@ -1407,10 +1399,9 @@ if(sum(launch_pos,launch_neg) == 2){
 
 if(sum(launch_pos,launch_neg) == 2){
 
-        res_full$res <- downstream_analysis(df_full, z_thresh = input$peak_thresh_full_z,reference = input$norm_method_full,
+        res_full$res <- downstream_analysis(df_full,rate = as.numeric(input$frame_rate_load), z_thresh = input$peak_thresh_full_z,reference = input$norm_method_full,
                                              delta_thresh = input$peak_thresh_full_delta, lambda = input$lambda_full, gam = input$gam_full,
-                                              compare_groups = input$groups,
-                                     pattern_matching = input$patMatch, posBank = posBank, negBank = negBank,
+                                             pattern_matching = input$patMatch, posBank = posBank, negBank = negBank,
                                      deconvolve_var = deconvolve_var,
                                      method=method,
                                      norm_var = method)

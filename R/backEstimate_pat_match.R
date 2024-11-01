@@ -342,15 +342,11 @@ interpolR <- function(list, len, type = c("one","multiple")){
 #' @export
 #'
 #' @examples
-backEstimatR <- function(dt, patdet_out) {
+backEstimatR <- function(dt, patdet_out, w) {
 
   # Automatic definition of the width parameter in rolling functions (set to 1/10)
   # of the length of the trace
 
-  w <- round(dt[,.N, by = Cell_id]$N[[1]] / 10)
-
-  print("w")
-  print(w)
 
   patdet_out[, smooth_min_ratio := gplots::wapply(seq(1,.N), ratio,fun = min,
                                                  n = .N,  width = w, method = "nobs")[[2]], by = Cell_id]

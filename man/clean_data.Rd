@@ -4,16 +4,7 @@
 \alias{clean_data}
 \title{clean_data}
 \usage{
-clean_data(
-  data,
-  moving_threshold,
-  outlier_threshold,
-  mean_width,
-  CN_DPA_width,
-  DPA_width,
-  mean_width_diff,
-  method = "DPA"
-)
+clean_data(data, moving_threshold, outlier_threshold, w, method = "DPA")
 }
 \arguments{
 \item{data}{a data.table output from prepareData function}

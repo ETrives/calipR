@@ -6,16 +6,12 @@
 \usage{
 downstream_analysis(
   data,
+  rate,
   moving_thresh = 0.1,
   outlier_thresh = 2,
-  mean_width = 20,
-  DPA_width = 10,
-  CN_DPA_width = 20,
-  mean_width_diff = 10,
   method = "back",
   norm_var = "back",
   reference = c("baseline", "estimate"),
-  norm_width = 5,
   lambda = 100,
   gam = 0.97,
   z_thresh = 3,
@@ -28,7 +24,7 @@ downstream_analysis(
   pattern_matching = FALSE,
   posBank = list(),
   negBank = list(),
-  windows = c(30, 70, 100)
+  windows = NULL
 )
 }
 \arguments{

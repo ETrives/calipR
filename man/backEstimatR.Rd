@@ -4,7 +4,7 @@
 \alias{backEstimatR}
 \title{backEstimatR}
 \usage{
-backEstimatR(dt, patdet_out)
+backEstimatR(dt, patdet_out, w)
 }
 \arguments{
 \item{dt}{}

@@ -16,8 +16,7 @@
 #' @export
 #'
 #' @examples
-clean_data <- function(data, moving_threshold, outlier_threshold ,mean_width,
-                       CN_DPA_width, DPA_width, mean_width_diff, method = "DPA") {
+clean_data <- function(data, moving_threshold, outlier_threshold, w, method = "DPA") {
 
   ncells_before <- length(unique(data$Cell_id))
 
@@ -25,6 +24,9 @@ clean_data <- function(data, moving_threshold, outlier_threshold ,mean_width,
 
   # Removing Cells with too much Nas :
 
+
+  print("w")
+  print(w)
 
   na_sum <- data.table::setDT(data)[, .(NA_sum = sum(is.na(get("Mean_Grey")))), by = Cell_id ]
 
@@ -51,7 +53,7 @@ clean_data <- function(data, moving_threshold, outlier_threshold ,mean_width,
 
   # Computing a local mean for each data.table
 
-  local_mean_fct <- function(x,y,z) gplots::wapply(x, y, fun = mean, n=length(z), width = mean_width, method = "nobs")[[2]]
+  local_mean_fct <- function(x,y,z) gplots::wapply(x, y, fun = mean, n=length(z), width = w, method = "nobs")[[2]]
 
   data <- data[, local_mean := data[, .(local_mean = local_mean_fct(get("time_frame"), get("Mean_Grey"), get("time_frame"))), by = Cell_id]$local_mean]
 
@@ -68,14 +70,14 @@ clean_data <- function(data, moving_threshold, outlier_threshold ,mean_width,
     data <- data[, first_derivative := data[, .(first_derivative = first_d_fct(get("time_seconds"), get("local_mean"))), by = Cell_id]$first_derivative]
 
 
-    local_mean_diff_fct <- function(x,y,z) gplots::wapply(x, y, fun = mean, n=length(z), width = mean_width_diff, method = "nobs", drop.na = FALSE)[[2]]
+    local_mean_diff_fct <- function(x,y,z) gplots::wapply(x, y, fun = mean, n=length(z), width = w, method = "nobs", drop.na = FALSE)[[2]]
 
     data <- data[, smooth_Diff := data[, .(smooth_Diff = local_mean_diff_fct(get("time_frame"), get("first_derivative"), get("time_frame"))), by = Cell_id]$smooth_Diff]
 
     if(method == "DPA") {
 
   cell_split <- split(data, data$Cell_id)
-  cell_split <- lapply(cell_split, function(x) data.table::setDT(x)[, c("DPA", "CN_DPA") := list(DPA(x, DPA_width),  CN_DPA(x, CN_DPA_width))])
+  cell_split <- lapply(cell_split, function(x) data.table::setDT(x)[, c("DPA", "CN_DPA") := list(DPA(x, w),  CN_DPA(x, w))])
 
 
   cell_split <- lapply(cell_split, function(x) x[, c("DPA", "CN_DPA") :=

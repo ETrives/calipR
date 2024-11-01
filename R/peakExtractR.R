@@ -171,9 +171,8 @@ return(list(peaks_data, norm_data, peaks))
 peakExtraction <- function(peak_extracted_data, thresh = 3, var, peak_frame) {
 
 
-
   peak_extracted_data <- peakExtractR(peak_extracted_data[[1]], peak_extracted_data[[2]],
-                                      threshold = thresh, var = var, peak_frame = peak_frame)
+                                      peak_frame = peak_frame, threshold = thresh, var = var)
 
   if(length(peak_extracted_data[[1]]$Cell_id >= 1)){
   peak_extracted_data[[1]][, peaks_start_bis := peaks_start]
