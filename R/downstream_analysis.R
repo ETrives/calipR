@@ -32,17 +32,19 @@
 #' @export
 #'
 #' @examples
-downstream_analysis <- function(data, moving_thresh = 0.1, outlier_thresh = 2, mean_width = 20, DPA_width = 10, CN_DPA_width = 20,
-                                mean_width_diff = 10, method = "back", norm_var = "back", reference = c("baseline","estimate"),
-                                norm_width = 5, lambda = 100,
+downstream_analysis <- function(data, rate, moving_thresh = 0.1, outlier_thresh = 2,
+                               method = "back", norm_var = "back", reference = c("baseline","estimate"),
+                                lambda = 100,
                                 gam = 0.97, z_thresh = 3, delta_thresh = 0,
                                 deconvolve_var = "background_detrended", compare_groups = FALSE, false_pos = c(TRUE, FALSE), one_cell = FALSE, simulation = FALSE,
                                 pattern_matching = FALSE, posBank = list(),
-                                negBank = list(), windows = c(30,70,100)) {
+                                negBank = list(), windows = NULL) {
 
   lambda <- as.numeric(lambda)
 
   gam <- as.numeric(gam)
+
+  roll_width <- 10*rate
 
 if(method == "back"){
   max_peak_bank <- lapply(posBank, function(x) max(x,na.rm=TRUE))
@@ -59,30 +61,26 @@ if(method == "back"){
   shiny::withProgress(message = "Analyzing Full Dataset", value = 0, detail = "Cleaning Data", {
 
   if(pattern_matching == TRUE){
-  clean <-clean_data(data, moving_thresh, outlier_thresh, mean_width,
-                              CN_DPA_width, DPA_width, mean_width_diff, method = "back")
+  clean <-clean_data(data, moving_thresh, outlier_thresh, w = roll_width, method = "back")
 
   shiny::incProgress(1/5, detail = "Estimating Background")
 
 
   back <- patDetectR(clean, posBank, negBank, Var = "Mean_Grey")
 
-  back <- backEstimatR(clean, back)
+  back <- backEstimatR(clean, back, roll_width*3)
 
 
 
   shiny::incProgress(1/5, detail = "Normalizing Data")
 
-  norm <- norm_df(back, var = "back", width = norm_width, reference = reference)
+  norm <- norm_df(back, var = "back", width = roll_width, reference = reference)
 
   shiny::incProgress(1/5, detail = "Performing Deconvolution")
 
   deconvolved <- deconvolve(norm, lambda = lambda, gam = gam, var = "background_detrended")
 
 
-  #deconvolved <- peakExtractR(deconvolved[[1]], deconvolved[[2]],
-     #                         threshold = z_thresh, delta_threshold = delta_thresh,
-     #                         var = "background_detrended")
   deconvolved <- peakExtraction(deconvolved, thresh = z_thresh, var = deconvolve_var,
                                 peak_frame = peak_frame)
 
@@ -91,8 +89,7 @@ if(method == "back"){
 
 
   if(pattern_matching == FALSE){
-  clean <- clean_data(data, moving_thresh, outlier_thresh, mean_width,
-                              CN_DPA_width, DPA_width, mean_width_diff)
+  clean <- clean_data(data, moving_thresh, outlier_thresh, w = roll_width)
 
   shiny::incProgress(1/5, detail = "Estimating Background")
 
@@ -100,7 +97,7 @@ if(method == "back"){
 
   shiny::incProgress(1/5, detail = "Normalizing Data")
 
-  norm <- norm_df(back, var = norm_var, width = norm_width, reference = reference)
+  norm <- norm_df(back, var = norm_var, width = roll_width, reference = reference)
 
   shiny::incProgress(1/5, detail = "Performing Deconvolution")
 
@@ -138,15 +135,15 @@ if(method == "back"){
 
       if(pattern_matching == TRUE){
 
-        clean <- clean_data(data, moving_thresh, outlier_thresh, mean_width,
-                            CN_DPA_width, DPA_width, mean_width_diff, method = "back")
+        clean <- clean_data(data, moving_thresh, outlier_thresh, w = roll_width,
+                            method = "back")
 
         back <- patDetectR(clean, posBank,
                            negBank, Var = "Mean_Grey")
 
-        back <- backEstimatR(clean, back)
+        back <- backEstimatR(clean, back, w = roll_width*3)
 
-        norm <- norm_df(back, var = "back", width = norm_width, reference = reference)
+        norm <- norm_df(back, var = "back", width = roll_width, reference = reference)
 
         deconvolved <- deconvolve(norm, lambda = lambda,gam = gam,
                                   var = "background_detrended")
@@ -162,20 +159,16 @@ if(method == "back"){
       if(pattern_matching == FALSE){
 
 
-        clean <- clean_data(data, moving_thresh, outlier_thresh, mean_width,
-                            CN_DPA_width, DPA_width, mean_width_diff)
+        clean <- clean_data(data, moving_thresh, outlier_thresh, w = roll_width)
 
         back <- backEstimate(clean, method = method)
 
-        norm <- norm_df(back, var = norm_var, width = norm_width, reference = reference)
+        norm <- norm_df(back, var = norm_var, width = roll_width, reference = reference)
 
         deconvolved <- deconvolve(norm, lambda = lambda, gam = gam,
                                   var = deconvolve_var)
 
-        #deconvolved <- peakExtractR(deconvolved[[1]], deconvolved[[2]],
-                                   # var = deconvolve_var,
-                                   # threshold = z_thresh,
-                                   # delta_threshold = delta_thresh)
+
 
         deconvolved <- peakExtraction(deconvolved, thresh = z_thresh, var = deconvolve_var,
                                       peak_frame = peak_frame)
