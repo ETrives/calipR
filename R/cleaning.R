@@ -101,9 +101,6 @@ clean_data <- function(data, moving_threshold, outlier_threshold ,mean_width,
   cell_split <- lapply(cell_split, function(x) x[, Mean_Grey_wo_peaks := replace(Mean_Grey_wo_peaks, time_frame == 1 & is.na(Mean_Grey_wo_peaks), local_mean[1])])
 
 
-  lapply(cell_split, function(x) if(length(is.na(x$Mean_Grey_wo_peaks)[is.na(x$Mean_Grey_wo_peaks)[TRUE]]) == length(x$Mean_Grey_wo_peaks)) {print(x)})
-
-
 
   cell_split <- lapply(cell_split, function(x) x[, Mean_Grey_wo_peaks := approxfun(which(!is.na(Mean_Grey_wo_peaks)), na.omit(Mean_Grey_wo_peaks))(seq_along(Mean_Grey_wo_peaks))])
 
