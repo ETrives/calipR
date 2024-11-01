@@ -74,9 +74,6 @@ deconvolve <- function(norm_data, gam = 0.95, lambda = 1, var = "gam_detrended",
 #' @examples
 subset_spike_frames <- function(dt1,dt2, peak_frame = 10){
 
-  print(peak_frame)
-  print("peak_frame_2")
-
   # Retrieve indices of lines where a spike occurred in dt1
   setkey(dt1, Cell_id, time_frame)
   setkey(dt2, Cell_id, time_frame)

@@ -4,7 +4,7 @@
 \alias{stim_var}
 \title{stim_var}
 \usage{
-stim_var(data, stimuli, each, frame_rate, coverslip_id)
+stim_var(data, stimuli, each, frame_rate, coverslip_id, unit)
 }
 \arguments{
 \item{data}{the original dataset}

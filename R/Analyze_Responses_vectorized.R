@@ -22,12 +22,6 @@ Analyze_Responses <- function(data, df_clean, compare_groups = FALSE,
   data <- setDT(data)
   df_clean <- setDT(df_clean)
 
-  print("data")
-  print(data)
-
-  print("df_clean")
-  print(df_clean)
-
   'isnotna' <- Negate('is.na')
 
   df_clean <- df_clean[ isnotna(stimulus)]
@@ -125,10 +119,8 @@ Analyze_Responses <- function(data, df_clean, compare_groups = FALSE,
 
 
     if("coverslip" %notin% var_list & "group" %notin% var_list & "marker_positive" %notin% var_list ){
-      print("yoush")
-      print(data)
+
       data <- data[, c("Prop", "n_cells_tot") := list(Responders/ n_cells, n_cells)]
-      print("yash")
     }
 
     if("coverslip" %notin% var_list & "stimulus" %notin% var_list & "group" %in% var_list & "marker_positive" %notin% var_list){
@@ -328,10 +320,8 @@ Compare_props <- function(data, by = NULL, var = NULL, stim_list,alt=alt){
 
   else{
 
-    print(stim_list)
   data <- data[get(by) %in% stim_list]
 
-  print(data)
   lev <- unique(data[[eval(by)]])
   it <- seq(1,length(lev))
 
@@ -342,8 +332,7 @@ Compare_props <- function(data, by = NULL, var = NULL, stim_list,alt=alt){
     dt <- data[get(by) == lev[i]]
     cont <- table(dt$Response, dt[[eval(var)]])
 
-    print(length(cont))
-    print(cont)
+
     if(length(cont) > 4){
       cont <- t(cont)
       res_tot[[i]] <- prop.test(cont)
@@ -375,7 +364,6 @@ lm_tidy <- function(df, x, y) {
   # take the code piece `y ~ x` and substitute using list lookup table
   .fm <- substitute(y ~ x, list(y=.y, x=.x))
 
-  print(.fm)
   # take the code `lm(fm, data=df)` and substitute with the code pieceses defined by the lookup table
   # by replacing them by the code pieces stored in `.fm` and `.df`
   # and finally: evaluate the substituted code in the parent environment (the environment where the function was called!)

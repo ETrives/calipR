@@ -4,7 +4,7 @@
 \alias{Compare_props}
 \title{Compare_props}
 \usage{
-Compare_props(data)
+Compare_props(data, by = NULL, var = NULL, stim_list, alt = alt)
 }
 \arguments{
 \item{data}{the full output from Count_responders_stim()}

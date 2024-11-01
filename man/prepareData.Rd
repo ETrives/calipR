@@ -4,7 +4,13 @@
 \alias{prepareData}
 \title{prepareData}
 \usage{
-prepareData(folder_name, frame_rate, duration_in_seconds = 30, marker_thresh)
+prepareData(
+  folder_name,
+  frame_rate,
+  duration_in_seconds = 30,
+  marker_thresh,
+  unit
+)
 }
 \arguments{
 \item{folder_name}{Path to the folder containing the fluorescence data and the meta.csv file}
