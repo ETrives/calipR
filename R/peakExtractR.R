@@ -64,12 +64,9 @@ peakExtractR <- function(peaks_data, norm_data, peak_frame = 10, threshold = 3,
 
   dt[, Max_by_20 := max(smooth_z, na.rm = TRUE)[[1]], by = .(blocs)]
 
-  #dt[, smooth_Diff := ifelse(is.na(smooth_Diff), first_derivative,smooth_Diff), by = .(blocs)]
   dt[, smooth_Diff := ifelse(is.na(smooth_Diff_detrended), first_derivative_detrended,smooth_Diff_detrended), by = .(blocs)]
 
-  #dt[, peak_end := .SD[smooth_z <= 0 & smooth_Diff <= 0,][1,]$time_frame,  by = .(Cell_id,blocs)]
   dt[, peak_end := .SD[smooth_z <= 0 & smooth_Diff_detrended <= 0,][1,]$time_frame,  by = .(Cell_id,blocs)]
-  #dt[, peak_end := .SD[smooth_z <= 0,][1,]$time_frame,  by = .(Cell_id,blocs)]
 
   dt[, peak_end := ifelse(is.na(peak_end),
                                 .SD[time_frame > .SD[smooth_z == Max_by_20]$time_frame][smooth_z == min(smooth_z, na.rm = TRUE)]$time_frame, peak_end),  by = .(Cell_id,blocs)]

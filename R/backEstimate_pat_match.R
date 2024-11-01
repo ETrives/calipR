@@ -23,7 +23,7 @@
 #'
 #' @examples
 patDetectR <- function(dt, posBank, negBank, Var, Norm = TRUE, windows = NULL) {
-
+print("yo")
 if(is.null(windows)){
   posBank<-posBank[!sapply(posBank,is.null)]
   negBank<-negBank[!sapply(negBank,is.null)]
@@ -45,7 +45,7 @@ if(is.null(windows)){
 
   else{
     window <- windows
-    new_len <- 30
+    new_len <- max(window, na.rm = TRUE)
   }
 
   # Extending the trace so that patterns in its end can be fully screened with large
@@ -344,8 +344,16 @@ interpolR <- function(list, len, type = c("one","multiple")){
 #' @examples
 backEstimatR <- function(dt, patdet_out) {
 
+  # Automatic definition of the width parameter in rolling functions (set to 1/10)
+  # of the length of the trace
+
+  w <- round(dt[,.N, by = Cell_id]$N[[1]] / 10)
+
+  print("w")
+  print(w)
+
   patdet_out[, smooth_min_ratio := gplots::wapply(seq(1,.N), ratio,fun = min,
-                                                 n = .N,  width = 20, method = "nobs")[[2]], by = Cell_id]
+                                                 n = .N,  width = w, method = "nobs")[[2]], by = Cell_id]
 
 
   patdet_out[, time_frame := seq(1,.N), by = Cell_id]
@@ -360,7 +368,7 @@ backEstimatR <- function(dt, patdet_out) {
 
 
   full_dt[, rolling_min_new := gplots::wapply(time_frame, Mean_Grey,fun = function(x) quantile(x, probs = 0.2, names = FALSE),
-                                              n = length(time_frame),  width = 30, method = "nobs")[[2]], by = Cell_id]
+                                              n = length(time_frame),  width = w, method = "nobs")[[2]], by = Cell_id]
 
 
   full_dt[, mean_grey_wo_peaks_new_new := ifelse(signal %in% c("Noise", NA), Mean_Grey, NA), by = Cell_id]
@@ -368,7 +376,6 @@ backEstimatR <- function(dt, patdet_out) {
   # If all values have been removed : fix the first and last values
 
   full_dt[, mean_grey_wo_peaks_new_new := ifelse(time_frame %in% c(1,.N), rolling_min_new, mean_grey_wo_peaks_new_new), by = Cell_id]
-  #full_dt[, mean_grey_wo_peaks_new_new := ifelse(time_frame %in% c(1,.N), Mean_Grey, mean_grey_wo_peaks_new_new), by = Cell_id]
 
 
   # Linear interpolation between removed values
@@ -394,7 +401,7 @@ backEstimatR <- function(dt, patdet_out) {
 
 
   full_dt[, rolling_med_new := gplots::wapply(time_frame, mean_grey_wo_peaks_new_new,fun = median,
-                                              n = length(time_frame),  width = 30, method = "nobs")[[2]], by = Cell_id]
+                                              n = length(time_frame),  width = w, method = "nobs")[[2]], by = Cell_id]
 
 
   full_dt[, below_med := ifelse(mean_grey_wo_peaks_new_new < rolling_med_new, TRUE, FALSE), by = Cell_id]
@@ -409,7 +416,7 @@ backEstimatR <- function(dt, patdet_out) {
 
   # Last rolling median to estimate the background
   full_dt[, background := gplots::wapply(time_frame, mean_grey_wo_peaks_new_new,fun = median,
-                                         n = length(time_frame),  width = 30, method = "nobs")[[2]], by = Cell_id]
+                                         n = length(time_frame),  width = w, method = "nobs")[[2]], by = Cell_id]
 
   full_dt[, background := ifelse(time_frame %in% c(seq(1,10),.N), Mean_Grey, background)]
 
