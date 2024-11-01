@@ -16,7 +16,8 @@ tidy_df(
   multiple = FALSE,
   groups,
   marker,
-  marker_thresh
+  marker_thresh,
+  unit
 )
 }
 \arguments{

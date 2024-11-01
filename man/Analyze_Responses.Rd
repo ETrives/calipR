@@ -11,7 +11,11 @@ Analyze_Responses(
   one_cell = FALSE,
   marker = FALSE,
   var_list = NULL,
-  simulation = FALSE
+  simulation = FALSE,
+  by = NULL,
+  var = NULL,
+  stims,
+  alt = alt
 )
 }
 \arguments{

@@ -4,7 +4,7 @@
 \alias{patDetectR}
 \title{patDetectR}
 \usage{
-patDetectR(dt, posBank, negBank, Var, Norm = TRUE)
+patDetectR(dt, posBank, negBank, Var, Norm = TRUE, windows = NULL)
 }
 \arguments{
 \item{Norm}{}

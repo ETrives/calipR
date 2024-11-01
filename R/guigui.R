@@ -1422,7 +1422,6 @@ if(sum(launch_pos,launch_neg) == 2){
 
         data.table::setDT(res1)[, peak_frames := NULL]
 
-        View(res1)
 
         saveData(res1, paste(project$dir_path,project$db_file, sep ="/"), "peak_res",
                  over = TRUE, append = FALSE)
