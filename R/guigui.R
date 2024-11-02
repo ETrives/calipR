@@ -79,7 +79,7 @@ ui <-
                                                            shiny::textInput("gam_full", label = "gam"),
                                                            shiny::selectInput(inputId = "norm_method_full", label = "Choose method to compute z-score",
                                                                               list("Baseline Period" = "baseline", "Baseline Period without Peaks" = "estimate")),
-                                                           shiny::checkboxInput("patMatch", label = "Background Estimation with Pattern Matching"),
+                                                           shiny::checkboxInput("patMatch", label = "Background Estimation with SBPC"),
                                                            shiny::uiOutput('posBank_field_full'),
                                                            shiny::uiOutput('warning_bank_pos_full'),
                                                            shiny::uiOutput('negBank_field_full'),
@@ -200,7 +200,7 @@ ui <-
 
             shiny::selectInput(inputId = "norm_method", label = "Choose method to compute z-score",
                                list("Baseline Period" = "baseline", "Baseline Period without Peaks" = "estimate")),
-            shiny::checkboxInput("patMatch_opt", label = "Background Estimation with Pattern Matchhing"),
+            shiny::checkboxInput("patMatch_opt", label = "Background Estimation with SBPC"),
 
             shiny::uiOutput('posBank_field'),
             shiny::uiOutput('warning_bank_pos'),
@@ -235,7 +235,7 @@ ui <-
             shiny::textInput("gam_bis", label = "Gam", placeholder = "Enter the Gam parameter for the Deconvolution (double between 0-1)"),
             shiny::selectInput(inputId = "norm_method_bis", label = "Choose method to compute z-score",
                                list("Baseline Period" = "baseline", "Baseline Period without Peaks" = "estimate")),
-            shiny::checkboxInput("patMatch_opt_bis", label = "Background Estimation with Pattern Matchhing"),
+            shiny::checkboxInput("patMatch_opt_bis", label = "Background Estimation with SBPC"),
 
             shiny::uiOutput('posBank_field_bis'),
             shiny::uiOutput('warning_bank_pos_bis'),
