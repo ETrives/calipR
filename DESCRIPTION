@@ -21,7 +21,8 @@ Depends:
   plyr,
   data.table,
   shiny,
-  shinyFiles
+  shinyFiles,
+  flux
 Imports:
   purrr,
   dplyr,
