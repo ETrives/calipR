@@ -186,7 +186,6 @@ stim_var <- function(data, stimuli, each, frame_rate, coverslip_id, unit){
     x <- i - count
     count <- count + x
     rep_each <- append(rep_each, x)
-    print(rep_each)
   }
 
   rep_each <- rep_each[-1]

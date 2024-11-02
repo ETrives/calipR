@@ -422,7 +422,6 @@ shiny::observeEvent(input$load, {
 
       list(
       shiny::textInput("proj_name_load", label = "Project Name" ),
-      shiny::textInput("frame_rate_load", label = "Enter your frame rate (Hz)", placeholder = "e.g. 0.5" ),
       shiny::actionButton("load_button", "Load Project", align = "center"))
 
     })
@@ -1085,7 +1084,7 @@ observe({
 
 
 if(sum(launch_pos,launch_neg) == 2){
-      res_sim$res <- downstream_analysis(df_sub,rate =as.numeric(input$frame_rate_load),  z_thresh = input$peak_thresh, reference = input$norm_method,
+      res_sim$res <- downstream_analysis(df_sub,rate = orig_freq(),  z_thresh = input$peak_thresh, reference = input$norm_method,
                                          delta_thresh = input$peak_thresh_delta, lambda = input$lambda, gam = input$gam,
                                          simulation = TRUE, pattern_matching = input$patMatch_opt,
                                          posBank = posBank, negBank = negBank,
@@ -1271,7 +1270,7 @@ if(sum(launch_pos,launch_neg) == 2){
 
   if(sum(c(launch_pos,launch_neg)) == 2){
 
-        res_sim$res_bis <- downstream_analysis(df_sub_bis, rate = as.numeric(input$frame_rate_load), z_thresh = input$peak_thresh_bis,reference = input$norm_method_bis,
+        res_sim$res_bis <- downstream_analysis(df_sub_bis, rate = orig_freq(), z_thresh = input$peak_thresh_bis,reference = input$norm_method_bis,
                                                delta_thresh = input$peak_thresh_bis_delta, lambda = input$lambda_bis,
                                                gam = input$gam_bis,simulation = TRUE, one_cell = TRUE,
                                                pattern_matching = input$patMatch_opt_bis,
@@ -1399,7 +1398,7 @@ if(sum(launch_pos,launch_neg) == 2){
 
 if(sum(launch_pos,launch_neg) == 2){
 
-        res_full$res <- downstream_analysis(df_full,rate = as.numeric(input$frame_rate_load), z_thresh = input$peak_thresh_full_z,reference = input$norm_method_full,
+        res_full$res <- downstream_analysis(df_full,rate = orig_freq(), z_thresh = input$peak_thresh_full_z,reference = input$norm_method_full,
                                              delta_thresh = input$peak_thresh_full_delta, lambda = input$lambda_full, gam = input$gam_full,
                                              pattern_matching = input$patMatch, posBank = posBank, negBank = negBank,
                                      deconvolve_var = deconvolve_var,
