@@ -1430,15 +1430,15 @@ if(sum(launch_pos,launch_neg) == 2){
         calipR::saveData(res3_1, paste(project$dir_path,project$db_file, sep ="/"), "stats_desc_final")
 
 
-if(input$groups == TRUE){print( "it is true")}
-        else{
+#if(input$groups == TRUE){print( "it is true")}
+       # else{
 
         res3_3_1 <- data.table::setDT(res_full$res[[3]][[2]][[1]])
         calipR::saveData(res3_3_1, paste(project$dir_path,project$db_file, sep ="/"), "overall_q")
 
         res3_3_2 <- data.table::setDT(res_full$res[[3]][[2]][[2]])
         calipR::saveData(res3_3_2, paste(project$dir_path,project$db_file, sep ="/"), "pairwise")
-        }
+       # }
 
 }
       })
