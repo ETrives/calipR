@@ -23,7 +23,7 @@
 #'
 #' @examples
 patDetectR <- function(dt, posBank, negBank, Var, Norm = TRUE, windows = NULL) {
-print("yo")
+
 if(is.null(windows)){
   posBank<-posBank[!sapply(posBank,is.null)]
   negBank<-negBank[!sapply(negBank,is.null)]
