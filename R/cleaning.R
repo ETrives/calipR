@@ -25,8 +25,6 @@ clean_data <- function(data, moving_threshold, outlier_threshold, w, method = "D
   # Removing Cells with too much Nas :
 
 
-  print("w")
-  print(w)
 
   na_sum <- data.table::setDT(data)[, .(NA_sum = sum(is.na(get("Mean_Grey")))), by = Cell_id ]
 

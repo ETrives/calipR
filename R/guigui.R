@@ -22,9 +22,58 @@ ui <-
     shinydashboard::dashboardSidebar(
 
       shiny::tags$head(
-        shiny::tags$style(shiny::HTML(".sidebar {
+        shiny::tags$style(shiny::HTML("
+
+        .sidebar {
                       height: 100%;
-                    }"
+        }
+
+        .launch-btn {
+       position: relative;
+       left : 15px;
+       width: 200px;
+       color: white;
+       background-color:#7a3193;
+       border-color: #a365b9;
+        }
+
+         .launch-btn:focus {
+       position: relative;
+       left : 15px;
+       width: 200px;
+       color: white;
+       background-color:#7a3193;
+       border-color: #a365b9;
+        }
+
+        .launch-btn:hover {
+      background-color:#b76ed1;
+      border-color: #7a3193;
+      transition: 0.5s;
+        }
+
+      .warn-side {
+
+      position: relative;
+      left: 40px;
+      color: red;
+
+      }
+
+      .warn-side-long {
+
+      position: relative;
+      left: 30px;
+      color: red;
+
+      }
+       .warn-main {
+
+      color: red;
+
+      }
+
+  "
         )
         )
       ),
@@ -56,7 +105,7 @@ ui <-
                                     "Create Your Banks", tabName = "bank"),
                                   shiny::conditionalPanel( 'input.sidebarid === "bank"',
                                                            shiny::textInput("db_name", label = NULL, placeholder = "Database name"),
-                                                           shiny::uiOutput("warning_db"),
+                                                           shiny::uiOutput("warning_db", class = "warn-side"),
                                                            shiny::textInput("bankName", "How do you want to call this bank ?"),
                                                            shiny::actionButton("start_creation", "Load Data", align = "center")),
 
@@ -64,7 +113,7 @@ ui <-
                                     "Annotate Your Data", tabName = "annotation"),
                                   shiny::conditionalPanel( 'input.sidebarid === "annotation"',
                                                            shiny::textInput("db_name_bis", label = NULL, placeholder = "Database name"),
-                                                           shiny::uiOutput("warning_db_bis"),
+                                                           shiny::uiOutput("warning_db_bis",  class = "warn-side"),
                                                            shiny::textInput("annotation_project", "How do you want to call this annotation project ?"),
                                                            shiny::actionButton("start_creation_bis", "Load Data", align = "center")),
 
@@ -73,18 +122,19 @@ ui <-
                                   shinydashboard::menuItem(
                                     "Launch Full Analysis", tabName = "ana_full"),
                                   shiny::conditionalPanel( 'input.sidebarid === "ana_full"',
-                                                           shiny::numericInput("peak_thresh_full_z", label = "Peak Threshold (z)", value = 0, min = 0),
+                                                           shiny::numericInput("peak_thresh_full_z", label = "Peak Threshold (z)", value = 3, min = 0),
                                                            shiny::numericInput("peak_thresh_full_delta", label = "Peak Threshold (deltaf/f)", value = 0, min =0),
-                                                           shiny::textInput("lambda_full", label = "Lambda"),
-                                                           shiny::textInput("gam_full", label = "gam"),
+                                                           shiny::textInput("lambda_full", label = "Lambda", value = "1000"),
+                                                           shiny::textInput("gam_full", label = "gam", value = "0.9"),
                                                            shiny::selectInput(inputId = "norm_method_full", label = "Choose method to compute z-score",
                                                                               list("Baseline Period" = "baseline", "Baseline Period without Peaks" = "estimate")),
                                                            shiny::checkboxInput("patMatch", label = "Background Estimation with SBPC"),
                                                            shiny::uiOutput('posBank_field_full'),
-                                                           shiny::uiOutput('warning_bank_pos_full'),
                                                            shiny::uiOutput('negBank_field_full'),
-                                                           shiny::uiOutput('warning_bank_neg_full'),
-                                                           shiny::actionButton("ana_full_button", "Launch Full Analysis", align = "center")),
+                                                           shiny::uiOutput('warning_bank', class = "warn-side"),
+                                                           shiny::uiOutput('warning_data', class = "warn-side-long"),
+                                                           fluidRow(shiny::actionButton("ana_full_button", "Launch Full Analysis", class ="launch-btn"
+                                                                                        ))),
                                   shinydashboard::menuItem(
                                     "Visualize Results", tabName = "viz_res")
 
@@ -106,7 +156,8 @@ ui <-
         /* active selected tab in the sidebarmenu */
         .skin-blue .main-sidebar .sidebar .sidebar-menu .active a{
                               background-color: #5499c7
-                              }
+        }
+
 
                                     "))),
 
@@ -123,7 +174,7 @@ ui <-
 
         shiny::uiOutput("project_creation"),
         shiny::uiOutput("project_loading"),
-        shiny::uiOutput("warning_load")
+        shiny::uiOutput("warning_load",  class = "warn-main")
 
         ))),
 
@@ -136,7 +187,7 @@ ui <-
             shiny::fluidRow(
             shinydashboard::box(title = "Select Patterns by clicking on the graph", width = 12, solidHeader = TRUE, status = "primary",
         shiny::uiOutput('cell_selector'),
-        shiny::uiOutput('warning'),
+        shiny::uiOutput('warning', class = "warn-main"),
         shiny::selectInput("displayType", "Type of data display", choices = list("points" = "markers", "line" = "line",
                                                                           "both" = "lines+markers"),selected = "points" ),
         plotly::plotlyOutput("myPlot")),
@@ -192,26 +243,26 @@ ui <-
 
       shiny::fluidRow(
       shinydashboard::box(title = "Optimize Parameters", width = 12, solidHeader = TRUE, status = "primary",
-            shiny::numericInput("peak_thresh", label = "Peak Threshold (z score)", value = 0, min = 0),
+            shiny::numericInput("peak_thresh", label = "Peak Threshold (z score)", value = 3, min = 0),
             shiny::numericInput("peak_thresh_delta", label = "Peak Threshold (delta f/f)", value = 0, min = 0),
-            shiny::textInput("lambda", label = "Lambda", placeholder = "Enter the Lambda parameter for the Deconvolution (integer)"),
-            shiny::textInput("gam", label = "Gam", placeholder = "Enter the Gam parameter for the Deconvolution (double between 0-1)"),
-            shiny::textInput("n_cells", label = "Number of cells", placeholder = "Enter the number of cells you want to run the stimulation on"),
+            shiny::textInput("lambda", label = "Lambda", placeholder = "Enter the Lambda parameter for the Deconvolution (integer)", value = "1000"),
+            shiny::textInput("gam", label = "Gam", placeholder = "Enter the Gam parameter for the Deconvolution (double between 0-1)", value = "0.9"),
+            shiny::textInput("n_cells", label = "Number of cells", placeholder = "Enter the number of cells you want to run the stimulation on", value = "10"),
 
             shiny::selectInput(inputId = "norm_method", label = "Choose method to compute z-score",
                                list("Baseline Period" = "baseline", "Baseline Period without Peaks" = "estimate")),
             shiny::checkboxInput("patMatch_opt", label = "Background Estimation with SBPC"),
 
             shiny::uiOutput('posBank_field'),
-            shiny::uiOutput('warning_bank_pos'),
             shiny::uiOutput('negBank_field'),
-            shiny::uiOutput('warning_bank_neg'),
-
 
             shiny::checkboxInput("show_peak", label = "Show Peaks"),
 
             shiny::uiOutput('responders'),
             shiny::uiOutput('non_responders'),
+
+            shiny::uiOutput('warning_data_sim', class = "warn-main"),
+            shiny::uiOutput('warning_bank_sim', class = "warn-main"),
 
             shiny::actionButton("sim", "Simulate Analysis", align = "center"),
             shiny::actionButton("plot_responders", "Plot Responder", align = "center"),
@@ -228,24 +279,23 @@ ui <-
       shinydashboard::box(title = "Try other parameters on a given cell", width = 12, solidHeader = TRUE, status = "primary",
             shiny::textInput("cell_opt", label = "Cell", placeholder = "On which cell do you want to try new parameters ?"),
 
-            shiny::numericInput("peak_thresh_bis", label = "Threshold (z_score)", value = 0, min = 0),
+            shiny::numericInput("peak_thresh_bis", label = "Threshold (z_score)", value = 3, min = 0),
             shiny::numericInput("peak_thresh_bis_delta", label = "Threshold (delta f/f)", value = 0, min = 0),
 
-            shiny::textInput("lambda_bis", label = "Lambda", placeholder = "Enter the Lambda parameter for the Deconvolution (integer)"),
-            shiny::textInput("gam_bis", label = "Gam", placeholder = "Enter the Gam parameter for the Deconvolution (double between 0-1)"),
+            shiny::textInput("lambda_bis", label = "Lambda", placeholder = "Enter the Lambda parameter for the Deconvolution (integer)", value = "1000"),
+            shiny::textInput("gam_bis", label = "Gam", placeholder = "Enter the Gam parameter for the Deconvolution (double between 0-1)", value = "0.9"),
             shiny::selectInput(inputId = "norm_method_bis", label = "Choose method to compute z-score",
                                list("Baseline Period" = "baseline", "Baseline Period without Peaks" = "estimate")),
             shiny::checkboxInput("patMatch_opt_bis", label = "Background Estimation with SBPC"),
 
             shiny::uiOutput('posBank_field_bis'),
-            shiny::uiOutput('warning_bank_pos_bis'),
-
             shiny::uiOutput('negBank_field_bis'),
-            shiny::uiOutput('warning_bank_neg_bis'),
 
 
             shiny::checkboxInput("show_peak_bis", label = "Show Peaks"),
 
+            shiny::uiOutput('warning_data_sim_bis', class = "warn-main"),
+            shiny::uiOutput('warning_bank_sim_bis', class = "warn-main"),
 
             shiny::actionButton("sim_bis", "Simulate Analysis", align = "center"),
             shiny::actionButton("plot_simulation_bis", "Plot Cell", align = "center"))),
@@ -368,9 +418,10 @@ server <- function(input, output, session){
 root_path <- paste0(getwd(),"/projects")
 sqlitePath <- getwd()
 
-project <- reactiveValues(dir_path = "")
+project <- reactiveValues(dir_path = "no path")
 
 orig_freq <- reactiveVal(value = 1)
+
 
 
 #### Data Preparation ##############
@@ -433,11 +484,10 @@ volumes <- getVolumes()() # this makes the directory at the base of your compute
 abs_path <- reactiveValues()
 abs_path$path <- "hey"
 
-observe({
+observeEvent(input$folder, {
   shinyDirChoose(input, 'folder', roots=volumes, filetypes=c('', 'txt'))
   abs_path$path <- shiny::reactive({shinyFiles::parseDirPath(volumes, input$folder)})
   output$value <- renderText(abs_path$path())
-
 })
 
 
@@ -450,6 +500,7 @@ observe({
     project$dir_path <- paste(root_path, project$name, sep = "/")
 
     project$db_file <- paste0(project$name, ".sqlite")
+
 
     '%notin%' <- Negate('%in%')
     if(is.null(input$folder)) {}
@@ -505,6 +556,7 @@ observe({
 
     print(project$dir_path)
     project$db_file <- paste0(project$name, ".sqlite")
+
 
     if(project$db_file %in% list.files(project$dir_path)){
 
@@ -1006,23 +1058,59 @@ observe({
       })
 
 
+      bank_path <- reactiveValues()
+
+
     shiny::observeEvent(input$patMatch_opt, {
 
+
       if(input$patMatch_opt == TRUE){
+
+        bank_path$pos_path <- "path to positive bank"
+        bank_path$neg_path <- "path to negative bank"
+
+
+        ready$pos <- FALSE
+        ready$neg <- FALSE
       output$posBank_field <- shiny::renderUI({
-        shiny::textInput(inputId = "posBank", "Positive Bank", placeholder = "Enter the name of the bank you want to use")
+
+        fluidRow(
+          column(4,
+        list(shinyFilesButton('posbank_file', 'Select positive bank file', 'Positive Bank', multiple = FALSE),
+             shiny::div(style = "width: 165px ;", shiny::verbatimTextOutput("bpp")))),
+
+        column(4,
+        list(shinyFilesButton('negbank_file', 'Select negative bank file', 'Negative Bank', multiple = FALSE),
+             shiny::div(style = "width: 168px ;",  shiny::verbatimTextOutput("bpn")))))
+
+         })
+
+      observeEvent(input$posbank_file, {
+
+        shinyFileChoose(input, 'posbank_file', roots=volumes, filetypes=c('', 'txt', 'RDS', 'rds'))
+        bank_path$pos_path <- shiny::reactive({shinyFiles::parseFilePaths(volumes, input$posbank_file)
+        })
+
+
+        if(length(bank_path$pos_path()$datapath != 0)){
+          output$bpp <- renderPrint(bank_path$pos_path()$datapath[[1]])
+          ready$pos <- TRUE
+        }
 
       })
 
-      output$negBank_field <- shiny::renderUI({
-        shiny::textInput(inputId = "negBank", "Negative Bank", placeholder = "Enter the name of the bank you want to use")
+      observeEvent(input$negbank_file,{
+        shinyFileChoose(input, 'negbank_file', roots=volumes, filetypes=c('', 'txt', 'RDS', 'rds'))
+        bank_path$neg_path <- shiny::reactive({shinyFiles::parseFilePaths(volumes, input$negbank_file)})
 
+        if(length(bank_path$neg_path()$datapath != 0)){
+          output$bpn <- renderPrint(bank_path$neg_path()$datapath[[1]])
+          ready$neg <- TRUE
+        }
       })
 
+}
 
-
-
-    }
       if(input$patMatch_opt == FALSE){
 
         output$posBank_field <- NULL
@@ -1035,55 +1123,55 @@ observe({
 
    shiny::observeEvent(input$sim, {
 
+
+     if(project$dir_path == "no path"){
+       output$warning_data_sim <- renderUI({"Create or load a project first"})
+
+     }
+
+     else{
       df_sub <- calipR::get_sub_df(paste(project$dir_path, project$db_file,sep = "/"),
                                    "df_full", input$n_cells)
+      output$warning_data_sim <- renderUI({""})
+     }
+
+
+
 
       if(input$patMatch_opt == TRUE){
 
-      deconvolve_var <- "background_detrended"
-      method <- "back"
+        deconvolve_var <- "background_detrended"
+        method <- "back"
 
-      if(input$posBank %in% list.files(project$dir_path)){
-        output$warning_bank_pos <- NULL
-        posBank <- readRDS(paste(project$dir_path, input$posBank, sep = "/"))
+        if (sum(c(ready$pos,ready$neg)) == 2) {
+
+        output$warning_bank_sim <- NULL
+
+        posBank <- readRDS(bank_path$pos_path()$datapath[[1]])
         posBank <- Filter(Negate(is.null), posBank)
-        launch_pos <- TRUE
 
-      }
-      else if(input$posBank %notin% list.files(project$dir_path)){
-        output$warning_bank_pos <- shiny::renderUI({"Bank not found. Check bank name"})
-        launch_pos <- FALSE
-      }
-
-      if(input$negBank %in% list.files(project$dir_path)){
-        output$warning_bank_neg <- NULL
-        negBank <- readRDS(paste(project$dir_path, input$negBank, sep = "/"))
+        negBank <- readRDS(bank_path$neg_path()$datapath[[1]])
         negBank <- Filter(Negate(is.null), negBank)
-        launch_neg <- TRUE
+        }
+
+        else{
+          output$warning_bank_sim <- renderUI({"Please provide bank files"})
+
+        }
       }
-      else if(input$negBank %notin% list.files(project$dir_path)){
-        output$warning_bank_neg <- shiny::renderUI({"Bank not found. Check bank name"})
-        launch_neg <- FALSE
-      }
-
-
-      }
-
-
 
       else{
+
         posBank <- list()
         negBank <- list()
-      deconvolve_var <- "gam_detrended"
-      method <- "gam"
-
-      launch_pos <- TRUE
-      launch_neg <- TRUE
+        deconvolve_var <- "gam_detrended"
+        method <- "gam"
+        ready$pos <- TRUE
+        ready$neg <- TRUE
       }
 
+     if (sum(c(ready$pos,ready$neg)) == 2 & project$dir_path != "no path") {
 
-
-if(sum(launch_pos,launch_neg) == 2){
       res_sim$res <- downstream_analysis(df_sub,rate = orig_freq(),  z_thresh = input$peak_thresh, reference = input$norm_method,
                                          delta_thresh = input$peak_thresh_delta, lambda = input$lambda, gam = input$gam,
                                          simulation = TRUE, pattern_matching = input$patMatch_opt,
@@ -1192,83 +1280,120 @@ if(sum(launch_pos,launch_neg) == 2){
       })
     })
 
+      bank_path_bis <- reactiveValues()
+
       shiny::observeEvent(input$patMatch_opt_bis, {
 
-        if(input$patMatch_opt_bis == TRUE){
-          output$posBank_field_bis <- shiny::renderUI({
-            shiny::textInput(inputId = "posBank_bis", "Positive Bank", placeholder = "Enter the name of the bank you want to use")
 
-          })
+          if(input$patMatch_opt_bis == TRUE){
 
-          output$negBank_field_bis <- shiny::renderUI({
-            shiny::textInput(inputId = "negBank_bis", "Negative Bank", placeholder = "Enter the name of the bank you want to use")
+            bank_path_bis$pos_path <- "path to positive bank"
+            bank_path_bis$neg_path <- "path to negative bank"
 
-          })
+            ready$pos <- FALSE
+            ready$neg <- FALSE
+
+            output$posBank_field_bis <- shiny::renderUI({
+
+              fluidRow(
+                column(4,
+                       list(shinyFilesButton('posbank_file_bis', 'Select positive bank file', 'Positive Bank bis', multiple = FALSE),
+                            shiny::div(style = "width: 165px ;",shiny::verbatimTextOutput("bpp_bis")))),
+
+                column(4,
+                       list(
+                         shinyFilesButton('negbank_file_bis', 'Select negative bank file', 'Negative Bank bis', multiple = FALSE),
+                         shiny::div(style = "width: 168px ;",shiny::verbatimTextOutput("bpn_bis")))))
+
+            })
+
+            observeEvent(input$posbank_file_bis,{
+
+              shinyFileChoose(input, 'posbank_file_bis', roots=volumes, filetypes=c('', 'txt', 'RDS', 'rds'))
+
+              bank_path_bis$pos_path <- shiny::reactive({shinyFiles::parseFilePaths(volumes, input$posbank_file_bis)
+              })
 
 
-        }
-        if(input$patMatch_opt_bis == FALSE){
+              if(length(bank_path_bis$pos_path()$datapath != 0)){
+                output$bpp_bis <- renderPrint(bank_path_bis$pos_path()$datapath[[1]], width = 10)
+                ready$pos <- TRUE
+              }
 
-          output$posBank_field_bis <- NULL
-          output$negBank_field_bis <- NULL
-        }
+            })
+
+            observeEvent(input$negbank_file_bis,{
+            shinyFileChoose(input, 'negbank_file_bis', roots=volumes, filetypes=c('', 'txt', 'RDS', 'rds'))
+            bank_path_bis$neg_path <- shiny::reactive({shinyFiles::parseFilePaths(volumes, input$negbank_file_bis)})
+
+            if(length(bank_path_bis$neg_path()$datapath != 0)){
+              output$bpn_bis <- renderPrint(bank_path_bis$neg_path()$datapath[[1]], width = 10)
+              ready$neg <- TRUE
+            }
+           })
+          }
 
 
-      })
+
+          if(input$patMatch_opt_bis == FALSE){
+
+            output$posBank_field_bis <- NULL
+            output$negBank_field_bis <- NULL
+          }
+        })
+
 
 
 
 
       shiny::observeEvent(input$sim_bis, {
 
+        if (project$dir_path != "no path") {
+
         df_sub_bis <- get_cell(input$cell_opt, paste(project$dir_path,project$db_file,sep = "/"),
                                "df_full")
+        output$warning_data_sim_bis <- renderUI({""})
+        }
 
+        else{
+          output$warning_data_sim_bis <- renderUI({"Create or load a project first"})
+
+        }
 
         if(input$patMatch_opt_bis == TRUE){
 
-          deconvolve_var <- "background_detrended"
-          method <- "back"
+            deconvolve_var <- "background_detrended"
+            method <- "back"
 
-          if(input$posBank_bis %in% list.files(project$dir_path)){
-            output$warning_bank_pos_bis <- NULL
-            posBank <- readRDS(paste(project$dir_path, input$posBank_bis, sep = "/"))
+            if (sum(c(ready$pos,ready$neg)) == 2) {
+
+            posBank <- readRDS(bank_path_bis$pos_path()$datapath[[1]])
             posBank <- Filter(Negate(is.null), posBank)
 
-            launch_pos <- TRUE
-
-          }
-          else if(input$posBank_bis %notin% list.files(project$dir_path)){
-            output$warning_bank_pos_bis <- shiny::renderUI({"Bank not found. Check bank name"})
-            launch_pos <- FALSE
-          }
-
-          if(input$negBank_bis %in% list.files(project$dir_path)){
-            output$warning_bank_neg_bis <- NULL
-            negBank <- readRDS(paste(project$dir_path, input$negBank_bis, sep = "/"))
+            negBank <- readRDS(bank_path_bis$neg_path()$datapath[[1]])
             negBank <- Filter(Negate(is.null), negBank)
-            launch_neg <- TRUE
-          }
-          else if(input$negBank_bis %notin% list.files(project$dir_path)){
-            output$warning_bank_neg_bis <- shiny::renderUI({"Bank not found. Check bank name"})
-            launch_neg <- FALSE
-          }
-          }
+
+            output$warning_bank_sim_bis <- renderUI({""})
+            }
+
+            else{
+              output$warning_bank_sim_bis <- renderUI({"Please provide bank files"})
+
+            }
+
+            }
 
         else{
+
           posBank <- list()
           negBank <- list()
           deconvolve_var <- "gam_detrended"
           method <- "gam"
-
-          launch_pos <- TRUE
-          launch_neg <- TRUE
+          ready$pos <- TRUE
+          ready$neg <- TRUE
         }
 
-
-
-
-  if(sum(c(launch_pos,launch_neg)) == 2){
+        if (sum(c(ready$pos,ready$neg)) == 2 & project$dir_path != "no path") {
 
         res_sim$res_bis <- downstream_analysis(df_sub_bis, rate = orig_freq(), z_thresh = input$peak_thresh_bis,reference = input$norm_method_bis,
                                                delta_thresh = input$peak_thresh_bis_delta, lambda = input$lambda_bis,
@@ -1278,7 +1403,7 @@ if(sum(launch_pos,launch_neg) == 2){
                                                deconvolve_var = deconvolve_var,
                                                method = method,
                                                norm_var = method)
-  }
+}
       })
 
 
@@ -1315,24 +1440,68 @@ if(sum(launch_pos,launch_neg) == 2){
       res_full <- shiny::reactiveValues(res = NULL)
 
 
+      bank_path_full <- reactiveValues()
       ### This block codes alows to launch the analysis when the button analyze dataset is clicked on. It runs the whole analysis, on the whole dataset
+
+      ready <- reactiveValues()
+      ready$pos <- FALSE
+      ready$neg <- FALSE
+
       shiny::observeEvent(input$patMatch, {
 
         if(input$patMatch == TRUE){
+
+          bank_path_full$pos_path <- "path to positive bank"
+          bank_path_full$neg_path <- "path to negative bank"
+
+          ready$pos <- FALSE
+          ready$neg <- FALSE
+
           output$posBank_field_full <- shiny::renderUI({
-            shiny::textInput(inputId = "posBank_full", "Positive Bank", placeholder = "Enter the name of the bank you want to use")
+
+list(
+  tags$h6(shiny::div(style= "color: white; padding-left: 15px;", "Select the positive and negative banks")),
+             fluidRow(
+                      column(4, shiny::div(style= "width: 250px;",
+                      shinyFilesButton('posbank_file_full', 'positive', 'Positive Bank', multiple = FALSE))),
+                      column(4, shiny::div(style= "width: 250px;margin-left: 35px;",
+                      shinyFilesButton('negbank_file_full', 'negative', 'Negative Bank', multiple = FALSE)))),
+
+            fluidRow(column(4, shiny::div(style= "width: 87px; padding-left: 15px;",
+                      shiny::verbatimTextOutput("bpp_full"))),
+                     column(4, shiny::div(style= "width: 77px; margin-left: 50px;",
+                                       shiny::verbatimTextOutput("bpn_full"))))
+)
+
 
           })
 
-          output$negBank_field_full <- shiny::renderUI({
-            shiny::textInput(inputId = "negBank_full", "Negative Bank", placeholder = "Enter the name of the bank you want to use")
+
+          observeEvent(input$posbank_file_full, {
+
+            shinyFileChoose(input, 'posbank_file_full', roots=volumes, filetypes=c('', 'txt', 'RDS', 'rds'))
+            bank_path_full$pos_path <- shiny::reactive({shinyFiles::parseFilePaths(volumes, input$posbank_file_full)
+            })
+
+            if(length(bank_path_full$pos_path()$datapath != 0)){
+              output$bpp_full <- renderPrint(bank_path_full$pos_path()$datapath[[1]])
+              ready$pos <- TRUE
+            }
 
           })
 
+          observeEvent(input$negbank_file_full,{
+            shinyFileChoose(input, 'negbank_file_full', roots=volumes, filetypes=c('', 'txt', 'RDS', 'rds'))
+            bank_path_full$neg_path <- shiny::reactive({shinyFiles::parseFilePaths(volumes, input$negbank_file_full)})
 
-
+            if(length(bank_path_full$neg_path()$datapath != 0)){
+              output$bpn_full <- renderPrint(bank_path_full$neg_path()$datapath[[1]])
+              ready$neg <- TRUE
+            }
+          })
 
         }
+
         if(input$patMatch == FALSE){
 
           output$posBank_field_full <- NULL
@@ -1347,56 +1516,60 @@ if(sum(launch_pos,launch_neg) == 2){
 
       res <- shiny::observeEvent(input$ana_full_button, {
 
-
-        df_full <- calipR::get_full_df(paste(project$dir_path,project$db_file,sep="/"),
-                                       "df_full")
-
-
-        if(input$patMatch == TRUE){
-
-          deconvolve_var <- "background_detrended"
-          method <- "back"
-
-          if(input$posBank_full %in% list.files(project$dir_path)){
-            output$warning_bank_pos_full <- NULL
-            posBank <- readRDS(paste(project$dir_path, input$posBank_full, sep = "/"))
-            posBank <- Filter(Negate(is.null), posBank)
-            launch_pos <- TRUE
-
-          }
-          else if(input$posBank_full %notin% list.files(project$dir_path)){
-            output$warning_bank_pos_full <- shiny::renderUI({"Bank not found. Check bank name"})
-            launch_pos <- FALSE
-          }
-
-          if(input$negBank_full %in% list.files(project$dir_path)){
-            output$warning_bank_neg_full <- NULL
-            negBank <- readRDS(paste(project$dir_path, input$negBank_full, sep = "/"))
-            negBank <- Filter(Negate(is.null), negBank)
-            launch_neg <- TRUE
-          }
-          else if(input$negBank_full %notin% list.files(project$dir_path)){
-            output$warning_bank_neg_full <- shiny::renderUI({"Bank not found. Check bank name"})
-            launch_neg <- FALSE
-          }
-
+        if(project$dir_path == "no path"){
+          output$warning_data <- renderUI({"Create or load a project first"})
 
         }
 
         else{
+
+        df_full <- calipR::get_full_df(paste(project$dir_path,project$db_file,sep="/"),
+                                       "df_full")
+
+        output$warning_data <- renderUI({""})
+
+        }
+
+        if(input$patMatch == TRUE){
+
+
+
+            deconvolve_var <- "background_detrended"
+            method <- "back"
+
+
+            if (sum(c(ready$pos,ready$neg)) == 2) {
+
+            output$warning_bank <- NULL
+
+            posBank <- readRDS(bank_path_full$pos_path()$datapath[[1]])
+            posBank <- Filter(Negate(is.null), posBank)
+
+            negBank <- readRDS(bank_path_full$neg_path()$datapath[[1]])
+            negBank <- Filter(Negate(is.null), negBank)
+
+            }
+
+            else{
+
+              output$warning_bank <- renderUI({"Please provide bank files"})
+
+            }
+        }
+
+        else{
+
           posBank <- list()
           negBank <- list()
           deconvolve_var <- "gam_detrended"
           method <- "gam"
+          ready$pos <- TRUE
+          ready$neg <- TRUE
 
-          launch_pos <- TRUE
-          launch_neg <- TRUE
         }
 
 
-
-
-if(sum(launch_pos,launch_neg) == 2){
+        if (sum(c(ready$pos,ready$neg)) == 2 & project$dir_path != "no path") {
 
         res_full$res <- downstream_analysis(df_full,rate = orig_freq(), z_thresh = input$peak_thresh_full_z,reference = input$norm_method_full,
                                              delta_thresh = input$peak_thresh_full_delta, lambda = input$lambda_full, gam = input$gam_full,
@@ -1430,15 +1603,12 @@ if(sum(launch_pos,launch_neg) == 2){
         calipR::saveData(res3_1, paste(project$dir_path,project$db_file, sep ="/"), "stats_desc_final")
 
 
-#if(input$groups == TRUE){print( "it is true")}
-       # else{
 
         res3_3_1 <- data.table::setDT(res_full$res[[3]][[2]][[1]])
         calipR::saveData(res3_3_1, paste(project$dir_path,project$db_file, sep ="/"), "overall_q")
 
         res3_3_2 <- data.table::setDT(res_full$res[[3]][[2]][[2]])
         calipR::saveData(res3_3_2, paste(project$dir_path,project$db_file, sep ="/"), "pairwise")
-       # }
 
 }
       })
@@ -1825,21 +1995,7 @@ if(sum(launch_pos,launch_neg) == 2){
 
         result$peaks <- clustCellID(clust_res, result$peaks, input$c_to_rm)
 
-        ### Exporting results
 
-        output$export_csv <- shiny::renderUI({
-
-          list(
-          shiny::textInput("fName", "File name"),
-          shiny::actionButton("exportPeakResults", "Export Data", align = "right")
-          )
-
-        })
-
-        observeEvent(input$exportPeakResults, {
-          write.csv(result$peaks, paste(root_path, paste(project$name, paste0(input$fName, ".csv"),sep = "/"),sep="/"))
-
-        })
 
         # Preparing data for visualization :
 
@@ -1908,6 +2064,22 @@ if(sum(launch_pos,launch_neg) == 2){
 
 
         })
+
+        })
+
+        ### Exporting results
+
+        output$export_csv <- shiny::renderUI({
+
+          list(
+            shiny::textInput("fName", "File name"),
+            shiny::actionButton("exportPeakResults", "Export Data", align = "right")
+          )
+
+        })
+
+        observeEvent(input$exportPeakResults, {
+          write.csv(result$peaks, paste(root_path, paste(project$name, paste0(input$fName, ".csv"),sep = "/"),sep="/"))
 
         })
 
