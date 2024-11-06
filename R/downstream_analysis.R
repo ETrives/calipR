@@ -187,9 +187,6 @@ if(method == "back"){
     })
   }
 
-print("res")
-print(res)
-
 return(list(deconvolved[[1]], deconvolved[[2]], res))
 }
 
