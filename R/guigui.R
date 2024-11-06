@@ -1630,8 +1630,8 @@ list(
           full <- calipR::get_full_df(path, "df_final")
           peaks <- calipR::get_full_df(path, "peak_res")
 
-          result$full <- full
-          result$peaks <- peaks
+          result$full <- data.table::setDT(full)
+          result$peaks <- data.table::setDT(peaks)
 
         }
 
