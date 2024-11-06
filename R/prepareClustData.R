@@ -13,6 +13,10 @@ prepareClustData <- function(dt, clust_var, norm = TRUE){
   sub_dt <- setDT(dt)[,.(Clustering_variable = get(clust_var),Cell_id)]
   cell_split <- split(sub_dt, sub_dt$Cell_id)
   cell_split <- lapply(cell_split, function(x) data.table(as.double(t(x[,1]))))
+
+  print("cell_split")
+  print(cell_split)
+
   final <- do.call(cbind, cell_split)
 
   if(norm == TRUE){

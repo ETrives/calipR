@@ -9,9 +9,9 @@
 #' @param peak_frame an integer corresponding to the number of frame you want
 #' to screen after each spike to find the peak maximum default to 10 (tested in 1 and 0.25Hz data)
 #' @param threshold a numeric indicating the z score threshold a peak maximum must
-#' exceed to be kept default to 3 (i.e. 3 standard deviations)
+#' exceed (or be equal to) to be kept, default to 3 (i.e. 3 standard deviations)
 #' @param delta_threshold a numeric indicating the delta f/f threshold a peak maximum must
-#' exceed to be kept default to 0
+#' exceed (or be equal to) to be kept default to 0
 #' @param var the variable used for deconvolution (default to "background_detrended").
 #' If you don't use the pattern matching option for noise estimation and use DPA method instead,
 #' this parameter needs to be changed to "gam_detrended"
@@ -168,11 +168,39 @@ return(list(peaks_data, norm_data, peaks))
 
 
 
-peakExtraction <- function(peak_extracted_data, thresh = 3, var, peak_frame) {
+#' peakExtraction
+#'
+#' This function takes the output from the deconvolve function to extract
+#' full calcium events (peaks), attributing only one start and one end to each event.
+#' It then computes the area under the curve (AUC) of each event.
+#'
+#'
+#' @param thresh a numeric indicating the z score threshold a peak maximum must
+#' exceed (or be equal to) to be kept, default to 3 (i.e. 3 standard deviations)
+#' @param var the variable used for deconvolution (default to "background_detrended").
+#' If you don't use the pattern matching option for noise estimation and use DPA method instead,
+#' this parameter needs to be changed to "gam_detrended"
+#' @param peak_frame an integer corresponding to the number of frame you want
+#' to screen after each spike to find the peak maximum default to 10 (tested in 1 and 0.25Hz data)
+#' @param deconvolved the object output from the deconvolve function
+#' @param delta_thresh a numeric indicating the delta f/f threshold a peak maximum must
+#' exceed (or be equal to) to be kept default to 0
+#'
+#'
+#' @return a list with two data tables. The first is the peaks data as in the
+#' output of deconvolve but with new columns indicating the beginning and end of each event
+#' the maximum and the AUC of the overall event. The second is the full data as in the
+#' output of deconvolve.
+#'
+#' @export
+#'
+#' @examples
+peakExtraction <- function(deconvolved, thresh = 3, delta_thresh = 0, var, peak_frame) {
 
 
-  peak_extracted_data <- peakExtractR(peak_extracted_data[[1]], peak_extracted_data[[2]],
-                                      peak_frame = peak_frame, threshold = thresh, var = var)
+  peak_extracted_data <- peakExtractR(deconvolved[[1]], deconvolved[[2]],
+                                      peak_frame = peak_frame, threshold = thresh,
+                                      delta_threshold = delta_thresh, var = var)
 
   if(length(peak_extracted_data[[1]]$Cell_id >= 1)){
   peak_extracted_data[[1]][, peaks_start_bis := peaks_start]
@@ -197,6 +225,20 @@ peakExtraction <- function(peak_extracted_data, thresh = 3, var, peak_frame) {
 
 }
 
+#' extractPeakVal
+#'
+#' Extracts the whole time series (from start to end) of each detected peaks.
+#' This is used to then compute the area under the curve (AUC) of each peak.
+#'
+#' @param full_data second element from the list returned by peakExtractR function
+#' @param peaks_data first element from the list returned by peakExtractR function
+#'
+#' @return a data table containing the whole fluorescence values between the start
+#' and the end of each detected peak.
+#'
+#' @export
+#'
+#' @examples
 extractPeakVal <- function(full_data,peaks_data){
 
   'isnotna' <- Negate('is.na')

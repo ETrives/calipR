@@ -24,10 +24,10 @@ the deconvolve() function}
 to screen after each spike to find the peak maximum default to 10 (tested in 1 and 0.25Hz data)}
 
 \item{threshold}{a numeric indicating the z score threshold a peak maximum must
-exceed to be kept default to 3 (i.e. 3 standard deviations)}
+exceed (or be equal to) to be kept, default to 3 (i.e. 3 standard deviations)}
 
 \item{delta_threshold}{a numeric indicating the delta f/f threshold a peak maximum must
-exceed to be kept default to 0}
+exceed (or be equal to) to be kept default to 0}
 
 \item{var}{the variable used for deconvolution (default to "background_detrended").
 If you don't use the pattern matching option for noise estimation and use DPA method instead,
