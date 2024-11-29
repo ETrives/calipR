@@ -2,8 +2,10 @@
 # Visit https://bit.ly/cffinit to generate yours today!
 
 cff-version: 1.2.0
-title: calipR
-message: A Calcium Imaging Data Analysis Pipeline in R
+title: A Calcium Imaging Data Analysis Pipeline in R (calipR)
+message: >-
+  If you use this software, please cite it using the
+  metadata from this file.
 type: software
 authors:
   - given-names: Elliott
@@ -17,3 +19,5 @@ abstract: >-
   is distributed as an R package, a windows application and
   a docker image.
 license: GPL-3.0
+version: v1.0.2-alpha
+date-released: '2024-11-06'
