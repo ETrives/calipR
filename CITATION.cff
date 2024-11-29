@@ -1,0 +1,14 @@
+# This CITATION.cff file was generated with cffinit.
+# Visit https://bit.ly/cffinit to generate yours today!
+
+cff-version: 1.2.0
+title: calipR
+message: >-
+  If you use this software, please cite it using the
+  metadata from this file.
+type: software
+authors:
+  - given-names: Elliott
+    family-names: Trives
+    email: triveselliott@hotmail.fr
+    orcid: 'https://orcid.org/0009-0009-2683-4859'
