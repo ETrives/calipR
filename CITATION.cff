@@ -3,12 +3,17 @@
 
 cff-version: 1.2.0
 title: calipR
-message: >-
-  If you use this software, please cite it using the
-  metadata from this file.
+message: A Calcium Imaging Data Analysis Pipeline in R
 type: software
 authors:
   - given-names: Elliott
     family-names: Trives
     email: triveselliott@hotmail.fr
     orcid: 'https://orcid.org/0009-0009-2683-4859'
+repository-code: 'https://github.com/ETrives/calipR'
+abstract: >-
+  calipR is a free and open source software dedicated to
+  calcium imaging data analysis. It is fully coded in R and
+  is distributed as an R package, a windows application and
+  a docker image.
+license: GPL-3.0
