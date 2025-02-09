@@ -71,7 +71,34 @@ ui <-
 
       color: red;
 
-      }
+       }
+
+       .project-type-btn {
+       top:-10px;
+       left:-10px;
+       border-radius:0px;
+       position:relative;
+       color: white;
+       background-color:#1c4257;
+       border : 10px;
+       border-color: white;
+       float: left;
+        }
+
+         .project-type-btn:focus {
+       position: relative;
+       color: white;
+       background-color:#0d1f29;
+       border-color: #a365b9;
+        }
+
+        .project-type-btn:hover {
+      background-color:#0d1f29;
+      color : white;
+      border-color: #7a3193;
+      transition: 0.5s;
+        }
+
 
   "
         )
@@ -172,6 +199,9 @@ ui <-
         shinydashboard::box(title = "Project", width = 12,
                             solidHeader = TRUE, status = "primary", collapsible = T,
 
+        shiny::uiOutput("project_type"),
+        shiny::tags$br(),
+        shiny::tags$br(),
         shiny::uiOutput("project_creation"),
         shiny::uiOutput("project_loading"),
         shiny::uiOutput("warning_load",  class = "warn-main")
@@ -430,9 +460,26 @@ shiny::observeEvent(input$create, {
 
   if(input$create == TRUE){
 
-  output$project_creation <- shiny::renderUI( {
+  output$project_type <- shiny::renderUI( {
 
   list(
+  shiny::actionButton("in_vitro", "In Vitro Project", align = "left", class = "project-type-btn"),
+  shiny::actionButton("fiber", "Fiber Photometry project", align = "right", class = "project-type-btn")
+
+  )})
+  }
+
+  else{
+
+    output$project_type <- NULL
+
+  }
+
+  creation_tab <- reactiveValues(elements = NULL)
+
+  shiny::observeEvent(input$in_vitro, {
+
+  creation_tab$elements <- list(
   shiny::textInput("proj_name", label = "Project Name" ),
   shiny::textInput("frame_rate", label = "Enter your frame rate (Hz)", placeholder = "e.g. 0.5" ),
   shiny::selectInput("unit", label = "Select the unit of the times indicated in meta",
@@ -445,13 +492,31 @@ shiny::observeEvent(input$create, {
   shiny::actionButton("creating", "Load & Tidy Data", align = "center")
   )
   })
-  }
 
-  else{
 
-  output$project_creation <- NULL
 
-  }
+
+
+
+  shiny::observeEvent(input$fiber, {
+
+
+      creation_tab$elements <- list(
+        shiny::textInput("proj_name", label = "Project Name" ),
+        shiny::textInput("frame_rate", label = "Enter your frame rate (Hz)", placeholder = "e.g. 0.5" ),
+        shinyDirButton('folder', 'Select a folder', 'Please select a folder', FALSE),
+        shiny::uiOutput("folder_warning"),
+        shiny::actionButton("creating", "Load & Tidy Data", align = "center")
+      )
+    })
+
+
+  output$project_creation <- shiny::renderUI( {
+    creation_tab$elements
+  })
+
+
+
 
 })
 
