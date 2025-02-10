@@ -657,12 +657,16 @@ time_to_f <- function(x, frame_rate, unit = c("seconds", "minutes")){
 #' @examples
 downsampleCaData  <- function(data, original_freq,  target_freq ){
 
+  '%notin%' <- Negate('%in%')
   if(target_freq != 0) {
   dt <- copy(setDT(data))
   factor <- round(original_freq/target_freq)
   dt <- dt[time_frame %% factor == 0 | time_frame == 1]
   dt[, time_frame := seq(1,.N), by = Cell_id]
+
+  if("Time_frame_stim" %in% colnames(data) & "ID" %notin% colnames(data)){
   dt[, Time_frame_stim := seq(1,.N), by = .(Cell_id,stimulus)]
+  }
 
   }
 

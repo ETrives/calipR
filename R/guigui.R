@@ -120,7 +120,7 @@ ui <-
                                   shinydashboard::menuItem(
                                     "Visualize Raw Data", tabName = "viz"),
                                   shiny::conditionalPanel( 'input.sidebarid === "viz"',
-                                  sliderInput("filter",label = "Choose a frequency filter", min = 2, max = 500, value = 2, step =1 ),
+                                  shiny::sliderInput("filter",label = "Choose a frequency filter", min = 2, max = 10000, value = 2, step =1 ),
                                   shiny::uiOutput("downsampling"),
                                   shiny::actionButton("saveFilteredData", "Save Filtered Data")
 
@@ -453,6 +453,10 @@ project <- reactiveValues(dir_path = "no path")
 orig_freq <- reactiveVal(value = 1)
 
 
+reticulate::source_python(paste0(getwd(), "/inst/python_scripts/tdt_extraction.py"))
+reticulate::source_python(paste0(getwd(), "/inst/python_scripts/addEpocs.py"))
+reticulate::source_python(paste0(getwd(), "/inst/python_scripts/annotateVideo.py"))
+
 
 #### Data Preparation ##############
 
@@ -475,10 +479,11 @@ shiny::observeEvent(input$create, {
 
   }
 
+})
+
   creation_tab <- reactiveValues(elements = NULL)
 
   shiny::observeEvent(input$in_vitro, {
-
   creation_tab$elements <- list(
   shiny::textInput("proj_name", label = "Project Name" ),
   shiny::textInput("frame_rate", label = "Enter your frame rate (Hz)", placeholder = "e.g. 0.5" ),
@@ -500,13 +505,12 @@ shiny::observeEvent(input$create, {
 
   shiny::observeEvent(input$fiber, {
 
-
-      creation_tab$elements <- list(
+        creation_tab$elements <- list(
         shiny::textInput("proj_name", label = "Project Name" ),
         shiny::textInput("frame_rate", label = "Enter your frame rate (Hz)", placeholder = "e.g. 0.5" ),
         shinyDirButton('folder', 'Select a folder', 'Please select a folder', FALSE),
         shiny::uiOutput("folder_warning"),
-        shiny::actionButton("creating", "Load & Tidy Data", align = "center")
+        shiny::actionButton("creating_fiber", "Load Fiber Photometry Data", align = "center")
       )
     })
 
@@ -517,11 +521,67 @@ shiny::observeEvent(input$create, {
 
 
 
+  ### Creating a new project for In Fiber data :
+  observeEvent(input$creating_fiber, {
+
+    project$name <- input$proj_name
+    project$dir_path <- paste(root_path, project$name, sep = "/")
+    project$db_file <- paste0(project$name, ".sqlite")
+
+    '%notin%' <- Negate('%in%')
+    if(is.null(input$folder)) {}
+
+
+    else{
+      output$folder_warning <- NULL
+      folder <-  abs_path$path()
+
+
+      if(length(list.files(project$dir_path)) == 0){
+        dir.create(project$dir_path, showWarnings = TRUE, recursive = FALSE, mode = "0777")
+      }
+
+
+        extract_all_tdt_data(abs_path$path(), destination_path = getwd())
+        df <- fread(paste0(getwd(), "/full_Extracted_TDT_Data.csv"))[, Cell_id := ID][, Mean_Grey := CA_TRACE]
+        colnames(df)[1] <- "time_frame"
+
+       ids <- unique(setDT(df)$Cell_id)
+
+       if("ID" %notin% colnames(df)){
+      val <- setDT(df)[Cell_id == ids[[1]] & time_seconds <= 1, .N]
+      }
+
+      if("ID" %in% colnames(df)){
+         val <- setDT(df)[Cell_id == ids[[1]] & TIME_SECONDS <= 1, .N]
+       }
+      orig_freq(val)
+
+      calipR::saveData(df, paste(project$dir_path, project$db_file, sep = "/"), "df_full")
+
+      df <- calipR::loading100(paste(project$dir_path, project$db_file, sep = "/"), "df_full")
+
+      output$df_created <- shiny::renderDataTable({df},
+                                                  options = list(scrollX = TRUE))
+
+      db$load <- data.table::setDT(calipR::get_full_df(paste(project$dir_path, project$db_file,sep = "/"), "df_full"))
+
+    }
+  })
+
+
+shiny::observeEvent(input$annotateVideo, {
+
+# Annotating videos :
+path_to_folders <- extractFiles(abs_path$path())
+video_path = extractAllVideoPath(abs_path$path())
+
+annotateVideo(video_path[1], paste0(abs_path$path(), "/projects"),list("f", "m", "w"), list(TRUE, TRUE, TRUE))
+
+
+calipR::saveData(df, paste(project$dir_path, project$db_file, sep = "/"), "df_full")
 
 })
-
-
-
 
 
 shiny::observeEvent(input$load, {
@@ -557,6 +617,7 @@ observeEvent(input$folder, {
 
 
 
+### Creating a new project for In Vitro data :
   observeEvent(input$creating, {
 
     project$name <- input$proj_name
@@ -612,6 +673,7 @@ observeEvent(input$folder, {
     }
     })
 
+  ### Loading existing In vitro project
    observeEvent(input$load_button, {
 
 
@@ -629,8 +691,14 @@ observeEvent(input$folder, {
 
     df <- calipR::loading100(paste(project$dir_path, project$db_file, sep = "/"), "df_full")
 
-    freq <- setDT(df)[Cell_id == "A1aaa" & time_seconds <= 1, .N]
+    if( "ID" %in% colnames(setDT(df))){
+    ids <- unique(setDT(df)$ID)
+    freq <- setDT(df)[ID == ids[[1]] & TIME_SECONDS <= 1, .N]
+    }
 
+    if("ID" %notin% colnames(setDT(df)) & "Cell_id" %in% colnames(setDT(df))){
+      freq <- setDT(df)[Cell_id == "A1aaa" & time_seconds <= 1, .N]
+   }
     orig_freq(freq)
 
     output$df_loaded <- shiny::renderDataTable({df},
@@ -1044,11 +1112,20 @@ observeEvent(input$folder, {
 
       if(length(db$load) != 2) {
 
+
       df <- db$load[Cell_id == unique(db$load[["Cell_id"]])[[input$cell_num]]]
+
 
       output$plot_cell <- shiny::renderPlot({
 
+        if("ID" %notin% colnames(df)){
         p <- cell_plot_shiny(df)
+        }
+
+        if("ID" %in% colnames(df)){
+          p <- plot_fiber_data(df, "TIME_SECONDS", "CA_TRACE", "ID")
+        }
+
         p
 
       })
@@ -1067,12 +1144,25 @@ observeEvent(input$folder, {
       preprocessData$data <- db$load[Cell_id == unique(db$load[["Cell_id"]])[[input$cell_num]]]
       preprocessData$data_bis <- preprocessData$data
 
-      setDT(preprocessData$data_bis)[,Mean_Grey := dplR::pass.filt(y = preprocessData$data[["Mean_Grey"]], W = input$filter, type = "low")]
+      if("ID" %notin% colnames(preprocessData$data)){
+        setDT(preprocessData$data_bis)[,Mean_Grey := dplR::pass.filt(y = preprocessData$data[["Mean_Grey"]], W = input$filter, type = "low")]
+      }
+      if("ID" %in% colnames(preprocessData$data)){
+        print(orig_freq())
+        setDT(preprocessData$data_bis)[,CA_TRACE := dplR::pass.filt(y = preprocessData$data[["CA_TRACE"]], W = input$filter, type = "low")]
+      }
       preprocessData$data_bis <-  downsampleCaData(preprocessData$data_bis, orig_freq(), input$downslider)
 
       output$plot_cell_filter <- shiny::renderPlot({
 
-        p <- cell_plot_shiny(preprocessData$data_bis)
+        if("ID" %notin% colnames(preprocessData$data_bis)){
+          p <- cell_plot_shiny(preprocessData$data_bis)
+        }
+
+        if("ID" %in% colnames(preprocessData$data_bis)){
+          p <- plot_fiber_data(preprocessData$data_bis, "TIME_SECONDS", "CA_TRACE", "ID")
+        }
+
         p
 
 
@@ -1085,7 +1175,7 @@ observeEvent(input$folder, {
 
           output$downsampling <- shiny::renderUI( {
 
-              sliderInput("downslider",label = "Try Different Downsampling Values (Hz)", min = 0, max = 100, value = orig_freq(),step = 1 )
+              shiny::sliderInput("downslider",label = "Try Different Downsampling Values (Hz)", min = 0, max = 100, value = orig_freq(),step = 1 )
 
           })
 
@@ -1102,7 +1192,13 @@ observeEvent(input$folder, {
 
             output$plot_cell_filter <- shiny::renderPlot({
 
+              if("ID" %notin% colnames(preprocessData$data_bis)){
               p <- cell_plot_shiny(preprocessData$data_bis)
+              }
+
+              if("ID" %in% colnames(preprocessData$data_bis)){
+                p <- plot_fiber_data(preprocessData$data_bis, "TIME_SECONDS", "CA_TRACE")
+              }
               p
 
       })
@@ -1114,6 +1210,7 @@ observeEvent(input$folder, {
 
         df_full <- calipR::get_full_df(paste(project$dir_path,project$db_file,sep="/"),
                                        "df_full")
+
 
         df_full <- setDT(df_full)[, Mean_Grey := dplR::pass.filt(y = Mean_Grey, W = input$filter, type = "low"), by = Cell_id ]
         df_full <-  downsampleCaData(df_full, orig_freq(), input$downslider)

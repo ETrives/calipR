@@ -274,6 +274,25 @@ cell_plot_shiny <- function(data) {
 }
 
 
+#' plot_fiber_data
+#'
+#' @param data
+#'
+#' @return
+#' @export
+#'
+#' @examples
+plot_fiber_data <- function(data, x_var, y_var, grouping_var = NULL) {
+
+  p <- ggplot2::ggplot(data, ggplot2::aes(x = x_var, y = y_var))+
+    ggplot2::geom_line( ggplot2::aes( color =grouping_var),size = 1)+
+    ggplot2::theme_classic()
+
+
+  return(p)
+
+}
+
 
 # Fonction plot pour la simulation sur shiny :
 
