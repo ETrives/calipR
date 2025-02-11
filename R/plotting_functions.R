@@ -247,6 +247,8 @@ simple_cell_plot <- function(data, triangle_data, cell, var, line = c(FALSE, "po
   }
   #final <- grid.arrange(p,q, ncol = 2)
 
+  p <- plotly::ggplotly(p)
+
   return(p)
 
 }
@@ -268,6 +270,8 @@ cell_plot_shiny <- function(data) {
     ggplot2::facet_wrap(~Cell_id) +
     ggplot2::theme_classic()
 
+  p <- plotly::ggplotly(p)
+
 
   return(p)
 
@@ -284,9 +288,11 @@ cell_plot_shiny <- function(data) {
 #' @examples
 plot_fiber_data <- function(data, x_var, y_var, grouping_var = NULL) {
 
-  p <- ggplot2::ggplot(data, ggplot2::aes(x = x_var, y = y_var))+
+  p <- ggplot2::ggplot(data, ggplot2::aes(x = get(x_var), y = get(y_var)))+
     ggplot2::geom_line( ggplot2::aes( color =grouping_var),size = 1)+
     ggplot2::theme_classic()
+
+  p <- plotly::ggplotly(p)
 
 
   return(p)

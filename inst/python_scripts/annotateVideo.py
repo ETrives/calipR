@@ -100,7 +100,7 @@ def annotateVideo(path, destination_path, key_list, state_list, speed = 20):
         
     final_df = pd.concat(df_list, axis = 1)
     final_df = final_df.applymap(lambda x: list(x.values())[0] if isinstance(x, dict) else x)
-    final_df.to_csv(os.path.join(destination_path,'behavioral_annotations.csv'))
+    final_df.to_csv(destination_path)
 
     return final_df
 
