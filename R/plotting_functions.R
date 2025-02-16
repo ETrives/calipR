@@ -286,10 +286,10 @@ cell_plot_shiny <- function(data) {
 #' @export
 #'
 #' @examples
-plot_fiber_data <- function(data, x_var, y_var, grouping_var = NULL) {
+plot_fiber_data <- function(data, x_var, y_var) {
 
   p <- ggplot2::ggplot(data, ggplot2::aes(x = get(x_var), y = get(y_var)))+
-    ggplot2::geom_line( ggplot2::aes( color =grouping_var),size = 1)+
+    ggplot2::geom_line()+
     ggplot2::theme_classic()
 
   p <- plotly::ggplotly(p)
@@ -299,6 +299,55 @@ plot_fiber_data <- function(data, x_var, y_var, grouping_var = NULL) {
 
 }
 
+
+#' plot_aligned_fiber_data
+#'
+#' @param data
+#' @param x_var
+#' @param y_var
+#' @param grouping_var
+#'
+#' @return
+#' @export
+#'
+#' @examples
+library(ggplot2)
+library(plotly)
+library(data.table)
+
+plot_aligned_fiber_data <- function(data, x_var, y_var) {
+
+  # Extraire les événements uniques
+  events <- unique(stats::na.omit(data$start_behavior))  # Supprime les NA éventuels
+
+  # Construire un data.table contenant uniquement les lignes où un événement est détecté
+  vline_data <- data.table::copy(data)[start_behavior %in% events, .(TIME_SECONDS, start_behavior)]
+
+  # Convertir start_behavior en facteur
+  vline_data[, start_behavior := as.factor(start_behavior)]
+
+  print("yous")
+
+  # Définir un yintercept sous la courbe principale
+  min_y <- min(data[[y_var]], na.rm = TRUE)
+  vline_data[, yintercept := min_y - (0.05 * (max(data[[y_var]], na.rm = TRUE) - min_y))]
+
+  print("vouch")
+  # Construction du graphique ggplot
+  p <- ggplot2::ggplot(data, ggplot2::aes(x = get(x_var), y = get(y_var))) +
+    ggplot2::geom_line()+
+    ggplot2::geom_segment(data = vline_data,
+                          ggplot2::aes(x = TIME_SECONDS, xend = TIME_SECONDS,
+                                       y = yintercept, yend = min_y, color = start_behavior),
+                          linetype = "dashed", size = 1) +  # Lignes verticales
+    ggplot2::scale_color_viridis_d() +  # Utilisation d'une échelle discrète pour tout
+    ggplot2::theme_classic()
+
+  # Conversion en plotly interactif
+  p <- plotly::ggplotly(p)
+
+  return(p)
+}
 
 # Fonction plot pour la simulation sur shiny :
 

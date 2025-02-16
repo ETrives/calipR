@@ -278,6 +278,7 @@ guigui <- function(){
                                                               shiny::fluidRow(
                                                                 shinydashboard::box(title = "Plotting Cells", width = 12, solidHeader = TRUE, status = "primary",
                                                                                     shiny::numericInput("cell_num",label = "cell_number", value = 1, min = 1),
+                                                                                    shiny::checkboxInput("align_behavior", label = "align behavior and fiber photometry data"),
                                                                                     plotly::plotlyOutput( "plot_cell"))),
 
 
@@ -521,9 +522,6 @@ guigui <- function(){
 
 
 
-
-
-
     shiny::observeEvent(input$fiber, {
 
       creation_tab$elements <- list(
@@ -534,11 +532,8 @@ guigui <- function(){
         shiny::actionButton("creating_fiber", "Load Fiber Photometry Data", align = "center")
       )
 
-      print("yol")
 
       creation_tab$videoElements <- list(
-        shinyDirButton('videoFolder', 'Select the folder with your video files', 'Please select a folder', FALSE),
-        shiny::verbatimTextOutput("videoValue"),
         shiny::actionButton("loadVideoButton", "Load Video Files", align = "center"),
         shiny::tags$br(),
         shiny::textInput("videoPath", label = "path to the video you want to annotate" ),
@@ -559,17 +554,6 @@ guigui <- function(){
       creation_tab$videoElements
     })
 
-    volumes <- getVolumes()() # this makes the directory at the base of your computer.
-    abs_path <- reactiveValues()
-    abs_path$videoPath <- "hey"
-    abs_path$allVideoPaths <- "hey"
-
-    observeEvent(input$videoFolder, {
-      shinyDirChoose(input, 'videoFolder', roots=volumes, filetypes=c('', 'txt'))
-      abs_path$videoPath <- shiny::reactive({shinyFiles::parseDirPath(volumes, input$videoFolder)})
-      output$videoValue <- shiny::renderText(abs_path$videoPath())
-    })
-
 
     output$project_creation <- shiny::renderUI( {
       creation_tab$elements
@@ -582,7 +566,8 @@ guigui <- function(){
       if(dim(calipR::checkTable(paste(project$dir_path,project$db_file, sep ="/"), "'video_status'"))[1] == 0) {
         print("the table has not been found")
 
-      res <- extractAllVideoPath(abs_path$videoPath())
+      print(db$load[["root_path"]][1])
+      res <- extractAllVideoPath(db$load[["root_path"]][1])
       paths <- lapply(res, function(x) x)
 
       dt_paths <- data.table(paths)[, status := "not annotated"][, time_at_annotation := NA]
@@ -593,12 +578,9 @@ guigui <- function(){
 
       calipR::saveData(video_status$dt, paste(project$dir_path, project$db_file, sep = "/"), "video_status")
 
-      video_status$dt <- data.table::setDT(calipR::get_full_df(paste(project$dir_path, project$db_file,sep = "/"), "video_status"))
-
       }
       else{
         print("the table has been found")
-
         video_status$dt <- data.table::setDT(calipR::get_full_df(paste(project$dir_path, project$db_file,sep = "/"), "video_status"))
         video_status$l <- video_status$dt[["status"]]
       }
@@ -644,6 +626,8 @@ guigui <- function(){
         }
         orig_freq(val)
 
+        df[, root_path := abs_path$path()]
+
         calipR::saveData(df, paste(project$dir_path, project$db_file, sep = "/"), "df_full")
 
         df <- calipR::loading100(paste(project$dir_path, project$db_file, sep = "/"), "df_full")
@@ -651,7 +635,14 @@ guigui <- function(){
         output$df_created <- shiny::renderDataTable({df},
                                                     options = list(scrollX = TRUE))
 
+
+        if(dim(calipR::checkTable(paste(project$dir_path,project$db_file, sep ="/"), "'df_full'"))[1] == 0) {
+print("yikoul")
+        }
+        else{
+          print("yak")
         db$load <- data.table::setDT(calipR::get_full_df(paste(project$dir_path, project$db_file,sep = "/"), "df_full"))
+        }
 
       }
     })
@@ -661,40 +652,72 @@ guigui <- function(){
 
       # Annotating videos :
 
-      annotateVideo(input$videoPath, paste(project$dir_path, input$animal_id, sep= "/" ), list("f", "m", "w"), list(TRUE, TRUE, TRUE))
+      annotateVideo(input$videoPath, paste(project$dir_path, paste0(input$animal_id,".csv"), sep= "/" ), list("f", "m", "w"), list(TRUE, TRUE, TRUE))
 
-      annotated_video <- data.table::fread(paste(project$dir_path, input$animal_id, sep= "/" ))
+      annotated_video <- data.table::fread(paste0(paste(project$dir_path, input$animal_id, sep= "/" ), ".csv"))
 
       annotated_video[, ID := input$animal_id]
 
+      print("annotated_video_first")
+      print(annotated_video)
+
+      ### Working on behavior alignment
+      print('db$load[["root_path"]][1]')
+      print(db$load[["root_path"]][1])
+
+      addEpocs(paste(db$load[["root_path"]][1], input$animal_id, sep = "/"), annotated_video, "behavioral_data.csv", project$dir_path)
+      print("yoo")
+      annotated_video <- fread( paste(project$dir_path, "behavioral_data.csv", sep= "/" ))
+      print("annotated_video")
+      print(annotated_video)
+
+      ###
+
+      if(length(which(colnames(annotated_video) == "V1")) > 1){
+
+        v1_to_rm <- which(colnames(annotated_video) == "V1")[[1]]
+        annotated_video[, v1_to_rm] <- NULL
+
+      }
+
+      print("annotated_video_last")
+      print(annotated_video)
+
+      if(dim(calipR::checkTable(paste(project$dir_path,project$db_file, sep ="/"), "'video_annotation'"))[1] == 0) {
+
       calipR::saveData(annotated_video, paste(project$dir_path, project$db_file, sep = "/"), "video_annotation")
 
-      video_status$annotation <- calipR::get_full_df(paste(project$dir_path, project$db_file, sep = "/"), "video_annotation")
+      }
 
+      else{
+
+      video_status$annotation <- setDT(calipR::get_full_df(paste(project$dir_path, project$db_file, sep = "/"), "video_annotation"))
+
+      video_status$annotation <- rbind(video_status$annotation, annotated_video)
+      calipR::saveData(video_status$annotation, paste(project$dir_path, project$db_file, sep = "/"), "video_annotation")
+
+      }
+
+      print("yish")
 
 })
 
     shiny::observeEvent(input$save_video_annotation, {
       # Updating the video_status data :
 
-      print("video_status$l")
-
-      print(video_status$l)
-      print("input$videoPath")
-      print(input$videoPath)
-      print("which(video_status$l == input$videoPath)")
-      print(which(video_status$dt[["paths"]] == input$videoPath))
       current_path <- which(video_status$dt[["paths"]] == input$videoPath)
-
-      print('video_status$dt[["status"]][current_path]')
-      print(video_status$dt[["status"]][current_path])
 
       video_status$dt[["status"]][current_path] <- "annotated"
       video_status$dt[["time_at_annotation"]][current_path] <- Sys.time()
 
       calipR::saveData(video_status$dt, paste(project$dir_path, project$db_file, sep = "/"), "video_status")
 
+
+      if(dim(calipR::checkTable(paste(project$dir_path,project$db_file, sep ="/"), "'video_annotation'"))[1] == 0) {
+      }
+      else{
       video_status$dt <- data.table::setDT(calipR::get_full_df(paste(project$dir_path, project$db_file,sep = "/"), "video_status"))
+      }
 
 
     })
@@ -1233,31 +1256,107 @@ guigui <- function(){
     ############### Visualization Module ###################
 
     # Visualizing a cell
-    shiny::observeEvent(input$cell_num, {
 
-      'isnotdt' <- Negate('is.data.table')
-
-      if(length(db$load) != 2) {
-
-
-        df <- db$load[Cell_id == unique(db$load[["Cell_id"]])[[input$cell_num]]]
+    # Initializing a reactive plot :
+    plot <- reactiveValues(p = NULL)
+    db$aligned <- NULL
+    ### Building this one :
 
 
-        output$plot_cell <- plotly::renderPlotly({
+    observeEvent(input$align_behavior, {
 
-          if("ID" %notin% colnames(df)){
-            p <- cell_plot_shiny(df)
+    if(input$align_behavior == TRUE){
 
-          }
+    if(is.null(db$aligned)){
 
-          if("ID" %in% colnames(df)){
-            p <- plot_fiber_data(df, "TIME_SECONDS", "CA_TRACE", "ID")
-          }
+    if(dim(calipR::checkTable(paste(project$dir_path,project$db_file, sep ="/"), "'video_annotation'"))[1] == 0) {
+print("youch")
+    }
 
-          p
+      else {
+        print("youchi")
+    behavior_data <- data.table::setDT(calipR::get_full_df(paste(project$dir_path, project$db_file,sep = "/"), "video_annotation"))
+    print("behavior_data")
+    print(behavior_data)
+    print("db$load")
+    print(db$load)
 
-        })
+    video_status$annotation <- setDT(calipR::get_full_df(paste(project$dir_path, project$db_file, sep = "/"), "video_annotation"))
+
+    annotated_videos <- unique(video_status$annotation[["ID"]])
+
+    print("annotated_videos")
+    print(annotated_videos)
+
+    df <- lapply(annotated_videos, function(x)
+                alignEpocs(behavior_data[ID == x],  db$load[Cell_id == x], x))
+
+    df <- setDT(do.call(rbind,df))
+
+    print("df")
+    print(df)
+
+    df <- df[order(ID)]
+    calipR::saveData(df, paste(project$dir_path,project$db_file, sep ="/"), "aligned_behavioral_data")
+
+    # Extracting behavioral events starts :
+
+    db$aligned <- eventExtractR(df[VIDEO_FRAME != is.na(VIDEO_FRAME)])[[3]]
+
+    x[order(x)]
+    print("db$aligned")
+    print(db$aligned)
+    }
+    }
+
+      else{
+
       }
+    }
+  })
+
+#####
+
+
+    shiny::observeEvent(input$cell_num | input$align_behavior, {
+
+      if(input$align_behavior == TRUE & length(db$load) != 2) {
+print("yikaya")
+
+          output$plot_cell <- plotly::renderPlotly({
+
+            cell <- unique(db$aligned[["ID"]])[input$cell_num]
+            plot$p <- plot_aligned_fiber_data(db$aligned[ID == cell], "TIME_SECONDS", "CA_TRACE")
+
+            plot$p
+
+          })
+        }
+
+        if(input$align_behavior == FALSE  &  length(db$load) != 2){
+          print("yikayaya")
+
+          db$load <- db$load[order(Cell_id)]
+          df <- setDT(db$load[Cell_id == unique(db$load[["Cell_id"]])[[input$cell_num]]])
+
+          output$plot_cell <- plotly::renderPlotly({
+
+            if("ID" %notin% colnames(df)){
+              plot$p <- cell_plot_shiny(df)
+
+            }
+
+            if("ID" %in% colnames(df)){
+              plot$p <- plot_fiber_data(df, "TIME_SECONDS", "CA_TRACE")
+            }
+
+            plot$p
+
+          })
+
+        }
+
+      #}
     })
 
 
@@ -1344,6 +1443,12 @@ guigui <- function(){
     ### Saving the dataset with these new parameters
     shiny::observeEvent(input$saveFilteredData, {
 
+      if(dim(calipR::checkTable(paste(project$dir_path,project$db_file, sep ="/"), "'df_full'"))[1] == 0) {
+        print("yakoul")
+
+        }
+      else{
+        print("yakil")
       df_full <- calipR::get_full_df(paste(project$dir_path,project$db_file,sep="/"),
                                      "df_full")
 
@@ -1352,7 +1457,7 @@ guigui <- function(){
       df_full <-  downsampleCaData(df_full, orig_freq(), input$downslider)
 
       saveData(df_full, paste(project$dir_path, project$db_file, sep = "/"), "df_full")
-
+}
     })
 
 
