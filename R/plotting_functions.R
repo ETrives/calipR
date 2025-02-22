@@ -280,7 +280,9 @@ cell_plot_shiny <- function(data) {
 
 #' plot_fiber_data
 #'
-#' @param data
+#' @param data A data.table object containing x_var and y_var in 2 separate columns
+#' @param x_var a numeric vector containing the time
+#' @param y_var a numeric vector containing the calcium trace (or any other information)
 #'
 #' @return
 #' @export
@@ -302,21 +304,22 @@ plot_fiber_data <- function(data, x_var, y_var) {
 
 #' plot_aligned_fiber_data
 #'
-#' @param data
-#' @param x_var
-#' @param y_var
-#' @param grouping_var
+#' @param data a data.table object containing x_var, y_var, the isosbestic trace fitted to the raw trace (fit_isos)
+#'             and the normalized calcium trace (delta_f_f), all in separated columns
+#' @param x_var a numeric vector containing the time
+#' @param isos a logical indicating if isosbestic trace should be plotted
+#' @param norm a logical indicating if the normalized trace (deltaf/f) should be
+#'             plotted instead of the raw trace.
+#' @param y_var a numeric vector containing the calcium trace (or any other information)
 #'
 #' @return
 #' @export
 #'
 #' @examples
-library(ggplot2)
-library(plotly)
-library(data.table)
 
-plot_aligned_fiber_data <- function(data, x_var, y_var) {
+plot_aligned_fiber_data <- function(data, x_var, y_var, isos = FALSE, norm = FALSE, behavior = FALSE) {
 
+  if(behavior == TRUE){
   # Extraire les événements uniques
   events <- unique(stats::na.omit(data$start_behavior))  # Supprime les NA éventuels
 
@@ -326,23 +329,57 @@ plot_aligned_fiber_data <- function(data, x_var, y_var) {
   # Convertir start_behavior en facteur
   vline_data[, start_behavior := as.factor(start_behavior)]
 
-  print("yous")
-
   # Définir un yintercept sous la courbe principale
   min_y <- min(data[[y_var]], na.rm = TRUE)
   vline_data[, yintercept := min_y - (0.05 * (max(data[[y_var]], na.rm = TRUE) - min_y))]
 
-  print("vouch")
   # Construction du graphique ggplot
   p <- ggplot2::ggplot(data, ggplot2::aes(x = get(x_var), y = get(y_var))) +
     ggplot2::geom_line()+
     ggplot2::geom_segment(data = vline_data,
                           ggplot2::aes(x = TIME_SECONDS, xend = TIME_SECONDS,
                                        y = yintercept, yend = min_y, color = start_behavior),
-                          linetype = "dashed", size = 1) +  # Lignes verticales
+                          size = 1) +  # Lignes verticales
     ggplot2::scale_color_viridis_d() +  # Utilisation d'une échelle discrète pour tout
     ggplot2::theme_classic()
 
+  }
+
+  if(behavior == FALSE){
+
+    p <- ggplot2::ggplot(data, ggplot2::aes(x = get(x_var), y = get(y_var))) +
+      ggplot2::geom_line()+
+      ggplot2::theme_classic()
+
+  }
+
+  if(isos == TRUE){
+
+  p <- p + ggplot2::geom_line(ggplot2::aes(x = get(x_var), y = fit_isos, color = "red"))
+  }
+
+  if(norm == TRUE & behavior == TRUE){
+
+    min_y <- min(data[["delta_f_f"]], na.rm = TRUE)
+    vline_data[, yintercept := min_y - (0.05 * (max(data[["delta_f_f"]], na.rm = TRUE) - min_y))]
+
+    p <- ggplot2::ggplot(data, ggplot2::aes(x = get(x_var), y = delta_f_f)) +
+      ggplot2::geom_line()+
+      ggplot2::geom_segment(data = vline_data,
+                            ggplot2::aes(x = TIME_SECONDS, xend = TIME_SECONDS,
+                                         y = yintercept, yend = min_y, color = start_behavior),
+                            size = 1) +  # Lignes verticales
+      ggplot2::scale_color_viridis_d() +  # Utilisation d'une échelle discrète pour tout
+      ggplot2::theme_classic()
+  }
+
+  if(norm == TRUE & behavior == FALSE){
+    p <- ggplot2::ggplot(data, ggplot2::aes(x = get(x_var), y = delta_f_f)) +
+      ggplot2::geom_line()+
+      ggplot2::scale_color_viridis_d() +  # Utilisation d'une échelle discrète pour tout
+      ggplot2::theme_classic()
+
+  }
   # Conversion en plotly interactif
   p <- plotly::ggplotly(p)
 

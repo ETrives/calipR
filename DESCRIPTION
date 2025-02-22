@@ -54,5 +54,6 @@ Imports:
   dtwclust,
   matrixStats,
   dplR,
+  reticulate
 Remotes:
   jewellsean/FastLZeroSpikeInference

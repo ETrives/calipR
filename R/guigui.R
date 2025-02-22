@@ -279,7 +279,13 @@ guigui <- function(){
                                                                 shinydashboard::box(title = "Plotting Cells", width = 12, solidHeader = TRUE, status = "primary",
                                                                                     shiny::numericInput("cell_num",label = "cell_number", value = 1, min = 1),
                                                                                     shiny::checkboxInput("align_behavior", label = "align behavior and fiber photometry data"),
+                                                                                    shiny::checkboxInput("fit_isos", label = "fit isosbestic trace"),
+                                                                                    shiny::checkboxInput("delta_isos", label = "normalize with isosbestic (f) channel (delta f/f)"),
                                                                                     plotly::plotlyOutput( "plot_cell"))),
+
+                                                              shiny::fluidRow(
+                                                                shinydashboard::box(title = "Plotting Isosbestic Trace", width = 12, solidHeader = TRUE, status = "primary",
+                                                                                    plotly::plotlyOutput( "plot_isos"))),
 
 
                                                               shiny::fluidRow(
@@ -1267,7 +1273,7 @@ print("yikoul")
 
     if(input$align_behavior == TRUE){
 
-    if(is.null(db$aligned)){
+    if(is.null(db$aligned) | "start_behavior" %notin% colnames(db$aligned)){
 
     if(dim(calipR::checkTable(paste(project$dir_path,project$db_file, sep ="/"), "'video_annotation'"))[1] == 0) {
 print("youch")
@@ -1303,7 +1309,6 @@ print("youch")
 
     db$aligned <- eventExtractR(df[VIDEO_FRAME != is.na(VIDEO_FRAME)])[[3]]
 
-    x[order(x)]
     print("db$aligned")
     print(db$aligned)
     }
@@ -1317,23 +1322,93 @@ print("youch")
 
 #####
 
+    observeEvent(input$fit_isos, {
 
-    shiny::observeEvent(input$cell_num | input$align_behavior, {
+      if(input$fit_isos == TRUE & length(db$load) != 2 & is.null(db$aligned)){
 
-      if(input$align_behavior == TRUE & length(db$load) != 2) {
+          if("ID" %in% colnames(db$load)){
+
+            db$load[, fit_isos := stats::lm(CA_TRACE ~ ISOS_TRACE)$fitted.values, by = ID]
+            db$load[, delta_f_f := (CA_TRACE - fit_isos) / fit_isos, by = ID]
+
+            print(db$load)
+
+
+            #calipR::saveData(df, paste(project$dir_path,project$db_file, sep ="/"), "aligned_behavioral_data")
+
+          }
+      }
+
+      isnotnull <- Negate('is.null')
+      if(input$fit_isos == TRUE & isnotnull(db$aligned)){
+
+        print("yakoulor")
+          db$aligned[, fit_isos := stats::lm(CA_TRACE ~ ISOS_TRACE)$fitted.values, by = ID]
+          db$aligned[, delta_f_f := (CA_TRACE - fit_isos) / fit_isos, by = ID]
+
+          print(db$aligned)
+
+
+          #calipR::saveData(df, paste(project$dir_path,project$db_file, sep ="/"), "aligned_behavioral_data")
+
+      }
+
+      if(input$fit_isos == TRUE & is.null(db$aligned)){
+
+        db$aligned <- db$load
+        print("yakoulor")
+        db$aligned[, fit_isos := stats::lm(CA_TRACE ~ ISOS_TRACE)$fitted.values, by = ID]
+        db$aligned[, delta_f_f := (CA_TRACE - fit_isos) / fit_isos, by = ID]
+
+        print(db$aligned)
+
+
+        #calipR::saveData(df, paste(project$dir_path,project$db_file, sep ="/"), "aligned_behavioral_data")
+
+      }
+
+    })
+
+    shiny::observeEvent(input$cell_num | input$align_behavior |input$fit_isos |input$delta_isos, {
+
+
+      if(input$align_behavior == TRUE & length(db$load) != 2 & "start_behavior" %in% colnames(db$aligned)) {
 print("yikaya")
+
+        db$aligned <- db$aligned[order(ID)]
+        df <- setDT(db$aligned[ID == unique(db$aligned[["ID"]])[[input$cell_num]]])
 
           output$plot_cell <- plotly::renderPlotly({
 
             cell <- unique(db$aligned[["ID"]])[input$cell_num]
-            plot$p <- plot_aligned_fiber_data(db$aligned[ID == cell], "TIME_SECONDS", "CA_TRACE")
+            plot$p <- plot_aligned_fiber_data(db$aligned[ID == cell],
+                                              "TIME_SECONDS",
+                                              "CA_TRACE",
+                                              isos = input$fit_isos,
+                                              norm = input$delta_isos,
+                                              behavior = input$align_behavior)
 
             plot$p
 
           })
+
+          output$plot_isos <- plotly::renderPlotly({
+
+            cell <- unique(db$aligned[["ID"]])[input$cell_num]
+            plot$isos <- plot_aligned_fiber_data(db$aligned[ID == cell],
+                                                 "TIME_SECONDS",
+                                                 "ISOS_TRACE",
+                                                 isos = input$fit_isos,
+                                                 norm = input$delta_isos,
+                                                 behavior = input$align_behavior)
+
+            plot$isos
+
+          })
+
         }
 
-        if(input$align_behavior == FALSE  &  length(db$load) != 2){
+        if(input$align_behavior == FALSE  &  length(db$load) != 2 & input$fit_isos == FALSE & input$delta_isos == FALSE ){
           print("yikayaya")
 
           db$load <- db$load[order(Cell_id)]
@@ -1342,12 +1417,21 @@ print("yikaya")
           output$plot_cell <- plotly::renderPlotly({
 
             if("ID" %notin% colnames(df)){
+
               plot$p <- cell_plot_shiny(df)
 
             }
 
             if("ID" %in% colnames(df)){
-              plot$p <- plot_fiber_data(df, "TIME_SECONDS", "CA_TRACE")
+
+              cell <- unique(db$load[["ID"]])[input$cell_num]
+
+              plot$p <- plot_aligned_fiber_data(db$load[ID == cell],
+                                                "TIME_SECONDS",
+                                                "CA_TRACE",
+                                                isos = input$fit_isos,
+                                                norm = input$delta_isos,
+                                                behavior = input$align_behavior)
             }
 
             plot$p
@@ -1355,6 +1439,27 @@ print("yikaya")
           })
 
         }
+
+      if(input$align_behavior == FALSE  &  length(db$load) != 2 & input$fit_isos == TRUE){
+
+        db$aligned <- db$aligned[order(ID)]
+        df <- setDT(db$aligned[ID == unique(db$aligned[["ID"]])[[input$cell_num]]])
+
+        output$plot_cell <- plotly::renderPlotly({
+
+          cell <- unique(db$aligned[["ID"]])[input$cell_num]
+          plot$p <- plot_aligned_fiber_data(db$aligned[ID == cell],
+                                            "TIME_SECONDS",
+                                            "CA_TRACE",
+                                            isos = input$fit_isos,
+                                            norm = input$delta_isos,
+                                            behavior = input$align_behavior)
+
+          plot$p
+
+        })
+
+      }
 
       #}
     })
@@ -1389,7 +1494,7 @@ print("yikaya")
           }
 
           if("ID" %in% colnames(preprocessData$data_bis)){
-            p <- plot_fiber_data(preprocessData$data_bis, "TIME_SECONDS", "CA_TRACE", "ID")
+            p <- plot_fiber_data(preprocessData$data_bis, "TIME_SECONDS", "CA_TRACE")
 
 
           }

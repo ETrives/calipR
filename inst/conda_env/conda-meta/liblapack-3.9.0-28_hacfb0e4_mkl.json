@@ -1,0 +1,46 @@
+{
+  "build": "28_hacfb0e4_mkl",
+  "build_number": 28,
+  "channel": "https://conda.anaconda.org/conda-forge/win-64",
+  "constrains": [
+    "blas 2.128 mkl",
+    "liblapacke 3.9.0 28*_mkl",
+    "libcblas 3.9.0 28*_mkl"
+  ],
+  "depends": [
+    "libblas 3.9.0 28_h576b46c_mkl"
+  ],
+  "extracted_package_dir": "C:\\Users\\etrives\\AppData\\Local\\anaconda3\\pkgs\\liblapack-3.9.0-28_hacfb0e4_mkl",
+  "files": [
+    "Library/bin/liblapack.dll",
+    ".nonadmin"
+  ],
+  "fn": "liblapack-3.9.0-28_hacfb0e4_mkl.conda",
+  "license": "BSD-3-Clause",
+  "link": {
+    "source": "C:\\Users\\etrives\\AppData\\Local\\anaconda3\\pkgs\\liblapack-3.9.0-28_hacfb0e4_mkl",
+    "type": 1
+  },
+  "md5": "5aa8e62e29e0d76b0b99b79a739cd2dd",
+  "name": "liblapack",
+  "package_tarball_full_path": "C:\\Users\\etrives\\AppData\\Local\\anaconda3\\pkgs\\liblapack-3.9.0-28_hacfb0e4_mkl.conda",
+  "paths_data": {
+    "paths": [
+      {
+        "_path": "Library/bin/liblapack.dll",
+        "path_type": "hardlink",
+        "sha256": "75f2faf9ba5a658ebe068e9568d1275514f878b7a760d285b16f1e1505eea67c",
+        "sha256_in_prefix": "75f2faf9ba5a658ebe068e9568d1275514f878b7a760d285b16f1e1505eea67c",
+        "size_in_bytes": 26840968
+      }
+    ],
+    "paths_version": 1
+  },
+  "requested_spec": "None",
+  "sha256": "4b4bb704f46d12f56c1dcf5525bb97aea53a110e6bde6b8d588bf43b773500da",
+  "size": 3732321,
+  "subdir": "win-64",
+  "timestamp": 1738114541000,
+  "url": "https://conda.anaconda.org/conda-forge/win-64/liblapack-3.9.0-28_hacfb0e4_mkl.conda",
+  "version": "3.9.0"
+}
