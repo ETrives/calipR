@@ -38,10 +38,11 @@
 
   # Vérifier que le package est bien installé avant de charger le script
   setup_script <- system.file("setup_python.R", package = pkgname)
-  env_path <- system.file("calipr_env", package = pkgname)
+  env_path <- system.file("calipr_env.tar.gz", package = pkgname)
 
-  if (setup_script != "" && dir.exists(env_path)) {
+  if (setup_script != "" && file.exists(env_path)) {
     source(setup_script)
+
   } else {
     warning("L'environnement Conda embarqué est introuvable. Vérifiez l'installation.")
   }
