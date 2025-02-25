@@ -551,7 +551,8 @@ guigui <- function(){
         shiny::actionButton("loadVideoButton", "Load Video Files", align = "center"),
         shiny::tags$br(),
         shiny::textInput("videoPath", label = "path to the video you want to annotate" ),
-        shiny::textInput("animal_id", label = "name the output annotation file (eg : mouse_1.csv)" ),
+        shiny::textInput("animal_id", label = "ID of the animal's video your annotating (ex : 2426). It needs to match the name of the folder containing fiber data for this animal." ),
+        shiny::textInput("keys", label =  "keyboard keys you want to set for your annotation (comma separated) (e.g. f,m)" ),
         shiny::actionButton("annotateVideoButton", "Annotate Video", align = "center"),
         shiny::actionButton("save_video_annotation", "Save Annotation", align = "center"),
         shiny::dataTableOutput("annotated_Video")
@@ -666,7 +667,10 @@ print("yikoul")
 
       # Annotating videos :
 
-      annotateVideo(input$videoPath, paste(project$dir_path, paste0(input$animal_id,".csv"), sep= "/" ), list("f", "m", "w"), list(TRUE, TRUE, TRUE))
+      keys <- as.list(stringr::str_split(input$keys, pattern = ",", simplify = TRUE))
+
+
+      annotateVideo(input$videoPath, paste(project$dir_path, paste0(input$animal_id,".csv"), sep= "/" ), keys, list(TRUE, TRUE, TRUE))
 
       annotated_video <- data.table::fread(paste0(paste(project$dir_path, input$animal_id, sep= "/" ), ".csv"))
 
