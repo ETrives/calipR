@@ -3,6 +3,7 @@ library(reticulate)
 # Vérifier si on est dans un environnement temporaire (devtools::check)
 is_check <- grepl("file\\d+", getwd())
 
+
 # Définir le chemin de l'environnement Conda
 if (is_check) {
     package_path <- getwd()  # Lors de devtools::check()
@@ -11,6 +12,12 @@ if (is_check) {
 }
 
 env_path <- file.path(package_path, "calipr_env")
+
+# Extraire l’environnement s'il n'existe pas déjà
+if (!dir.exists(env_path) && file.exists(env_archive)) {
+    message("Extraction de l’environnement Conda...")
+    untar(env_archive, exdir = package_path)
+}
 
 # Vérifier si l'environnement Conda existe
 if (!dir.exists(env_path)) {
