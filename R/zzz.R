@@ -38,7 +38,7 @@
 
   # Vérifier que le package est bien installé avant de charger le script
   setup_script <- system.file("setup_python.R", package = pkgname)
-  env_path <- system.file("conda_env", package = pkgname)
+  env_path <- system.file("calipr_env", package = pkgname)
 
   if (setup_script != "" && dir.exists(env_path)) {
     source(setup_script)
