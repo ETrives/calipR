@@ -11,6 +11,10 @@ if (is_check) {
     package_path <- system.file(package = "calipR")  # Après installation normale
 }
 
+package_path <- system.file(package = "calipR")
+env_path <- file.path(package_path, "calipr_env")
+env_archive <- file.path(package_path, "calipr_env.tar.gz")
+
 env_path <- file.path(package_path, "calipr_env")
 
 # Extraire l’environnement s'il n'existe pas déjà
