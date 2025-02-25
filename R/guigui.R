@@ -219,7 +219,8 @@ guigui <- function(){
                                                               shinydashboard::box(title = "Annotate Video", width = 6,
                                                                                   solidHeader = TRUE, status = "primary", collapsible = T,
 
-                                                                                  shiny::uiOutput("annotateVideo"),shiny::div(style = "height:1000px")
+                                                                                  shiny::uiOutput("annotateVideo"),shiny::div(style = "height:1000px"),
+                                                                                  shiny::textOutput("key_status")
 
                                                               ),
 
