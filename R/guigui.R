@@ -478,9 +478,17 @@ guigui <- function(){
     orig_freq <- reactiveVal(value = 1)
 
 
-    reticulate::source_python(paste0(getwd(), "/inst/python_scripts/tdt_extraction.py"))
-    reticulate::source_python(paste0(getwd(), "/inst/python_scripts/addEpocs.py"))
-    reticulate::source_python(paste0(getwd(), "/inst/python_scripts/annotateVideo.py"))
+    if ("calipR" %in% installed.packages()[, "Package"]) {
+    package_path <- system.file(package = "calipR")
+    } else {
+    package_path <- getwd()
+    }
+
+    script_path <- file.path(package_path, "python_scripts")
+
+    reticulate::source_python(paste(script_path, "tdt_extraction.py", sep = "/"))
+    reticulate::source_python(paste(script_path, "addEpocs.py", sep = "/"))
+    reticulate::source_python(paste(script_path, "annotateVideo.py", sep = "/"))
 
 
     #### Data Preparation ##############

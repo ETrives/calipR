@@ -12,16 +12,14 @@ library(reticulate)
 
     # Définir les chemins vers l’environnement et l’archive compressée
     env_path <- file.path(package_path, "calipr_env")
-    message(paste0( "env_path is: ", env_path))
+    
     # **Correction : L'archive n'est plus dans `inst/` après installation**
     if (is_check) {
       env_archive <- file.path(package_path, "inst", "calipr_env.tar.gz")  # Lors du check
-      message(paste0( "env_archive is check is: ", env_archive))
 
       } else {
       env_archive <- file.path(package_path, "calipr_env.tar.gz")  # Après installation
 
-      message(paste0( "env_archive else is: ", env_archive))
       }
 
     # 🔍 Vérifier si l’archive est bien là
