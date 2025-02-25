@@ -467,6 +467,7 @@ guigui <- function(){
 
   server <- function(input, output, session){
 
+    set_calipR_env()
     '%notin%' <- Negate('%in%')
     'isnotnull' <- Negate('is.null')
 

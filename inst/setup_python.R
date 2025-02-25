@@ -12,7 +12,7 @@ library(reticulate)
 
     # Définir les chemins vers l’environnement et l’archive compressée
     env_path <- file.path(package_path, "calipr_env")
-    
+
     # **Correction : L'archive n'est plus dans `inst/` après installation**
     if (is_check) {
       env_archive <- file.path(package_path, "inst", "calipr_env.tar.gz")  # Lors du check
@@ -22,7 +22,7 @@ library(reticulate)
 
       }
 
-    # 🔍 Vérifier si l’archive est bien là
+    # Vérifier si l’archive est bien là
     if (!file.exists(env_archive)) {
       stop("L’archive Conda compressée est introuvable à : ", env_archive)
     } else {
@@ -61,7 +61,7 @@ library(reticulate)
     required_packages <- c("pandas", "tdt", "opencv-python")
     for (pkg in required_packages) {
       if (!py_module_available(pkg)) {
-        message(paste("📦 Installation de", pkg, "via pip..."))
+        message(paste("Installation de", pkg, "via pip..."))
         py_install(pkg, pip = TRUE)
       } else {
         message(paste("✅", pkg, "est déjà installé."))
