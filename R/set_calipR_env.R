@@ -23,6 +23,7 @@ set_calipR_env <- function(){
   }
 
   env_path <- file.path(package_path, "calipr_env")
+  env_archive <- file.path(package_path, "calipr_env.tar.gz")
 
   if (!dir.exists(env_path) && file.exists(env_archive)) {
   message("Extraction de l’environnement Conda...")
