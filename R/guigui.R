@@ -1321,7 +1321,9 @@ print("youch")
 
     # Extracting behavioral events starts :
 
-    db$aligned <- eventExtractR(df[VIDEO_FRAME != is.na(VIDEO_FRAME)])[[3]]
+    extracted_events <- eventExtractR(df[VIDEO_FRAME != is.na(VIDEO_FRAME)])
+
+    db$aligned <- extracted_events[[length(extracted_events)]]
 
     print("db$aligned")
     print(db$aligned)
