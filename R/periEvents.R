@@ -57,45 +57,61 @@ return(onset_list)
 #' @export
 #'
 #' @examples
-PeriEventExtractR <- function(data, before, after){
+PeriEventExtractR <- function(data,events_list, before, after){
 
   #extract behaviors
 
-  end <- which(colnames(data) == "onset") -1
-  events <- colnames(data)[2:end]
+ # end <- which(colnames(data) == "onset") -1
+ # events <- colnames(data)[2:end]
 
-  onset_list <- lapply(seq(1,length(events)), function(x) unique(data[ get(events[x]) == "start" |get(events[x]) == "1"]$TIME_SECONDS ))
+  print("data inside peri events")
+  print(data)
+  
+  onset_list <- lapply(seq(1,length(events_list)), function(x) unique(data[ start_behavior == events_list[x] | start_behavior ==  "1", , by = group]$TIME_SECONDS ))
 
+  print("yo")
   dif <- lapply(onset_list, diff)
 
+  print("yi")
+  print(onset_list)
   # Keep starting events
-  onset_list <- lapply(seq(1,length(dif)), function(x) onset_list[[x]][which(dif[[x]] > 1)])
+  #onset_list <- lapply(seq(1,length(dif)), function(x) onset_list[[x]][which(dif[[x]] > 1)])
 
 
 
-  onset_list <- Filter(function(x) !(length(x) == 0), onset_list)
+  #onset_list <- Filter(function(x) !(length(x) == 0), onset_list)
 
   n_obs <- unlist(lapply(onset_list, length))
 
+  print(n_obs)
   idx <- lapply(seq(1,length(n_obs)), function(x) if(x == 1) seq(x:n_obs[x])
-                else seq(n_obs[x -1], (n_obs[x -1] + n_obs[x])))
+                else seq(sum(n_obs[1:x -1]+1), (n_obs[x -1] + n_obs[x])))
 
 
+  print(idx)
 
   onset_list <- lapply(onset_list, function(x) data.table(before_onset = x -before, offset = x + after))
   onset_list <- lapply(onset_list, function(x) unname(split(x, seq(1,nrow(x)))))
   onset_list <- unlist(lapply(onset_list, function(x) lapply(x, function(y) unname(y))),recursive = FALSE)
 
+print("onset_list final")
+print(onset_list)
 
   # extracting slices from the original data table
   periEventsData <- Map(function(x) data[TIME_SECONDS %between% x,][, RELATIVE_TIME := seq(0,.N -1)], onset_list)
 
+  #print(periEventsData)
   # putting into separate lists, events of different nature
   periEventsData <- lapply(idx, function(x) periEventsData[x[[1]]:x[[length(x)]]])
 
-  names(periEventsData) <- events[1:length(idx)]
+  names(periEventsData) <- events_list[1:length(idx)]
+  print("before")
+  print(head(periEventsData))
 
-
+  
+  periEventsData <- lapply(periEventsData, function(x) lapply(x, function(y) data.table::setDT(y)[, TIME_FROM_EVENT := seq(-before,after, by = 0.1)[1:.N]]))
+  print("after")
+  print(head(periEventsData))
   return(periEventsData)
 }
 
@@ -110,7 +126,7 @@ PeriEventExtractR <- function(data, before, after){
 #' @examples
 PeriEventMergeR <- function(periEventsData){
 
-  events <- unique(names(test))
+  events <- unique(names(periEventsData))
 
   repetition_number <- lapply(events, function(x) length(periEventsData[[x]]))
 

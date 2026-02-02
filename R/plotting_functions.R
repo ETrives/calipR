@@ -319,10 +319,14 @@ plot_fiber_data <- function(data, x_var, y_var) {
 
 plot_aligned_fiber_data <- function(data, x_var, y_var, isos = FALSE, norm = FALSE, behavior = FALSE) {
 
+  print("youbakala")
   if(behavior == TRUE){
   # Extraire les événements uniques
+  print(data)
   events <- unique(stats::na.omit(data$start_behavior))  # Supprime les NA éventuels
-
+  
+  print("events")
+  print(events)
   # Construire un data.table contenant uniquement les lignes où un événement est détecté
   vline_data <- data.table::copy(data)[start_behavior %in% events, .(TIME_SECONDS, start_behavior)]
 

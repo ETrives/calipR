@@ -30,11 +30,12 @@ def annotateVideo(path, destination_path, key_list, state_list, speed = 20):
     init_speed = speed
     current_speed = speed
     cap = cv2.VideoCapture(path)
+
     current_state = ['NA' for i in range(0,len(key_list))]
     annotation_lists = [[] for i in range(0,len(key_list))]
     frame_number = 0
     key_counter = [1 for i in range(0,len(key_list))]
-    
+
     while(True):
         ret, frame = cap.read()
         if not ret:
@@ -43,10 +44,11 @@ def annotateVideo(path, destination_path, key_list, state_list, speed = 20):
         cv2.imshow('frame', frame)
         
         pressedKey = cv2.waitKey(speed)
-        
+
         for key in range(0,len(key_list)):
             if state_list[key] == False and current_state[key] ==  {key_list[key] : 1}:
                 current_state[key] = 'NA'
+
             if pressedKey == ord(key_list[key]) and state_list[key] == True:
                 key_counter[key] = key_counter[key] + 1
                 if key_counter[key] % 2 == 0:
