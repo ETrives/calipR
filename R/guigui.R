@@ -49,7 +49,7 @@ guigui <- function(){
                                     shinydashboard::tabItems(
                                       shinydashboard::tabItem(tabName = "start",
                                                               div(id = "loading_overlay",
-                                                                  h3("Initialisation en cours..."),
+                                                                  h3("Initializing..."),
                                                                   style = "padding:20px; color:#7a3193; font-weight:bold;"
                                                               ),
                                                               shiny::fluidRow(

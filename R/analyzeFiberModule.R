@@ -14,6 +14,17 @@ analyzeFiberModuleUI <- function(id) {
   tagList(
     shiny::fluidRow(
       shinydashboard::box(
+        title = "Denoising",
+        width = 12,
+        solidHeader = TRUE,
+        shiny::checkboxInput(ns("rolling_quantile"), "Background Estimation with a Rolling QUantile"),
+        shiny::checkboxInput(ns("isos"), "Background Estimation only with the isosbestic trace"),
+        shiny::checkboxInput(ns("mean"), "Background Estimation with mean of a baseline period"),
+        shiny::uiOutput(ns("rolling_params")),
+        shiny::numericInput(ns("id"), label = "animal number", value = 1),
+        shiny::actionButton(ns("launch_analysis"), "launch_analysis"),
+        plotly::plotlyOutput(ns("plot_back"))),
+      shinydashboard::box(
         title = "PeriEvents",
         width = 12,
         solidHeader = TRUE,
@@ -54,6 +65,8 @@ analyzeFiberModuleServer <- function(id, db) {
       shiny::selectInput(inputId = ns("x_var"), label = NULL, names(db$aligned))
 
     })
+
+
 
 
     observeEvent(input$plot, {
@@ -184,5 +197,129 @@ analyzeFiberModuleServer <- function(id, db) {
       })
 
     print("finished indiv selector")
+
+    ################ Backgroune estimation box #############"
+
+    observeEvent(input$rolling_quantile, {
+
+      if(input$rolling_quantile == TRUE){
+
+       output$rolling_params <- shiny::renderUI({
+        list(
+        shiny::numericInput(ns("width"), value = 500, label = "width of the time window (default = 500)"),
+         shiny::numericInput(ns("lower_q"), value = 0.1, label = "lower bound of the quantile window (default = 0.1)"),
+         shiny::numericInput(ns("upper_q"), value = 0.4, label = "upper bound of the quantile window (default = 0.4)"),
+         shiny::numericInput(ns("iter_num"), value = 2, label = "number of iterations (default = 2)")
+        )
+
+
+      })
+      }
+
+      if(input$rolling_quantile == FALSE){
+        output$rolling_params <- NULL
+      }
+
+       })
+
+
+    observeEvent(input$launch_analysis, {
+
+      if(input$isos == TRUE & input$rolling_quantile == FALSE){
+
+        # Fitting isosbestic to calcium trace :
+
+        db$aligned[, fit_isos := stats::lm(CA_TRACE ~ ISOS_TRACE)$fitted.values, by = .(ID, group)]
+
+        # Normalizing with isosbestic :
+        dt_full <- db$aligned[, delta_f_f_norm := (CA_TRACE - fit_isos) / fit_isos, by = .(ID, group)]
+
+          print(head(dt_full))
+      }
+
+      if(input$isos == FALSE){}
+
+      if(input$rolling_quantile == TRUE & input$isos == FALSE){
+
+        back_data <- lapply(unique(db$aligned[["ID"]]), function(x)
+        rolling_pct(db$aligned[Cell_id == x], input$width, pct_lower =input$lower_q, pct_upper =input$upper_q, it = seq(1,input$iter_num), var = "CA_TRACE"))
+
+        dt_full <- do.call(rbind, back_data)
+
+        print(head(dt_full))
+
+      }
+
+      if(input$rolling_quantile == FALSE){}
+
+      if(input$rolling_quantile == TRUE & input$isos == TRUE){
+
+        ids <- unique(db$aligned[["ID"]])
+
+        back_data <- lapply(ids[1], function(x)
+          rolling_pct(db$aligned[Cell_id == x], input$width, pct_lower =input$lower_q, pct_upper =input$upper_q, it = seq(1,input$iter_num), var = "CA_TRACE"))
+
+
+        dt_full <- do.call(rbind, back_data)
+
+        print("head(dt_full)")
+        print(head(dt_full))
+
+
+        back_data_isos <- lapply(ids[1], function(x)
+          rolling_pct(db$aligned[Cell_id == x], input$width, pct_lower =input$lower_q, pct_upper =input$upper_q, it = seq(1,input$iter_num), var = "ISOS_TRACE"))
+        dt_full_isos <- do.call(rbind, back_data_isos)
+
+        # Normalizing ###############
+
+        # CA trace
+        dt_full[, denoised_CA := CA_TRACE - get(paste0("Mean_Grey", input$iter_num))]
+        dt_full[, delta_f_f := denoised_CA / get(paste0("Mean_Grey", input$iter_num))]
+
+        # Isos trace
+        dt_full_isos[, denoised_ISOS := ISOS_TRACE - get(paste0("Mean_Grey", input$iter_num))]
+        dt_full_isos[, delta_f_f := denoised_ISOS / get(paste0("Mean_Grey", input$iter_num))]
+
+        # Second round of normalization (normalized CA_TRACE over the normalized ISOS_TRACE)
+
+        dt_full[, delta_f_f_isos := dt_full_isos$delta_f_f]
+        dt_full[, denoised_ISOS := dt_full_isos$denoised_ISOS]
+
+        dt_full[, delta_f_f_norm := (delta_f_f - delta_f_f_isos), by = Cell_id]
+
+
+        View(dt_full)
+
+        print(head(dt_full))
+
+        output$plot_back <- plotly::renderPlotly({
+
+        print("input$id")
+        print(input$id)
+        print(str(input$id))
+
+        id <- unique(dt_full[["unique_ID"]])[input$id]
+
+        print("id")
+        print(id)
+        p <- plot_fiber_data(dt_full[unique_ID == id],
+                        "TIME_SECONDS",
+                        "Mean_Grey",
+                        background = "Mean_Grey1")
+        p
+        })
+
+      }
+
+
+        })
+
+
+
   })
 }
+
+
+    ####################
+
+

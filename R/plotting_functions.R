@@ -288,11 +288,31 @@ cell_plot_shiny <- function(data) {
 #' @export
 #'
 #' @examples
-plot_fiber_data <- function(data, x_var, y_var) {
+plot_fiber_data <- function(data, x_var, y_var, background = FALSE) {
 
+  if(background == FALSE){
   p <- ggplot2::ggplot(data, ggplot2::aes(x = get(x_var), y = get(y_var)))+
     ggplot2::geom_line()+
     ggplot2::theme_classic()
+  }
+
+
+
+  if(background != FALSE){
+
+    print("background")
+    print(background)
+    print("data")
+    print(data)
+
+    print("data$background")
+    print(data[[background]])
+
+    p <- ggplot2::ggplot(data, ggplot2::aes(x = get(x_var), y = get(y_var)))+
+      ggplot2::geom_line()+
+      ggplot2::geom_line(ggplot2::aes(x = get(x_var), y = get(background)), color = "red")+
+      ggplot2::theme_classic()
+  }
 
   p <- plotly::ggplotly(p)
 
@@ -324,7 +344,7 @@ plot_aligned_fiber_data <- function(data, x_var, y_var, isos = FALSE, norm = FAL
   # Extraire les événements uniques
   print(data)
   events <- unique(stats::na.omit(data$start_behavior))  # Supprime les NA éventuels
-  
+
   print("events")
   print(events)
   # Construire un data.table contenant uniquement les lignes où un événement est détecté
