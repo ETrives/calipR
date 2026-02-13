@@ -343,6 +343,8 @@ plot_aligned_fiber_data <- function(data, x_var, y_var, isos = FALSE, norm = FAL
   if(behavior == TRUE){
   # Extraire les événements uniques
   print(data)
+    'isnotna' <- Negate('is.na')
+
   events <- unique(stats::na.omit(data$start_behavior))  # Supprime les NA éventuels
 
   print("events")
