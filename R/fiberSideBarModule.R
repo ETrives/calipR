@@ -45,3 +45,4 @@ fiberSideBarModuleUI <- function(id, orig_freq) {
     shinydashboard::menuItem("Analyze your data", tabName = "ana")
   )
 }
+

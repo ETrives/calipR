@@ -117,17 +117,21 @@ vizRawModuleServer <- function(id, db, project, orig_freq, filter, downslider, v
             print(db$load)
 
             video_status$annotation <- data.table::setDT(calipR::get_full_df(paste(project$dir_path, project$db_file, sep = "/"), "video_annotation"))
+           #video_status$status <- data.table::setDT(calipR::get_full_df(paste(project$dir_path, project$db_file, sep = "/"), "video_status"))
 
             annotated_videos <- unique(video_status$annotation[["ID"]])
             annotated_videos_ids <- db$load[Cell_id %in% annotated_videos]$ID
+            annotated_videos_paths <- unique(video_status$annotation[["PATH"]])
 
             print("annotated_videos")
             print(annotated_videos)
 
+            print("annotated_videos_paths")
+            print(annotated_videos_paths)
 
 
-            df <- lapply(annotated_videos, function(x)
-              alignEpocs(behavior_data[ID == x],  db$load[Cell_id == x], db$load[Cell_id == x]$ID))
+            df <- lapply(seq(1,length(annotated_videos)), function(x)
+              alignEpocs(behavior_data[ID == annotated_videos[x] & PATH == annotated_videos_paths[x]],  db$load[Cell_id == annotated_videos[x] & videoPath == annotated_videos_paths[x]], db$load[Cell_id == annotated_videos[x] & videoPath == annotated_videos_paths[x]]$ID))
 
             df <- setDT(do.call(rbind,df))
 
@@ -273,14 +277,20 @@ vizRawModuleServer <- function(id, db, project, orig_freq, filter, downslider, v
 
           #id <- unique(db$aligned[["ID"]])[input$cell_num]
           #db$aligned <- db$aligned[order(unique_ID)]
-          cell <- unique(db$load[["unique_ID"]])[input$cell_num]
-
+          cell <- unique(db$aligned[order(unique_ID)][["unique_ID"]])[input$cell_num]
+          gr <- unique(db$aligned[order(unique_ID)][["group"]])[input$cell_num]
           print("cell")
           print(cell)
+          print("groupe")
+          print(gr)
 
+          'isnotna' <- Negate('is.na')
+          print("db$aligned[unique_ID == cell & group == gr & isnotna(start_behavior)]")
+
+          print(db$aligned[unique_ID == cell & group == gr & isnotna(start_behavior)])
 
           #cell <- unique(db$aligned[["ID"]])[input$cell_num]
-          plot$p <- plot_aligned_fiber_data(db$aligned[unique_ID == cell],
+          plot$p <- plot_aligned_fiber_data(db$aligned[unique_ID == cell & group == gr],
                                             "TIME_SECONDS",
                                             "Mean_Grey",
                                             isos = input$fit_isos,

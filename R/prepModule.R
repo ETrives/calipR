@@ -192,19 +192,27 @@ prepModuleServer <- function(id, create_input, load_input, project_type, db,
 
         observeEvent(input$loadVideoButton, {
 
+          groups_path <- unique(db$load[["root_path"]])
+
+          print("groups_path")
+          print(groups_path)
+
+          paths <- lapply(groups_path, function(x)  extractAllVideoPath(x))
+
+          dt_list <- split(db$load[order(unique_ID)], db$load[order(unique_ID)]$unique_ID)
+          print("dt_list")
+          print(dt_list)
+
+          db$load <- setDT(do.call(rbind, lapply(seq(1,length(dt_list)), function(x) setDT(dt_list[[x]])[, videoPath := unlist(paths)[x]])))
+         # db$load[, videoPath := unlist(paths), by = unique_ID]
+
+          print("db$load paths")
+          print(db$load)
+
           if(dim(calipR::checkTable(paste(project$dir_path,project$db_file, sep ="/"), "'video_status'"))[1] == 0) {
             print("the table has not been found")
 
             print(db$load[["root_path"]][1])
-
-            db$load <- db$load[order(ID)]
-
-            groups_path <- unique(db$load[["root_path"]])
-
-            paths <- lapply(groups_path, function(x)  extractAllVideoPath(x))
-
-
-           # res <- extractAllVideoPath(db$load[["root_path"]][1])
 
             print("path before")
 
@@ -227,6 +235,8 @@ prepModuleServer <- function(id, create_input, load_input, project_type, db,
           }
           else{
             print("the table has been found")
+
+
             video_status$dt <- data.table::setDT(calipR::get_full_df(paste(project$dir_path, project$db_file,sep = "/"), "video_status"))
             video_status$l <- video_status$dt[["status"]]
           }
@@ -497,15 +507,19 @@ prepModuleServer <- function(id, create_input, load_input, project_type, db,
           if( paste0(input$animal_id, ".csv") %in% list.files(project$dir_path)){
             print("in da place")
             annotated_video <- data.table::fread(paste(project$dir_path, paste0(input$animal_id, ".csv"), sep = "/"), header = TRUE)
-            annotated_video[, ID := input$animal_id]
+            annotated_video[, ID := input$animal_id][,PATH := input$videoPath]
 
             print(head(annotated_video))
-
-            addEpocs(paste(db$load[Cell_id == input$animal_id]$root_path[1], input$animal_id, sep = "/"), annotated_video, "behavioral_data.csv", project$dir_path)
+            print(paste(db$load[Cell_id == input$animal_id & videoPath == input$videoPath]$root_path[1]))
+            print(head(db$load))
+            print(input$videoPath)
+            print(db$load[Cell_id == input$animal_id & videoPath == input$videoPath])
+            addEpocs(paste(db$load[Cell_id == input$animal_id & videoPath == input$videoPath]$root_path[1], input$animal_id, sep = "/"), annotated_video[ID == input$animal_id & PATH == input$videoPath], "behavioral_data.csv", project$dir_path)
             print("yoo")
 
             annotated_video <- fread( paste(project$dir_path, "behavioral_data.csv", sep= "/" ), header = TRUE)
-
+            print("this is the nanotated video from the behavioral file")
+            print(annotated_video)
             if(length(which(colnames(annotated_video) == "V1")) > 1){
               print("yis")
               v1_to_rm <- which(colnames(annotated_video) == "V1")[[1]]
@@ -516,6 +530,8 @@ prepModuleServer <- function(id, create_input, load_input, project_type, db,
             if(dim(calipR::checkTable(paste(project$dir_path,project$db_file, sep ="/"), "'video_annotation'"))[1] == 0) {
               print("yal")
 
+              print("this is the annotation table that is going to be saved")
+              print(annotated_video)
               calipR::saveData(annotated_video, paste(project$dir_path, project$db_file, sep = "/"), "video_annotation")
 
             }
@@ -525,7 +541,6 @@ prepModuleServer <- function(id, create_input, load_input, project_type, db,
               video_status$annotation <- setDT(calipR::get_full_df(paste(project$dir_path, project$db_file, sep = "/"), "video_annotation"))
 
               print("yoli")
-
 
 
               print("head(annotated_video)")
@@ -549,7 +564,7 @@ prepModuleServer <- function(id, create_input, load_input, project_type, db,
 
               if(input$animal_id %in% video_status$annotation[["ID"]]){
                 print("yikouroutu")
-
+                  # if the video has already been annotated, the old version will be discarded
                   video_status$annotation <- video_status$annotation[ID != input$animal_id,]
                   video_status$annotation <- rbind(video_status$annotation, annotated_video)
 
@@ -576,7 +591,7 @@ prepModuleServer <- function(id, create_input, load_input, project_type, db,
 
             annotated_video <- data.table::fread(paste0(paste(project$dir_path, input$animal_id, sep= "/" ), ".csv"), header = TRUE)
 
-            annotated_video[, ID := input$animal_id]
+            annotated_video[, ID := input$animal_id][,PATH := input$videoPath]
 
             print("annotated_video_first")
             print(annotated_video)
@@ -592,7 +607,7 @@ prepModuleServer <- function(id, create_input, load_input, project_type, db,
             print(db$load[ID == input$animal_id]$root_path[1])
 
 
-            addEpocs(paste(db$load[Cell_id == input$animal_id]$root_path[1], input$animal_id, sep = "/"), annotated_video, "behavioral_data.csv", project$dir_path)
+            addEpocs(paste(db$load[Cell_id == input$animal_id]$root_path[1], input$animal_id, sep = "/"), annotated_video[ID == input$animal_id & PATH == input$videoPath], "behavioral_data.csv", project$dir_path)
             print("yoo")
             annotated_video <- fread( paste(project$dir_path, "behavioral_data.csv", sep= "/" ), header = TRUE)
             print("annotated_video")
@@ -613,7 +628,7 @@ prepModuleServer <- function(id, create_input, load_input, project_type, db,
           if(dim(calipR::checkTable(paste(project$dir_path,project$db_file, sep ="/"), "'video_annotation'"))[1] == 0) {
             print("yal")
 
-            calipR::saveData(annotated_video, paste(project$dir_path, project$db_file, sep = "/"), "video_annotation")
+            calipR::saveData(annotated_video[ID == input$animal_id & PATH == input$videoPath], paste(project$dir_path, project$db_file, sep = "/"), "video_annotation")
 
           }
 
@@ -701,3 +716,4 @@ prepModuleServer <- function(id, create_input, load_input, project_type, db,
 
 })
 }
+
