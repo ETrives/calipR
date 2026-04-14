@@ -10,7 +10,6 @@ library(reticulate)
 #' @examples
 setup_python_calipR <- function(){
 
-
   package_path <- system.file(package = "calipR")
   first_run_flag <- file.path(package_path, ".calipR_first_run")  # Flag après installation
 
