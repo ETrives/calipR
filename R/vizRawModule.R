@@ -23,6 +23,12 @@ vizRawModuleUI <- function(id) {
             value = 1,
             min = 1
           ),
+          shiny::numericInput(
+            ns("group_num"),
+            label = "group_number",
+            value = 1,
+            min = 1
+          ),
           shiny::checkboxInput(ns("align_behavior"), label = "align behavior and fiber photometry data"),
           shiny::checkboxInput(ns("fit_isos"), label = "fit isosbestic trace"),
           shiny::checkboxInput(ns("delta_isos"), label = "normalize with isosbestic (f) channel (delta f/f)"),
@@ -278,7 +284,7 @@ vizRawModuleServer <- function(id, db, project, orig_freq, filter, downslider, v
           #id <- unique(db$aligned[["ID"]])[input$cell_num]
           #db$aligned <- db$aligned[order(unique_ID)]
           cell <- unique(db$aligned[order(unique_ID)][["unique_ID"]])[input$cell_num]
-          gr <- unique(db$aligned[order(unique_ID)][["group"]])[input$cell_num]
+          gr <- unique(db$aligned[order(unique_ID)][["group"]])[input$group_num]
           print("cell")
           print(cell)
           print("groupe")
